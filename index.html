@@ -296,6 +296,7 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .codebox b{grid-column:1;font:700 1.35rem var(--display);letter-spacing:.06em;color:var(--amber);font-variant-numeric:tabular-nums}
 .codebox .btn{grid-column:2;grid-row:1/span 2;padding:9px 14px;font-size:.95rem}
 .setcard .sub{font-size:.84rem}
+@media (max-height:540px) and (min-aspect-ratio:4/3){.screen.peek{padding-block:8px}.pausecard{width:min(100%,560px);grid-template-columns:1fr 1fr 1fr;align-items:center;padding:8px 10px;gap:6px 8px}.pausecard h2{grid-column:1;font-size:1.35rem}.pausecard p{grid-column:2/-1;margin:0;text-align:left;font-size:.82rem}.pausecard .btn,.pausecard .wide{grid-column:auto;padding:8px 6px;font-size:1rem}}
 @media (prefers-reduced-motion:reduce){.nobear{animation:none}.btn:active{transform:none}}
 </style>
 
@@ -957,12 +958,27 @@ function pickPZ(){
   SFX.peeSurface(PZ.v==='creek'?'water':PZ.v==='ledge'?'far':'ground');
   const el=document.querySelector('#pauseScr p');if(el)el.textContent=pick(PZ_CAP[PZ.v]);
 }
-function pzTrunk(x,ly,top){
-  const aspen=(S.biome||0)===1;
-  const c=aspen?'#e9e4d6':'#5a3d26',d=aspen?'#2b2620':'#3f2a19';
-  px(ctx,c,x-4,top,8,ly-top+2);px(ctx,c,x-6,ly-2,12,4);
-  if(aspen){for(let yy=top+4;yy<ly-4;yy+=9)px(ctx,d,x-3+((yy/9|0)%2)*3,yy,3,1)}
-  else{px(ctx,d,x-2,top,1,ly-top);px(ctx,d,x+2,top+6,1,ly-top-10);px(ctx,'rgba(255,255,255,.08)',x-4,top,2,ly-top)}
+function pzTrunk(x,ly,top,i){
+  const aspen=(S.biome||0)===1,r=hash(i*3.7+PZ.seed),h=(aspen?66:56)+Math.round(r*8),winter=SEASON==='winter';
+  if(aspen){
+    px(ctx,'#e9e4d6',x-2,ly-h+20,4,h-18);px(ctx,'#e9e4d6',x-3,ly-2,6,3);
+    for(let yy=ly-h+28;yy<ly-4;yy+=6)px(ctx,'#2b2620',x-2+((yy/7|0)%2)*2,yy,2,1);
+    
+    const H=30,top=ly-h,Wd=21;
+    for(let j=0;j<H;j++){const e=(j-H/2)/(H/2),ww=Math.max(2,Math.round(Wd*Math.sqrt(Math.max(0,1-e*e))));
+      px(ctx,j>H*.7?'#c98e2a':'#e0a83a',x-Math.round(ww/2),top+j,ww,1);
+      for(let q=0;q<ww;q+=3){const r2=hash(j*7.1+q*3.3+i);if(r2<.3)px(ctx,r2<.12?'#f6d06a':'#b97f24',x-Math.round(ww/2)+q,top+j,1,1)}}
+    return;
+  }
+  const t0=ly-h,cb=ly-20,dk='#24482e',md='#2f5a3a',lt='#3f7048',sn='#eef3f6';
+  px(ctx,'#5a3d26',x-2,cb-4,4,ly-cb+5);px(ctx,'#3f2a19',x-1,cb,1,ly-cb);px(ctx,'#5a3d26',x-4,ly-1,8,2);
+  const tiers=5,th=(cb-t0)/tiers;
+  for(let k=0;k<tiers;k++){
+    const y=Math.round(t0+k*th),w=6+Math.round((k+1)*(20/tiers)),hh=Math.round(th+5);
+    for(let j=0;j<hh;j++){const ww=Math.max(2,Math.round(w*(j+2)/(hh+1)));px(ctx,j>hh-3?dk:md,x-Math.round(ww/2),y+j,ww,1);px(ctx,lt,x-Math.round(ww/2),y+j,1,1)}
+    if(winter)px(ctx,sn,x-Math.round(w/4),y+1,Math.round(w/2),1);
+  }
+  px(ctx,md,x,t0-2,1,3);if(winter)px(ctx,sn,x-1,t0,3,1);
 }
 function pzRock(x,ly,w,h){
   px(ctx,'#76736c',x-w/2+2,ly-h,w-4,h);px(ctx,'#76736c',x-w/2,ly-h+3,w,h-3);px(ctx,'#9c988f',x-w/2+3,ly-h+1,w-8,3);px(ctx,'#55524c',x-w/2,ly-2,w,3);
@@ -1013,7 +1029,7 @@ function drawPee(){
     for(let i=0;i<5;i++){const r=hash(i+PZ.seed);pzRock(Math.round(r*W),ly+1,8+Math.round(r*6),4)}
   }
   /* props behind the crew */
-  if(v==='trees')crew.forEach((c,i)=>pzTrunk(Math.round(x0+i*sp+(i%2?2:-1)),ly,-oy));
+  if(v==='trees')crew.forEach((c,i)=>pzTrunk(Math.round(x0+i*sp+(i%2?2:-1)),ly,0,i));
   if(v==='rocks')crew.forEach((c,i)=>{if(i!==1)pzRock(Math.round(x0+i*sp+(i%2?3:-2)),ly+2,26,26+(i%2)*5)});
   if(v==='line'){const sx=Math.round(cx+PZ.side*((crew.length+1)*sp/2+6));px(ctx,'#6b4423',sx,ly-18,2,20);px(ctx,'#8a5a2e',sx-7,ly-20,16,6);px(ctx,'#f2e2b0',sx-5,ly-18,4,1);px(ctx,'#f2e2b0',sx,ly-18,5,1);px(ctx,'#f2e2b0',sx-5,ly-16,8,1)}
   /* sleeping bear (on the side away from the crew) */
