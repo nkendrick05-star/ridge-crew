@@ -701,7 +701,7 @@ function resize(){
   dpr=Math.min(2,window.devicePixelRatio||1);
   cw=cv.clientWidth||300;ch=cv.clientHeight||200;
   cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);
-  sc=Math.min(ch/H,cw/225);
+  sc=Math.min(ch/H,cw/250);
   W=cw/sc;viewH=ch/sc;oy=(viewH-H)*0.62;
 }
 window.addEventListener('resize',resize);resize();
