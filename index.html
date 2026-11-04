@@ -944,6 +944,7 @@ function pickPZ(){
   const dark=S.mode==='night'||(S.ev&&S.ev.type==='night')||todAt().dark>.25;
   const cr=dark?['fireflies','fireflies','owl',null]:(S.ev&&S.ev.type==='rain'?['frog',null]:['rabbit','deer','birds','squirrel',null]);
   PZ={v,side:Math.random()<.5?1:-1,critter:cr[Math.floor(Math.random()*cr.length)],seed:Math.random()*100};
+  SFX.peeSurface(PZ.v==='creek'?'water':PZ.v==='ledge'?'far':'ground');
   const el=document.querySelector('#pauseScr p');if(el)el.textContent=pick(PZ_CAP[PZ.v]);
 }
 function pzTrunk(x,ly,top){
@@ -1013,7 +1014,7 @@ function drawPee(){
   let flow=0;
   crew.forEach((c,i)=>{
     const ph=(t+i*1.37)%6.5,st=ph<4.3?'p':ph<4.5?'-':ph<5?'z':ph<6.3?'a':'-';
-    if(ph<4.3)flow+=ph<.25?ph/.25:ph>3.9?Math.max(0,(4.3-ph)/.4):1;
+    if(ph<4.3){let f=ph<.15?ph/.15:ph>3.7?Math.max(0,(4.3-ph)/.6):1;if(ph>3.7&&Math.sin(ph*47)>.2)f*=.25;flow+=f}
     if(peeState[i]!==st){if(st==='z')SFX.zip();if(st==='a')SFX.ahh(i);peeState[i]=st}
     const shiver=ph>4.5&&ph<5.0?(Math.floor(t*28)%2?1:-1):0;
     const x=x0+i*sp+shiver,fy=v==='rocks'&&i===1?ly-14:ly+2;
@@ -1026,7 +1027,7 @@ function drawPee(){
   });
   if(v==='bushes')crew.forEach((c,i)=>pzBush(Math.round(x0+i*sp),ly+3,20));
   if(v==='bushes'||v==='line'){pzBush(Math.round(x0-sp),ly+3,12);pzBush(Math.round(x0+crew.length*sp),ly+3,14)}
-  SFX.setPee(Math.min(1,Math.sqrt(flow/2.2))*(.85+.15*Math.sin(t*9)));
+  SFX.setPee(Math.min(1,Math.sqrt(flow/2.2)));
   ctx.restore();
   /* weather + light, matching the run */
   const tod=todAt(),e=S.ev,ek=e?Math.max(0,Math.min(1,e.t/1.2,(e.dur-e.t)/1.2)):0;
@@ -1702,7 +1703,7 @@ const SFX=(()=>{
   function tone(f,dur,type,vol,slide,when){const a=A();if(!a||muted)return;const t=a.currentTime+(when||0),o=a.createOscillator(),g=a.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+dur);g.gain.setValueAtTime(vol||.12,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(out(a));o.start(t);o.stop(t+dur+.02)}
   function noise(dur,vol,freq,q,when,slideTo){const a=A();if(!a||muted)return;const t=a.currentTime+(when||0),n=Math.max(1,Math.floor(a.sampleRate*dur)),b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(freq||800,t);if(slideTo)f.frequency.exponentialRampToValueAtTime(slideTo,t+dur);f.Q.value=q||1;const g=a.createGain();g.gain.setValueAtTime(vol||.2,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f).connect(g).connect(out(a));s.start(t)}
   /* music + ambience */
-  let runG=null,biomeI=0,peeG=null,pee=0,master=null,musicG=null,ambG=null,windG=null,waterG=null,scn='none',nextT=0,stepI=0,night=false,water=0,lastAmb=0;
+  let runG=null,biomeI=0,peeG=null,peeW=null,peeD=null,peeLP=null,peeKind='ground',pee=0,master=null,musicG=null,ambG=null,windG=null,waterG=null,scn='none',nextT=0,stepI=0,night=false,water=0,lastAmb=0;
   function out(a){if(!master){master=a.createGain();master.gain.value=muted?0:1;master.connect(a.destination)}return master}
   const MEL=[72,0,76,79,76,0,74,72, 69,0,72,76,74,72,69,0, 65,69,72,0,74,72,69,67, 67,0,71,74,72,71,67,0, 72,0,76,79,81,79,76,0, 69,72,76,0,74,72,74,76, 65,0,69,72,77,76,74,72, 74,0,71,67,72,0,0,0];
   const RUNM=[{s:[60,62,64,67,69,72],w:'triangle'},{s:[62,64,66,69,71,74],w:'triangle'},{s:[57,60,62,64,67,69],w:'sine'},{s:[65,67,69,71,72,76],w:'sine'}];
@@ -1715,10 +1716,29 @@ const SFX=(()=>{
     runG=a.createGain();runG.gain.value=0;runG.connect(out(a));
     ambG=a.createGain();ambG.gain.value=0;ambG.connect(out(a));
     const len=a.sampleRate*2,buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
-    {const s=a.createBufferSource();s.buffer=buf;s.loop=true;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=2600;f.Q.value=1.4;
-     const f2=a.createBiquadFilter();f2.type='highpass';f2.frequency.value=900;
-     const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=6.5;lg.gain.value=520;lfo.connect(lg).connect(f.frequency);lfo.start();
-     peeG=a.createGain();peeG.gain.value=0;s.connect(f).connect(f2).connect(peeG).connect(out(a));s.start()}
+    {/* pee: a looped stream built from thousands of tiny droplets/bubbles plus splatter noise */
+     const mkStream=water=>{
+       const sr=a.sampleRate,n=Math.floor(sr*3),b=a.createBuffer(1,n,sr),d=b.getChannelData(0);
+       let lp=0,env=.6,hum=0;
+       for(let i=0;i<n;i++){
+         if(i%48===0){env+=(Math.random()-.5)*.3;env=Math.max(.25,Math.min(1,env))}
+         const w=Math.random()*2-1;lp+=(w-lp)*(water?.18:.45);hum+=(w-hum)*.03;
+         d[i]=(water?.07:.2)*env*(w-lp*.8)+(water?.22:.05)*hum;
+       }
+       const cnt=Math.floor(3*(water?520:240));
+       for(let k=0;k<cnt;k++){
+         const t0=Math.floor(Math.random()*n),f0=water?500+Math.random()*1900:1300+Math.random()*3200,
+               dec=water?.006+Math.random()*.016:.002+Math.random()*.006,L=Math.floor(dec*sr*5),A=water?.06+Math.random()*.22:.04+Math.random()*.14,rise=water?16:5;
+         let ph=0;for(let j=0;j<L;j++){const tt=j/sr;ph+=6.2832*f0*(1+tt*rise)/sr;d[(t0+j)%n]+=A*Math.sin(ph)*Math.exp(-tt/dec)}
+       }
+       let pk=0;for(let i=0;i<n;i++)pk=Math.max(pk,Math.abs(d[i]));for(let i=0;i<n;i++)d[i]*=.9/pk;
+       const s=a.createBufferSource();s.buffer=b;s.loop=true;s.start();return s;
+     };
+     const hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=220;
+     peeLP=a.createBiquadFilter();peeLP.type='lowpass';peeLP.frequency.value=7000;
+     peeW=a.createGain();peeW.gain.value=0;peeD=a.createGain();peeD.gain.value=1;
+     mkStream(true).connect(peeW).connect(hp);mkStream(false).connect(peeD).connect(hp);
+     peeG=a.createGain();peeG.gain.value=0;hp.connect(peeLP).connect(peeG).connect(out(a))}
     const mk=(type,f,q,g)=>{const s=a.createBufferSource();s.buffer=buf;s.loop=true;const fl=a.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;const gn=a.createGain();gn.gain.value=g;s.connect(fl).connect(gn).connect(ambG);s.start();return gn};
     windG=mk('lowpass',420,.7,.1);waterG=mk('bandpass',1300,.55,0);
     setInterval(tick,60);
@@ -1760,7 +1780,10 @@ const SFX=(()=>{
     scene(n){if(n===scn)return;scn=n;applyScene()},
     setWater(v){if(!waterG||Math.abs(v-water)<.03)return;water=v;waterG.gain.setTargetAtTime(v*.32,ac.currentTime,.5)},
     setNight(b){night=b},
-    setPee(v){if(!peeG||!ac||Math.abs(v-pee)<.02)return;pee=v;peeG.gain.setTargetAtTime(v*.2,ac.currentTime,.06)},
+    setPee(v){if(!peeG||!ac||Math.abs(v-pee)<.02)return;pee=v;peeG.gain.setTargetAtTime(v*(peeKind==='far'?.12:.24),ac.currentTime,.05)},
+    peeSurface(k){peeKind=k;if(!peeW||!ac)return;const t=ac.currentTime;
+      peeW.gain.setTargetAtTime(k==='water'?1:0,t,.05);peeD.gain.setTargetAtTime(k==='water'?.15:1,t,.05);
+      peeLP.frequency.setTargetAtTime(k==='far'?1800:7000,t,.05)},
     ahh(i){const a=A();if(!a||muted)return;const t=a.currentTime,f=[190,150,230,170,210][i%5],o=a.createOscillator(),g=a.createGain(),fl=a.createBiquadFilter();
       o.type='sawtooth';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.72,t+.7);fl.type='lowpass';fl.frequency.value=900;
       g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+.12);g.gain.exponentialRampToValueAtTime(.0001,t+.75);o.connect(fl).connect(g).connect(out(a));o.start(t);o.stop(t+.8)},
