@@ -1533,8 +1533,41 @@ function runForeground(){
       px(ctx,winter?'#9aa8b2':'#1c2c1e',Math.round(x)+o+sw,b-h,2,h)}}
   ctx.globalAlpha=1;
 }
+function cliffFace(ex,gy,dir,bottom,wx){
+  const G=GC,bi=S.biome||0,sd=wx*.37,rock=bi===2?'#6d6a64':mixHex(P.dirt,'#5a5650',.45),rL=mixHex(rock,'#ffffff',.22),rD=mixHex(rock,'#000000',.35),
+    out=k=>dir>0?ex+k:ex-1-k,inn=k=>dir>0?ex-1-k:ex+k;
+  /* rock face built from chunky blocks: varied width/shade, lit top edges, dark undersides, dithered into the soil */
+  for(let k=0,y=gy+2;y<bottom;k++){const r1=hash(sd+k*1.37),r2=hash(sd+k*2.91+5),bh=4+Math.round(r1*8),w=7+Math.round(r2*6),j=k===0?0:Math.round(hash(sd+k*.77+9)*4);
+    const c=[rock,mixHex(rock,'#ffffff',.1),mixHex(rock,'#000000',.12)][k%3],x0=dir>0?ex-w:ex-j,ww=w+j;
+    px(ctx,c,x0,y,ww,bh);
+    for(let q=0;q<bh;q+=2)px(ctx,c,dir>0?ex-w-1-(q%4?1:0):ex+w+(q%4?1:0),y+q,1,1);
+    px(ctx,rL,x0,y,ww,1);px(ctx,rD,x0,y+bh-1,ww,1);
+    px(ctx,dir>0?rL:rD,dir>0?ex+j-1:ex-j,y,1,bh);
+    if(r1>.6)px(ctx,rD,x0+2+Math.round(r2*(ww-4)),y+1,1,bh-2);
+    for(let q=0;q<3;q++){const rr=hash(sd+k*3+q*.7);if(rr<.5)px(ctx,rr<.25?rL:rD,x0+1+Math.round(rr*2*(ww-2)),y+1+Math.round(hash(rr*9)*(bh-2)),1,1)}
+    y+=bh}
+  ctx.globalAlpha=.35;px(ctx,'#000',dir>0?ex-9:ex,gy+1,9,2);ctx.globalAlpha=1;
+  /* ledges + cracks + stones + moss */
+  for(let k=0,y=gy+10+Math.round(hash(sd+1)*6);y<bottom-4;k++,y+=11+Math.round(hash(sd+k*3.1)*8)){const w=2+Math.round(hash(sd+k)*3);
+    px(ctx,rL,dir>0?ex-2:ex-w,y,w+2,1);px(ctx,rD,dir>0?ex-2:ex-w,y+1,w+2,1);
+    if(G.winter)px(ctx,'#ffffff',dir>0?ex-2:ex-w,y-1,w+2,1);
+    else if(hash(sd+k*7)<.45)px(ctx,bi===3?'#3f6a3a':'#5f8a3a',dir>0?ex-1:ex-w+1,y-1,w,1);
+    let cx=inn(2+Math.round(hash(sd+k*5)*3)),cy=y+2;for(let q=0;q<5;q++){px(ctx,rD,cx,cy,1,1);cy++;if(hash(sd+k+q)<.4)cx-=dir}}
+  for(let k=0;k<4;k++){const y=gy+14+Math.round(hash(sd+k*9.7)*(bottom-gy-20));if(y>bottom-3)continue;px(ctx,'#7d7a73',inn(4+k%3),y,3,2);px(ctx,'#a19d93',inn(4+k%3),y,2,1)}
+  if(!G.winter)for(let k=0;k<3;k++){const y=gy+8+Math.round(hash(sd+k*4.3)*30);px(ctx,bi===3?'#3f6a3a':'#4f7a3a',dir>0?ex-1:ex-1,y,2,2+Math.round(hash(sd+k)*3))}
+  /* grass lip hanging over the edge */
+  px(ctx,G.grass,dir>0?ex:ex-3,gy-2,3,2);px(ctx,G.grass2,dir>0?ex:ex-3,gy,3,1);
+  for(let k=0;k<3;k++){const h=2+Math.round(hash(sd+k*2.2)*3);px(ctx,G.grass,out(k),gy,1,h)}
+  /* hanging roots */
+  for(let k=0;k<2;k++){let x=out(Math.round(hash(sd+k*6)*1.5)),y=gy+3+k*3;const L=6+Math.round(hash(sd+k*8)*10);
+    for(let q=0;q<L;q++){px(ctx,q>L-3?'#5a3d26':'#7a5533',x,y,1,1);y++;if(hash(sd+k*3+q)<.35)x+=dir}}
+  /* winter icicles, rain drips */
+  if(G.winter)for(let k=0;k<3;k++)px(ctx,'#dff1f7',out(k),gy+1,1,2+Math.round(hash(sd+k*3)*3));
+  if(G.wet>0){const y=gy+2+((S.t*55+hash(sd)*100)%45);ctx.globalAlpha=G.wet;px(ctx,'#cfe3ef',out(1),Math.round(y),1,2);ctx.globalAlpha=1}
+}
 function drawGround(d,bottom){
   groundColors();
+  let ENDS=new Set(),STARTS=new Set();for(const q of S.segs)if(!q.kind){ENDS.add(Math.round(q.x1));STARTS.add(Math.round(q.x0))}
   for(const r of S.rivers){
     const a=Math.round(r.x0-d),b=Math.round(r.x1-d);if(b<0||a>W)continue;
     px(ctx,'#2f6c92',a,r.wy,b-a,bottom-r.wy);px(ctx,'#4d8fb5',a,r.wy,b-a,2);
@@ -1562,8 +1595,8 @@ function drawGround(d,bottom){
       if(G.winter&&r<.6)px(ctx,'#ffffff',x,gy-3,2,1);
       if(G.wet){ctx.globalAlpha=.26*G.wet;px(ctx,'#140f0a',x,gy-2,2,bottom-gy+2);ctx.globalAlpha=1}
     }
-    if(s.x0-d>=-2){const gy=Math.round(segY(s,s.x0));px(ctx,P.edge,a,gy-2,2,bottom-gy+2)}
-    if(s.x1-d<=W+2){const gy=Math.round(segY(s,s.x1));px(ctx,P.edge,b-2,gy-2,2,bottom-gy+2)}
+    if(!ENDS.has(Math.round(s.x0))&&s.x0-d>=-14)cliffFace(Math.round(s.x0-d),Math.round(segY(s,s.x0)),-1,bottom,s.x0);
+    if(!STARTS.has(Math.round(s.x1))&&s.x1-d<=W+14)cliffFace(Math.round(s.x1-d),Math.round(segY(s,s.x1)),1,bottom,s.x1);
     const vis=(k,st)=>{const xx=Math.round(k*st-d);return xx>-12&&xx<W+12?xx:null};
     /* specks, pebbles, stones, roots */
     for(let k=Math.ceil(s.x0/7);k*7<s.x1-3;k++){const xx=vis(k,7);if(xx==null)continue;const r=hash(k+.5);if(r<.5)px(ctx,r<.2?P.speck2:P.speck,xx,Math.round(segY(s,k*7))+9+Math.round(hash(k+40)*24),1+(r*3|0),1)}
