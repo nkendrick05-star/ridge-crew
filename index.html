@@ -3234,7 +3234,7 @@ const SFX=(()=>{
     ahh(i){const a=A();if(!a||muted)return;const t=a.currentTime,f=[190,150,230,170,210][i%5],o=a.createOscillator(),g=a.createGain(),fl=a.createBiquadFilter();
       o.type='sawtooth';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.72,t+.7);fl.type='lowpass';fl.frequency.value=900;
       g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+.12);g.gain.exponentialRampToValueAtTime(.0001,t+.75);o.connect(fl).connect(g).connect(out(a));o.start(t);o.stop(t+.8)},
-    zip(){if(SB.zip1&&SB.zip2){A();shot(Math.random()<.5?SB.zip1:SB.zip2,.45,.9+Math.random()*.25);return}noise(.22,.18,1800,4,0,4200)},
+    zip(){if(SB.zip1&&SB.zip2){A();shot(Math.random()<.5?SB.zip1:SB.zip2,.225,.9+Math.random()*.25);return}noise(.22,.09,1800,4,0,4200)},
     get muted(){return muted},
     toggle(){muted=!muted;try{localStorage.setItem('rc_mute',muted?'1':'0')}catch(e){}if(master&&ac)master.gain.setTargetAtTime(muted?0:1,ac.currentTime,.05);return muted},
     jump(){tone(330,.12,'square',.06,620)},
