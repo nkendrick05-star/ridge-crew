@@ -151,6 +151,8 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .topbar{min-width:0}.tbl,.tbr{min-width:0}
 @media (max-width:430px){.topbar .pill{font-size:.95rem;padding:4px 10px 4px 8px;gap:5px}.topbar .lvbar{width:24px}.tbl,.tbr{gap:5px}.topbar .iconpill{width:34px;height:34px}}
 @media (max-width:350px){.topbar .lvbar{display:none}}
+.btn.danger{background:transparent;border:2px solid rgba(224,80,60,.7);color:#ff9a8a;box-shadow:none}
+.btn.danger.armed{background:#c0392b;border-color:#c0392b;color:#fff}
 .setsec{display:flex;flex-direction:column;gap:8px;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
 .sethead{display:flex;justify-content:space-between;align-items:center}
 .sethead b{font:700 1.05rem var(--display);color:var(--cream)}
@@ -545,6 +547,8 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
       <p class="sub">Keep this code somewhere safe. On a new phone or computer, enter it below and all your progress comes with you.</p>
       <form class="frow" id="restoreForm"><input id="restoreInput" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH-JKLM" aria-label="Save code from another device"><button class="btn" id="restoreBtn" type="submit">Restore</button></form>
       <div class="frow"><button class="btn ghost" id="setHow" type="button">How to play</button><button class="btn ghost" id="setWho" type="button">Change who I am</button></div>
+      <button class="btn danger" id="resetBtn" type="button">Reset my progress</button>
+      <p class="sub" id="resetNote" hidden>This erases pinecones, gear, badges, journal, stories, levels and every score on the leaderboard. Your name and save code stay.</p>
       <button class="btn ghost" data-home type="button">Done</button>
     </div>
   </div>
@@ -4143,6 +4147,19 @@ $('setSound').addEventListener('click',toggleMute);
 for(const id of ['volMusic','volFx'])$(id).addEventListener('input',()=>{const m=+$('volMusic').value/100,f=+$('volFx').value/100;SFX.setVol(m,f);$('volMusicV').textContent=Math.round(m*100)+'%';$('volFxV').textContent=Math.round(f*100)+'%';if(SFX.muted&&(m>0||f>0))toggleMute()});
 $('volFx').addEventListener('change',()=>SFX.cone(2));
 $('setHow').addEventListener('click',()=>screen('howScr'));
+/* reset my progress: two taps, clears this device and the server copy, then restarts fresh */
+let resetArmT=null;
+$('resetBtn').addEventListener('click',async()=>{
+  const b=$('resetBtn');
+  if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Tap again to erase everything';$('resetNote').hidden=false;clearTimeout(resetArmT);resetArmT=setTimeout(()=>{b.classList.remove('armed');b.textContent='Reset my progress';$('resetNote').hidden=true},5000);return}
+  clearTimeout(resetArmT);b.disabled=true;b.textContent='Resetting...';
+  const KEYS=['rc_wallet','rc_owned','rc_equip','rc_ups','rc_xp','rc_badges','rc_missions','rc_journal','rc_life','rc_modebest','rc_bestdist','rc_seen','rc_best','rc_ffplayed'];
+  try{for(const k of KEYS)localStorage.removeItem(k);for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith('daily_'))localStorage.removeItem(k)}}catch(e){}
+  wallet=0;owned={};equip={};ups={};xp=0;
+  if(ACC.code){try{await rpc('rc_reset',{p_code:ACC.code})}catch(e){}}
+  try{location.reload()}catch(e){toast('Progress reset. Close and reopen the game.')}
+});
+
 $('pauseMute').addEventListener('click',toggleMute);
 $('secondBtn').addEventListener('click',secondChance);
 $('shareBtn').addEventListener('click',openCard);
