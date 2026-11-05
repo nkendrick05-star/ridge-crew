@@ -1185,10 +1185,21 @@ function zipY(x){const f=((x-ZLEDGE)%ZPOLE+ZPOLE)%ZPOLE/ZPOLE;return ZY+Math.sin
 function zipStandX(k){return ZLEDGE-8-k*14}
 function zipUpdate(dt){
   const n=S.crew.length,lx=S.dist+LX;
-  if(!S.zip){if(lx>ZLEDGE+40){S.zip={t:0,xs:S.crew.map((c,k)=>Math.min(lx-CB(k),zipStandX(k))),zx:S.crew.map(()=>ZLEDGE),said:false}}return}
+  if(!S.zip){if(lx>ZLEDGE+40){S.zip={t:0,xs:S.crew.map((c,k)=>Math.min(lx-CB(k),zipStandX(k))),zx:S.crew.map(()=>ZLEDGE),said:false,pxs:Math.min(lx+20,ZLEDGE-4),pzx:ZLEDGE}}return}
   const z=S.zip;z.t+=dt;
   if(!z.said&&z.t>.35){z.said=true;say('We will take the zipline!',LX-30,GY-70,'#bfe39a')}
   for(let k=0;k<n;k++){if(z.t<.9+k*.18)continue;const tg=lx-46-k*17;if(z.zx[k]<tg)z.zx[k]=Math.min(tg,z.zx[k]+Math.max(90*dt,(tg-z.zx[k])*dt*2.2));else z.zx[k]=tg}
+  if(z.pzx!=null&&z.t>=1.05+n*.18){const tg=lx-28;if(z.pzx<tg)z.pzx=Math.min(tg,z.pzx+Math.max(90*dt,(tg-z.pzx)*dt*2.2));else z.pzx=tg}
+}
+/* the pet: runs ahead to the ledge, waits, then rides the zipline last */
+function zipPetPos(){
+  const lx=S.dist+LX,n=S.crew.length;
+  if(!S.zip){const x=Math.min(lx+20,ZLEDGE-4),run=x<ZLEDGE-4;return {x,y:GY,mode:run?'run':'stand'}}
+  const z=S.zip,t0=.55+n*.18,u=Math.max(0,Math.min(1,(z.t-t0)/.45));
+  if(u<=0)return {x:z.pxs,y:GY,mode:'stand'};
+  const hy=zipY(ZLEDGE)+13;
+  if(u<1)return {x:z.pxs+(ZLEDGE-z.pxs)*u,y:GY+(hy-GY)*u-Math.sin(u*Math.PI)*14,mode:'climb'};
+  const x=z.pzx;return {x,y:zipY(x)+13,mode:'zip'};
 }
 function zipPos(k){
   const lx=S.dist+LX;
@@ -1217,6 +1228,11 @@ function drawZipCrew(d){
       outlined(ctx,()=>drawHiker(ctx,c,x+sw,y,t*.5+k,true));
       const lk=look(c);outlined(ctx,()=>{px(ctx,lk.skin,x+2+sw,cy+3,2,3);px(ctx,lk.skin,x+6+sw,cy+3,2,3)})}
     else{if(p.mode!=='climb')shd(x,y,12);outlined(ctx,()=>drawHiker(ctx,c,x,y,p.mode==='run'?S.at+k*.37:p.mode==='climb'?t:0,p.mode==='climb'))}}
+  const pt=equip.pet;
+  if(pt&&pt!=='none'){const p=zipPetPos(),x=Math.round(p.x-d),y=Math.round(p.y);
+    if(x>-20&&x<W+20){
+      if(p.mode==='zip'){const cy=Math.round(zipY(p.x)),sw=Math.round(Math.sin(t*3.4)*1);px(ctx,'#6e6a64',x-2,cy-2,5,3);px(ctx,'#c8c2b8',x-1,cy-2,3,1);px(ctx,'#2a2420',x,cy+1,1,y-cy-8);outlined(ctx,()=>drawPet(ctx,pt,x+sw,y,t,true))}
+      else{if(p.mode!=='climb')shd(x,y,8);outlined(ctx,()=>drawPet(ctx,pt,x,y,p.mode==='run'?S.at:0,p.mode==='climb'))}}}
 }
 function heartHud(x,y,s,full){
   const R=['.##.##.','#######','#######','.#####.','..###..','...#...'];
