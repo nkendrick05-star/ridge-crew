@@ -1570,6 +1570,7 @@ function drawBurnable(o,x,t){
   if(b>0&&!PXC){const n=Math.max(1,Math.round(o.w/6));for(let k=0;k<n;k++)drawFlame(ctx,x+3+k*6,gy-Math.round(o.h*.3),6+o.h*.5*(1-Math.max(0,b-2)/1.2),t,o.x+k*3)}
 }
 /* forest fire trees: trunk set back in the background, branch + crown in the crew's plane */
+/* trunks stop halfway up the crown, where the branches are wider than the trunk, so they never poke out the top */
 function ffTrunk(tx,top,bot,burnt,seed,tw){
   tw=tw||9;const hw=Math.floor(tw/2);
   const base=burnt?'#2a1e18':'#5a3d26',c=mixHex(base,P.sky[2]||'#c8b8a0',burnt?.08:.12),dk=mixHex(c,'#000000',.22),lt=mixHex(c,'#ffffff',.12);
@@ -1646,7 +1647,7 @@ function ffCrown(tx,y0,w,h,st,t,seed){
 function drawBranch(o,x){
   const bot=Math.round(o.gy-92),t=S.t,tx=x+o.w+8,g=Math.round(o.gy);
   const sz=.7+hash(o.x*.37)*.9,chh=Math.round(56+70*sz),cw=Math.round(chh*(.34+hash(o.x*.91)*.14)),tw=Math.round(6+5*sz),cTop=bot+12-chh;
-  ffTrunk(tx,cTop+6,g,false,o.x*.01,tw);
+  ffTrunk(tx,bot+12-Math.round(Math.round(chh/16)*16*.5),g,false,o.x*.01,tw);
   ffCrown(tx,bot+12,cw,chh,1.2,t,o.x+7);
   ffBranch(x,bot+1,tx-Math.floor(tw/2)+4,1.2,t,o.x);
   for(let k=0;k<4;k++){const hx=x+3+k*6;px(ctx,'#2f5a3a',hx,bot+1,3,3+(k%2)*2);px(ctx,'#24482e',hx,bot+3+(k%2)*2,3,1)}
@@ -1700,8 +1701,8 @@ function drawAnchors(d){
   for(const a of S.anchors){const x=Math.round(a.x-d),tx=x+(a.kind==='short'?22:30);if(tx<-40||x>W+40)continue;
     const st=a.gone?-2:a.burnT<0?0:a.burnT,by=Math.round(a.by),ay=Math.round(a.y);
     const sz=.7+hash(a.x*.37)*.9,chh=Math.round(52+64*sz),cw=Math.round(chh*(.34+hash(a.x*.91)*.14)),tw=Math.round(6+6*sz);
-    if(a.treeFall!=null){const ang=Math.min(1.45,a.treeFall*a.treeFall*2.2);if(ang<1.45||a.treeFall<2){ctx.save();ctx.translate(tx,LAVA_Y);ctx.rotate(ang);ffTrunk(0,by+16-chh+6-LAVA_Y,0,true,a.x*.01,tw);ffCrown(0,by+16-LAVA_Y,cw,chh,-2,t,a.x+3);if(!PXC)for(let k=0;k<3;k++)drawFlame(ctx,-4+k*4,Math.round(by-LAVA_Y-k*12),8,t,a.x+k);ctx.restore()}continue}
-    ffTrunk(tx,by-8-chh+6,LAVA_Y,a.burnT>1.2||a.gone,a.x*.01,tw);
+    if(a.treeFall!=null){const ang=Math.min(1.45,a.treeFall*a.treeFall*2.2);if(ang<1.45||a.treeFall<2){ctx.save();ctx.translate(tx,LAVA_Y);ctx.rotate(ang);ffTrunk(0,by+16-Math.round(Math.round(chh/16)*16*.5)-LAVA_Y,0,true,a.x*.01,tw);ffCrown(0,by+16-LAVA_Y,cw,chh,-2,t,a.x+3);if(!PXC)for(let k=0;k<3;k++)drawFlame(ctx,-4+k*4,Math.round(by-LAVA_Y-k*12),8,t,a.x+k);ctx.restore()}continue}
+    ffTrunk(tx,by-8-Math.round(Math.round(chh/16)*16*.5),LAVA_Y,a.burnT>1.2||a.gone,a.x*.01,tw);
     ffCrown(tx,by-8,cw,chh,a.gone?-2:(a.burnT>=0?a.burnT:(a.x<S.dist+40?1:0)),t,a.x+3);
     if(!a.gone){ffBranch(x,by,tx,st,t,a.x);
       if(a.hang&&!(S.swing&&S.swing.a===a)){const sw=Math.round(Math.sin(t*1.6+a.x)*2);ctx.strokeStyle=a.kind==='vine'?'#3f7a35':'#8a6a3a';ctx.lineWidth=a.kind==='rope'?1.5:1;ctx.beginPath();ctx.moveTo(x+.5,by+.5);ctx.lineTo(x+sw+.5,ay+.5);ctx.stroke();
