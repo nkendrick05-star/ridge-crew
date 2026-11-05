@@ -12,7 +12,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ridge Crew">
-<style>html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*,*::before,*::after{box-sizing:inherit}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* RC8: a clearer pixel "8" (only the 8; everything else stays Pixelify Sans) */
+@font-face{font-family:'RC8';src:url(data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMkkJRlYAAAEoAAAAYGNtYXAADACLAAABkAAAADRnbHlmC+q0pQAAAcwAAABeaGVhZC+J8PwAAACsAAAANmhoZWEF6AF4AAAA5AAAACRobXR4AowAAAAAAYgAAAAGbG9jYQAvAAAAAAHEAAAABm1heHAACgAeAAABCAAAACBuYW1lr98jMgAAAiwAAABUcG9zdAAfAAAAAAKAAAAAJgABAAAAAQAAKy55kV8PPPUAAwPoAAAAAOcSVtcAAAAA5xJW1wA8//UCEgJ5AAAAAwACAAAAAAAAAAEAAAOY/ugAAAJQADwAPgISAAEAAAAAAAAAAAAAAAAAAAABAAEAAAACABwABwAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAwJQAfQABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAPz8/PwBAADgAOAOY/ugAAAOaASEAAAAAAAAAAAHIArwAAAAgAAACUAAAADwAAAAAAAIAAAADAAAAFAADAAEAAAAUAAQAIAAAAAQABAABAAAAOP//AAAAOP///8kAAQAAAAAAAAAAAC8AAAAHADz/9QISAnkAAwAHAAsADwATABcAGwAAFzUhFSU1MxUhNTMVJTUhFSU1MxUzNTMVJTUzFZYBIv6EWgEiWv6EASL+mlr2Wv6w9gtaWlrBwcHBwVpaWrW1tbW1WloAAAAAAAQANgABAAAAAAABAAMAAAABAAAAAAACAAcAAwADAAEECQABAAYACgADAAEECQACAA4AEFJDOFJlZ3VsYXIAUgBDADgAUgBlAGcAdQBsAGEAcgACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAbAAA=) format('truetype');font-weight:100 599;unicode-range:U+0038;font-display:block}
+@font-face{font-family:'RC8';src:url(data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMknRRmwAAAEoAAAAYGNtYXAADACLAAABkAAAADRnbHlmxPuAxQAAAcwAAABcaGVhZC+W8QEAAACsAAAANmhoZWEF9QGCAAAA5AAAACRobXR4ApgAAAAAAYgAAAAGbG9jYQAuAAAAAAHEAAAABm1heHAACgAeAAABCAAAACBuYW1ljZkm4gAAAigAAABLcG9zdAAfAAAAAAJ0AAAAJgABAAAAAQAA+77Zwl8PPPUAAwPoAAAAAOcSVtcAAAAA5xJW1wA9//UCHgJ+AAAAAwACAAAAAAAAAAEAAAOY/ugAAAJbAD0APQIeAAEAAAAAAAAAAAAAAAAAAAABAAEAAAACABwABwAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAwJbArwABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAPz8/PwBAADgAOAOY/ugAAAOaASEAAAAAAAAAAAHTArwAAAAgAAACWwAAAD0AAAAAAAIAAAADAAAAFAADAAEAAAAUAAQAIAAAAAQABAABAAAAOP//AAAAOP///8kAAQAAAAAAAAAAAC4AAAAHAD3/9QIeAn4AAwAHAAsADwATABcAGwAAFzUzFSU1MxUzNTMVJTUzFSU1MxUzNTMVJTUzFa7//pBx/3H+kP/+pnHTcf680wtxcXGhoaGhoXBwcJaWlpaWcXEAAAAABAA2AAEAAAAAAAEAAwAAAAEAAAAAAAIABAADAAMAAQQJAAEABgAHAAMAAQQJAAIACAANUkM4Qm9sZABSAEMAOABCAG8AbABkAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAbAAA=) format('truetype');font-weight:600 900;unicode-range:U+0038;font-display:block}
+html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*,*::before,*::after{box-sizing:inherit}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Ridge Crew</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Rubik:wght@400;500;600&display=swap">
@@ -22,7 +26,7 @@
   --forest:#16241c; --panel:rgba(20,34,26,.94); --panel2:rgba(255,243,220,.06); --cream:#fff3dc; --muted:#c3b89c;
   --amber:#f2a541; --amber-dark:#a8661c; --amber-ink:#2a1b08; --line:rgba(255,243,220,.14); --red:#d9462b; --red-dark:#7a1e12;
   --r:14px;
-  --display:"Pixelify Sans", ui-monospace, "Courier New", monospace;
+  --display:"RC8","Pixelify Sans", ui-monospace, "Courier New", monospace;
   --body:"Rubik", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme:dark;
 }
@@ -527,6 +531,7 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 </div>
 
 <script>
+try{document.fonts&&document.fonts.load('700 10px RC8','8');document.fonts&&document.fonts.load('500 10px RC8','8')}catch(e){}
 (function(){
 const CHARS=[
  {id:'patch',def:'Sam',ability:'Double jump',desc:'Tap again in mid-air',hat:'camo',hatC:'#6c6a48',brim:'#4f4d34',patch:'#e08a33',hair:'#3b2a1e',shirt:'#d4d2cc',pants:'#8a7c62',pack:'#25282b',skin:'#f1c6a2'},
@@ -695,7 +700,7 @@ function drawReaction(g,t){
   else if(kind==='flex'){const u=fr?0:2;px(g,sk,x-7,y-22+u,2,5);px(g,sk,x-8,y-24+u,3,2);px(g,sk,x+5,y-22+u,2,5);px(g,sk,x+5,y-24+u,3,2)}
   else if(kind==='salute'){px(g,sk,x+3,y-21,2,4);px(g,sk,x+2,y-25,4,2)}
   else if(kind==='dab'){if(fr){px(g,sk,x+3,y-23,6,2);px(g,sk,x+8,y-25,2,2);px(g,sk,x-4,y-22,2,2);px(g,sk,x-6,y-20,2,2)}else{px(g,sk,x-6,y-23,6,2);px(g,sk,x-8,y-25,2,2);px(g,sk,x+3,y-22,2,2);px(g,sk,x+5,y-20,2,2)}}
-  if(S.newBest&&Math.floor(t*3)%2){g.font='700 7px "Pixelify Sans", monospace';g.textAlign='center';g.fillStyle='#f2a541';g.fillText('NEW BEST',x,y-36)}
+  if(S.newBest&&Math.floor(t*3)%2){g.font='700 7px "RC8","Pixelify Sans", monospace';g.textAlign='center';g.fillStyle='#f2a541';g.fillText('NEW BEST',x,y-36)}
 }
 const UPGRADES=[
  {id:'boots',name:'Sturdy boots',desc:'Every leader starts the run able to shrug off one hit.',max:1,prices:[300]},
@@ -1454,8 +1459,8 @@ function drawFFOverlay(){
   if(S.spin){const sp=S.spin,u=Math.min(1,sp.t/sp.dur),names=['blaze','lava','ride'],fi=names.indexOf(sp.final),total=15+fi,pos=total*(1-Math.pow(1-u,3)),idx=Math.floor(pos)%3,fr=pos-Math.floor(pos);
     const bw=Math.min(W-30,200),bx=Math.round(W/2-bw/2),by=Math.round(GY+oy-120);
     ctx.fillStyle='rgba(20,14,10,.82)';ctx.fillRect(bx,by,bw,64);ctx.strokeStyle='#f2a541';ctx.lineWidth=2;ctx.strokeRect(bx+.5,by+.5,bw-1,63);
-    ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 10px "Pixelify Sans", monospace';ctx.fillStyle='#ffb347';ctx.fillText('FOREST FIRE',W/2,by+11);
-    ctx.save();ctx.beginPath();ctx.rect(bx+6,by+20,bw-12,36);ctx.clip();ctx.font='700 13px "Pixelify Sans", monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 10px "RC8","Pixelify Sans", monospace';ctx.fillStyle='#ffb347';ctx.fillText('FOREST FIRE',W/2,by+11);
+    ctx.save();ctx.beginPath();ctx.rect(bx+6,by+20,bw-12,36);ctx.clip();ctx.font='700 13px "RC8","Pixelify Sans", monospace';
     for(const o of [-1,0,1]){const n=names[(idx+o+3)%3],yy=by+38+(o-fr*(u<1?1:0))*20;ctx.fillStyle=o===0?'#fff3dc':'rgba(255,243,220,.4)';ctx.fillText(FF_INFO[n].name,W/2,yy)}
     ctx.restore();if(u>=1){ctx.strokeStyle='#ffd166';ctx.strokeRect(bx+6.5,by+27.5,bw-13,21)}
     if(idx!==sp.last){sp.last=idx;SFX.cone()}}
@@ -1654,7 +1659,7 @@ function drawFFActors(d){
       shd(p.x0+14,p.y,26);
       ctx.save();ctx.translate(p.x0,y);ctx.rotate(Math.PI/2);outlined(ctx,()=>drawHiker(ctx,c,0,0,0,false));ctx.restore();
       outlined(ctx,()=>{px(ctx,lk.shirt,p.x0+22,y-4,4,2);px(ctx,lk.skin,p.x0+26,y-4,5,2);px(ctx,lk.shirt,p.x0+22,y+1,4,2);px(ctx,lk.skin,p.x0+26,y+1,5,2)});
-      if(Math.floor(t*3+k)%4===0){ctx.font='700 6px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(['ow','HOLD ON','aaa','my shirt'][k%4],p.x0+14,y-12)}});
+      if(Math.floor(t*3+k)%4===0){ctx.font='700 6px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(['ow','HOLD ON','aaa','my shirt'][k%4],p.x0+14,y-12)}});
     if(st.duck){
       shd(LX-2,S.y,46);outlined(ctx,()=>drawBearSleep(ctx,LX+22,S.y,t*3,true,true));
       riders.forEach((c,i)=>{if(blink&&i===riders.length-1)return;ctx.save();ctx.translate(LX-15+[0,3,-2,2,-1][i%5],Math.round(S.y)-15-i*st.sp);ctx.rotate(Math.PI/2);outlined(ctx,()=>drawHiker(ctx,c,0,0,0,false));ctx.restore()});
@@ -1665,7 +1670,7 @@ function drawFFActors(d){
       riders.forEach((c,i)=>{const sway=(i?Math.round(Math.sin(t*5+i*.9)*Math.min(2,i*.6)):0)+Math.round(S.lean*i*5),y=Math.round(S.y)-20-i*st.sp-bob,x=LX-2+sway;if(blink&&i===riders.length-1)return;outlined(ctx,()=>drawHiker(ctx,c,x,y,0,i===0&&!S.grounded))});
       const topY=Math.round(S.y)-20-(riders.length-1)*st.sp-bob-28,topX=LX-2+Math.round(S.lean*(riders.length-1)*5);
       if(S.hitch)outlined(ctx,()=>{px(ctx,'#7d7a73',topX-4,topY-4,7,4);px(ctx,'#8f8a80',topX+2,topY-6,4,4);px(ctx,'#1d1d1d',topX+3,topY-5,3,1);px(ctx,'#7d7a73',topX-8,topY-5,4,2);px(ctx,'#3a3a3a',topX-7,topY-5,1,2)});
-      if(Math.abs(S.lean)>.6&&Math.floor(t*6)%2){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#ff8a5a';ctx.fillText('WOBBLE! swipe up',LX,topY-10)}
+      if(Math.abs(S.lean)>.6&&Math.floor(t*6)%2){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#ff8a5a';ctx.fillText('WOBBLE! swipe up',LX,topY-10)}
     }
   }
 }
@@ -1674,16 +1679,16 @@ function ffHud(cw,pad,f,shadow){
   if(S.ff==='blaze'){
     const bw=Math.round(Math.min(220,cw*.3)),bh=Math.round(f*.45),bx=Math.round(cw/2-bw/2),by=Math.round(pad+f*.2),k=Math.max(0,S.heat/100);
     ctx.fillStyle='rgba(20,30,24,.75)';ctx.fillRect(bx-2,by-2,bw+4,bh+4);ctx.fillStyle=k>.5?'#ff8a2a':k>.25?'#f2a541':'#ff5a4a';ctx.fillRect(bx,by,Math.round(bw*k),bh);
-    ctx.font='700 '+Math.round(f*.55)+'px "Pixelify Sans", monospace';ctx.fillStyle='#fff3dc';ctx.fillText('HEAT',cw/2,by+bh/2+1);
-    ctx.font='700 '+Math.round(f*.7)+'px "Pixelify Sans", monospace';shadow((S.infernoT>0?'INFERNO! ':'')+'Burned '+S.burned+(S.combo>1&&S.t-S.lastBurn<1.6?'   x'+S.combo+' combo':''),cw/2,pad+f*1.3,S.infernoT>0?'#ff5a1a':'#ffb347');
+    ctx.font='700 '+Math.round(f*.55)+'px "RC8","Pixelify Sans", monospace';ctx.fillStyle='#fff3dc';ctx.fillText('HEAT',cw/2,by+bh/2+1);
+    ctx.font='700 '+Math.round(f*.7)+'px "RC8","Pixelify Sans", monospace';shadow((S.infernoT>0?'INFERNO! ':'')+'Burned '+S.burned+(S.combo>1&&S.t-S.lastBurn<1.6?'   x'+S.combo+' combo':''),cw/2,pad+f*1.3,S.infernoT>0?'#ff5a1a':'#ffb347');
     {const top=Object.entries(S.burnTypes).sort((a,b)=>b[1]-a[1]).slice(0,4);if(top.length){const isz=Math.round(f*.9),gap=isz*2.6,x0=cw/2-(top.length-1)*gap/2,yy=pad+f*2.25;
       top.forEach(([k,n],i)=>{const b=BURN[k];if(!b)return;const s2=Math.min(isz/b.h,isz*1.6/b.w)*.9;ctx.save();ctx.translate(x0+i*gap-isz*.6,yy+isz*.5);ctx.scale(s2,s2);drawBurnable({type:k,w:b.w,h:b.h,gy:0,x:0,burning:0},Math.round(-b.w/2),S.t);ctx.restore();
-        ctx.font='700 '+Math.round(f*.55)+'px "Pixelify Sans", monospace';ctx.textAlign='left';shadow('x'+n,x0+i*gap+isz*.3,yy+isz*.2,'#fff3dc');ctx.textAlign='center'})}}
+        ctx.font='700 '+Math.round(f*.55)+'px "RC8","Pixelify Sans", monospace';ctx.textAlign='left';shadow('x'+n,x0+i*gap+isz*.3,yy+isz*.2,'#fff3dc');ctx.textAlign='center'})}}
   }else if(S.ff==='lava'){
-    shadow('THE FLOOR IS LAVA',cw/2,pad+f*.4,'#ff8a2a');ctx.font='700 '+Math.round(f*.7)+'px "Pixelify Sans", monospace';
+    shadow('THE FLOOR IS LAVA',cw/2,pad+f*.4,'#ff8a2a');ctx.font='700 '+Math.round(f*.7)+'px "RC8","Pixelify Sans", monospace';
     shadow(S.t<9?'Hold: grab + climb  ·  Let go: swing':'Swings '+S.swings,cw/2,pad+f*1.3,'#fff3dc');
   }else{
-    shadow('RIDE THE BEAR',cw/2,pad+f*.4,'#ffb347');ctx.font='700 '+Math.round(f*.7)+'px "Pixelify Sans", monospace';
+    shadow('RIDE THE BEAR',cw/2,pad+f*.4,'#ffb347');ctx.font='700 '+Math.round(f*.7)+'px "RC8","Pixelify Sans", monospace';
     shadow(S.t<9?'Tap: jump  ·  Swipe down: slide  ·  Swipe up: steady':(S.lakeX&&S.lakeX-S.dist<3000?'Lake ahead!  ·  ':'Lake in '+Math.max(0,Math.round((18000-S.dist)/12))+' m  ·  ')+'Riders '+(1+S.crew.length)+(S.drag.length?'  ·  '+S.drag.length+' hanging on':''),cw/2,pad+f*1.3,'#fff3dc');
   }
   ctx.textAlign='left';
@@ -1987,7 +1992,7 @@ function pzCrewPee(list,x0,sp,fyFn,iyFn,opts){
     outlined(ctx,()=>drawHikerBack(ctx,c,x,fy,ph<5));
     pzStream(x-1,fy-8,iy,ph,t,i,false);
     if(hit>.1&&opts.impact)opts.impact(i,x,iy,hit);
-    if(ph>5.0&&ph<6.3){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';const k=(ph-5)/1.3;ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillStyle='#fff3dc';ctx.fillText('ahh',x,Math.round(fy-34-k*8));ctx.globalAlpha=1}
+    if(ph>5.0&&ph<6.3){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';const k=(ph-5)/1.3;ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillStyle='#fff3dc';ctx.fillText('ahh',x,Math.round(fy-34-k*8));ctx.globalAlpha=1}
   });
   return flow;
 }
@@ -2001,7 +2006,7 @@ function peeBlazeCabin(t,ly){
   px(ctx,'#2a1a10',cx-8,ly-20,16,20);px(ctx,'#ffb347',x0c+14,top+12,14,10);px(ctx,'#ffb347',x0c+cw-28,top+12,14,10);
   for(let j=0;j<9;j++)drawFlame(ctx,x0c+6+j*12,top-2-Math.round(Math.abs(j-4)*-2),8+hash(j)*10,t,j+40);
   const lw=S.leader;outlined(ctx,()=>drawHiker(ctx,lw,cx+18,top-16,0,false,'sit'));drawFlame(ctx,cx+18,top-34,8,t,1);
-  if(Math.floor(t*.7)%3===0){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('great view up here',cx+18,top-46)}
+  if(Math.floor(t*.7)%3===0){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('great view up here',cx+18,top-46)}
   const list=S.crew,sp=26,x0=Math.round(cx-(Math.max(1,list.length)-1)*sp/2);
   return pzCrewPee(list,x0,sp,()=>ly+12,()=>ly-2,{shadow:true,impact:(i,x,iy)=>{pzSteam(x,iy-2,t,i);if(Math.random()<.03)SFX.sizzle&&SFX.sizzle()}});
 }
@@ -2020,7 +2025,7 @@ function peeRideRiver(t,ly){
   ctx.globalAlpha=.3;px(ctx,'#000',bx-12,ly+1,24,2);ctx.globalAlpha=1;
   outlined(ctx,()=>drawBearBack(ctx,bx,ly+2,false));
   const fy=Math.round(ly-44+Math.sin(t*9)*2),fl=Math.floor(t*10)%2;px(ctx,'#b8c4cc',bx+10,fy,8,4);px(ctx,'#8a96a0',bx+17+(fl?1:0),fy-1+(fl?0:1),3,3);px(ctx,'#1d1d1d',bx+11,fy+1,1,1);px(ctx,'#5b3a22',bx+9,fy+1,3,6);
-  if(Math.floor(t*.6)%3===0){ctx.font='700 8px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('*caught one*',bx,ly-56)}
+  if(Math.floor(t*.6)%3===0){ctx.font='700 8px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('*caught one*',bx,ly-56)}
   return flow;
 }
 function drawPeeFire(){
@@ -2056,7 +2061,7 @@ function drawPeeFire(){
       drawFlame(ctx,lx,ly-24,9,t,1);drawFlame(ctx,lx-4,ly-20,6,t,2);drawFlame(ctx,lx+4,ly-20,6,t,3);
       px(ctx,'#8a6a3a',lx+6,ly-12,1,1);for(let k=0;k<10;k++)px(ctx,'#8a6a3a',lx+6+Math.round(k*.3),ly-12-k,1,1);
       px(ctx,Math.floor(t*.5)%2?'#f2e6c8':'#c8935a',lx+8,ly-25,3,3);
-      if(Math.floor(t*.7)%3===0){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(['my bad','sorry guys','warm though'][Math.floor(t*.7/3)%3],lx,ly-38)}
+      if(Math.floor(t*.7)%3===0){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(['my bad','sorry guys','warm though'][Math.floor(t*.7/3)%3],lx,ly-38)}
     }else if(PZ.fv){flow=peeRideRiver(t,ly)}else{
       const list=[S.leader,...S.crew,...(S.drag||[])],sp=24,bx=Math.round(W*.5+(list.length)*sp/2+10),x0=Math.round(W*.5-(list.length)*sp/2-6);
       flow=pzCrewPee(list,x0,sp,()=>ly+2,()=>ly+1,{shadow:true});
@@ -2064,7 +2069,7 @@ function drawPeeFire(){
       ctx.globalAlpha=.3;px(ctx,'#000',bx-12,ly+1,24,2);ctx.globalAlpha=1;
       outlined(ctx,()=>drawBearBack(ctx,bx,ly+2,ph<5));
       pzStream(bx-2,ly-10,ly+1,ph,t,9,false);pzStream(bx,ly-10,ly+1,ph,t,9,false);
-      if(ph>5&&ph<6.3){ctx.font='700 8px "Pixelify Sans", monospace';ctx.textAlign='center';const k=(ph-5)/1.3;ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillStyle='#fff3dc';ctx.fillText('GRRAHH',bx,Math.round(ly-46-k*8));ctx.globalAlpha=1}
+      if(ph>5&&ph<6.3){ctx.font='700 8px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';const k=(ph-5)/1.3;ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillStyle='#fff3dc';ctx.fillText('GRRAHH',bx,Math.round(ly-46-k*8));ctx.globalAlpha=1}
       flow+=hit*1.5;SFX.peeVoice(5,hit);
     }
     pzForeground(t);
@@ -2111,14 +2116,14 @@ function drawPee(){
     ctx.globalAlpha=.3;px(ctx,'#000',bx-11,ly+1,22,2);ctx.globalAlpha=1;
     outlined(ctx,()=>{px(ctx,'#2f6fc0',bx-9+sh,ly-31,18,33);px(ctx,'#e8e2d0',bx-10+sh,ly-34,20,3);px(ctx,'#1f4f90',bx-9+sh,ly-31,1,33);px(ctx,'#4a8ad8',bx-6+sh,ly-28,11,27);px(ctx,'#1f4f90',bx+3+sh,ly-16,2,2)});
     px(ctx,'#c0392b',bx-5+sh,ly-25,9,3);px(ctx,'#ffffff',bx-4+sh,ly-24,7,1);px(ctx,'#1f4f90',bx-3+sh,ly-33,6,1);
-    if(Math.floor(t*.8)%3===0){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(nm(inside)+' is in there',bx,ly-42)}
+    if(Math.floor(t*.8)%3===0){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(nm(inside)+' is in there',bx,ly-42)}
     crew.slice(1).forEach((c,j)=>{const x=bx+22+j*15,jig=Math.floor(t*6+j)%2;ctx.globalAlpha=.3;px(ctx,'#000',x-6,ly+1,12,2);ctx.globalAlpha=1;outlined(ctx,()=>drawHikerBack(ctx,c,x+(jig?1:-1),ly+2-(Math.floor(t*4+j)%2),false));
-      if(Math.floor(t*.9+j*1.3)%4===0){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(['hurry up!','come ON','dude!','my turn'][j%4],x,ly-36)}});
+      if(Math.floor(t*.9+j*1.3)%4===0){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(['hurry up!','come ON','dude!','my turn'][j%4],x,ly-36)}});
   }else
   crew.forEach((c,i)=>{
     if(pst==='wrong'&&i===PZ.wi%crew.length){const x=Math.round(x0+i*sp),fy=ly+2;SFX.peeVoice(i,0);ctx.globalAlpha=.3;px(ctx,'#000',x-6,fy-1,12,2);ctx.globalAlpha=1;
       outlined(ctx,()=>drawHikerFront(ctx,c,x,fy,false));pzBush(x,ly+3,16);
-      if(Math.floor(t*.7)%2===0){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(t%5<2.5?'uh... guys?':'wrong way?',x,fy-34)}
+      if(Math.floor(t*.7)%2===0){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(t%5<2.5?'uh... guys?':'wrong way?',x,fy-34)}
       return}
     const ph=(t+i*1.37)%6.5,st=ph<4.3?'p':ph<4.5?'d':ph<5?'z':ph<6.3?'a':'-';
     if(peeState[i]!==st){if(st==='d'&&peeState[i]==='p')SFX.drip();if(st==='z')SFX.zip();if(st==='a')SFX.ahh(i);peeState[i]=st}
@@ -2131,7 +2136,7 @@ function drawPee(){
     ctx.globalAlpha=.3;px(ctx,'#000',x-(ph<5?8:6),fy-1,ph<5?16:12,2);px(ctx,'#000',x-(ph<5?6:4),fy+1,ph<5?12:8,1);ctx.globalAlpha=1;
     outlined(ctx,()=>drawHikerBack(ctx,c,x,fy,ph<5));
     pzStream(x-1,fy-8,iy,ph,t,i,v==='creek');
-    if(ph>5.0&&ph<6.3){ctx.font='700 7px "Pixelify Sans", monospace';const k=(ph-5)/1.3;ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillStyle='#fff3dc';ctx.fillText('ahh',x,Math.round(fy-34-k*8));ctx.globalAlpha=1}
+    if(ph>5.0&&ph<6.3){ctx.font='700 7px "RC8","Pixelify Sans", monospace';const k=(ph-5)/1.3;ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillStyle='#fff3dc';ctx.fillText('ahh',x,Math.round(fy-34-k*8));ctx.globalAlpha=1}
   });
   if(pst==='curtain'){const lx0=Math.round(x0-sp/2-6),lx1=Math.round(x0+(crew.length-1)*sp+sp/2+6),top=ly-14;
     px(ctx,'#6a6a6a',lx0,top-1,2,ly+3-top);px(ctx,'#6a6a6a',lx1,top-1,2,ly+3-top);px(ctx,'#8a8a8a',lx0,top-1,lx1-lx0+2,1);
@@ -2164,7 +2169,7 @@ function drawPee(){
     ctx.fillStyle=eg;ctx.fillRect(0,ly-2+oy,W+2,viewH);
   }
   ctx.save();ctx.translate(0,oy);pzFireflies(ly,t);
-  ctx.font='700 8px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff3dc';
+  ctx.font='700 8px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff3dc';
   const hx=PZ.side>0?bx-40:bx-6;
   if(!peek)for(let z=0;z<3;z++){const k=((t*.6+z/3)%1);ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillText(z===2?'Z':'z',Math.round(hx-PZ.side*k*6+z),Math.round(ly-16-k*18))}
   else{ctx.globalAlpha=1;ctx.fillText('?',hx,ly-20)}
@@ -2240,7 +2245,7 @@ function drawCloud(C){
     const r=hash(i+3),rr=Math.round((3+r*3+C.t*5)*k),cx=Math.round(C.x-i*3*k-C.t*8*r),cy=Math.round(C.y-i*2*r-C.t*10);
     ctx.globalAlpha=a*.7;px(ctx,i%2?'#a8cc52':'#8fb840',cx-rr,cy-rr,rr*2,rr*2);
   }
-  ctx.globalAlpha=a;ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#e6f59a';
+  ctx.globalAlpha=a;ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#e6f59a';
   ctx.fillText('PFFT',Math.round(C.x-10),Math.round(C.y-16-C.t*6));ctx.globalAlpha=1;
 }
 
@@ -2724,7 +2729,7 @@ function drawGround(d,bottom){
 function drawBubble(){
   const B=S.bubble;if(!B)return;let x,y;
   if(B.sit){x=B.sit.x-S.dist;y=B.sit.y-24}else{const p=hikerPos(B.i);x=p.x;y=p.y-32}
-  ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
   const w=Math.ceil(ctx.measureText(B.text).width)+8,h=11;x=Math.max(w/2+2,Math.min(W-w/2-2,x));
   const a=Math.min(1,B.t*6,(2.6-B.t)*3);ctx.globalAlpha=Math.max(0,a);
   const bx=Math.round(x-w/2),by=Math.round(y-h);
@@ -2776,7 +2781,7 @@ function render(){
   if(S.mode==='bear'){
     const fr=S.freezeT>0;
     for(let k=S.prey.length-1;k>=0;k--){const p=preyPos(k),sx=fr?(Math.floor(S.t*30+k)%2?1:-1):0;shd(p.x,p.y,12);outlined(ctx,()=>drawHiker(ctx,S.prey[k],p.x+sx,p.y,fr?0:S.at+k*.37,p.air));
-      if(fr){ctx.font='700 9px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#ff6b5a';ctx.fillText('!',p.x+sx,Math.round(p.y)-32)}
+      if(fr){ctx.font='700 9px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#ff6b5a';ctx.fillText('!',p.x+sx,Math.round(p.y)-32)}
       else if(k===0&&S.gapX<26){const hx=Math.round(p.x),hy=Math.round(p.y);px(ctx,'#ff5a4a',hx,hy-36,2,5);px(ctx,'#ff5a4a',hx,hy-30,2,2)}}
     const blink=S.stun>0&&Math.floor(S.t*14)%2===0,pk=S.pounce?Math.sin(Math.min(1,S.pounce.t/.5)*Math.PI):0,ch=S.chargeT>0,chomping=S.pounce&&S.pounce.t<.4;
     const bxp=LX+14+(ch?7:0)+pk*12,byp=S.y-pk*8;
@@ -2785,7 +2790,7 @@ function render(){
     shd(LX-4,S.y,30);if(!blink)withSkin(()=>outlined(ctx,()=>drawBear(ctx,bxp,byp,S.at*(ch?1.6:1),chomping?Math.floor(S.pounce.t*14)%2===0:ch||S.gapX<34||Math.floor(S.t*3)%5===0,!S.grounded)));
     for(const b of S.bits)px(ctx,b.c,Math.round(b.x),Math.round(b.y),2,2);
     if(S.champ&&!blink)drawCrown(ctx,Math.round(bxp-9),Math.round(byp)-31);
-    if(S.stun>0){ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#f4d35e';ctx.fillText('* *',LX,Math.round(S.y)-32)}
+    if(S.stun>0){ctx.font='700 7px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#f4d35e';ctx.fillText('* *',LX,Math.round(S.y)-32)}
   }else if(S.eat){
     const E=S.eat;
     for(const v of E.victims)if(!v.eaten){
@@ -2800,7 +2805,7 @@ function render(){
     const bgy=groundY(S.dist+bx-14);
     shd(bx-18,by,30);outlined(ctx,()=>drawBear(ctx,bx,by,S.at,(!!S.fart&&Math.floor(S.t*8)%2===0)||(S.distract>0&&Math.floor(S.t*6)%2===0),bgy!=null&&by<bgy-1));
     if(S.fart){px(ctx,'#ff5a4a',Math.round(bx)-10,Math.round(by)-38,2,5);px(ctx,'#ff5a4a',Math.round(bx)-10,Math.round(by)-32,2,2)}
-    if(S.distract>0){ctx.font='700 6px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('munch',Math.round(bx)-10,Math.round(by)-33-(Math.floor(S.t*4)%2))}
+    if(S.distract>0){ctx.font='700 6px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('munch',Math.round(bx)-10,Math.round(by)-33-(Math.floor(S.t*4)%2))}
     }
     if(!(S.mode==='fire'&&S.ff==='ride')){
     if(!(S.mode==='fire'&&S.ff==='lava'&&!S.demo))for(let i=S.crew.length-1;i>=0;i--){
@@ -2836,8 +2841,8 @@ function render(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.textBaseline='middle';
   for(const t of S.texts){
     const a=1-t.t/1.4;ctx.globalAlpha=Math.max(0,a);
-    let fs=Math.round(Math.max(13,sc*5));ctx.font='700 '+fs+'px "Pixelify Sans", monospace';ctx.textAlign='center';
-    let tw=ctx.measureText(t.s).width;if(tw>cw-24){fs=Math.max(10,Math.floor(fs*(cw-24)/tw));ctx.font='700 '+fs+'px "Pixelify Sans", monospace';tw=ctx.measureText(t.s).width}
+    let fs=Math.round(Math.max(13,sc*5));ctx.font='700 '+fs+'px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';
+    let tw=ctx.measureText(t.s).width;if(tw>cw-24){fs=Math.max(10,Math.floor(fs*(cw-24)/tw));ctx.font='700 '+fs+'px "RC8","Pixelify Sans", monospace';tw=ctx.measureText(t.s).width}
     const x=Math.min(cw-tw/2-12,Math.max(tw/2+12,t.x*sc)),y=(t.y+oy-t.t*18)*sc;
     ctx.fillStyle='rgba(20,30,24,.8)';ctx.fillText(t.s,x+1,y+1);ctx.fillStyle=t.color;ctx.fillText(t.s,x,y);
   }
@@ -2847,7 +2852,7 @@ function render(){
 }
 function drawHud(){
   const f=Math.round(Math.max(16,Math.min(26,cw/26)));
-  ctx.font='700 '+f+'px "Pixelify Sans", monospace';ctx.textAlign='left';
+  ctx.font='700 '+f+'px "RC8","Pixelify Sans", monospace';ctx.textAlign='left';
   const pad=Math.max(14,f*.8);
   const shadow=(s,x,y,c)=>{ctx.fillStyle='rgba(20,30,24,.75)';ctx.fillText(s,x+2,y+2);ctx.fillStyle=c;ctx.fillText(s,x,y)};
   shadow(Math.floor(S.dist/12)+' m',pad,pad+f*.4,'#fff3dc');
@@ -2860,11 +2865,11 @@ function drawHud(){
     if(S.mood>70){ctx.fillRect(pad+2*u,fy+5*u,4*u,u);ctx.fillRect(pad+1.5*u,fy+4.5*u,u,u);ctx.fillRect(pad+5.5*u,fy+4.5*u,u,u)}
     else if(S.mood>=30)ctx.fillRect(pad+2*u,fy+5*u,4*u,u);
     else{ctx.fillRect(pad+2*u,fy+5*u,4*u,u);ctx.fillRect(pad+1.5*u,fy+5.6*u,u,u);ctx.fillRect(pad+5.5*u,fy+5.6*u,u,u)}
-    ctx.font='700 '+Math.round(f*.62)+'px "Pixelify Sans", monospace';
+    ctx.font='700 '+Math.round(f*.62)+'px "RC8","Pixelify Sans", monospace';
     const tag=S.boost>0?'BOOST':S.coffee>0?'SLOW-MO':S.mood<30?'GRUMPY':S.mood>85?'HYPED':'';
     if(tag)shadow(tag,pad+fs+6,fy+fs/2,mc);
     if(S.mode==='fire'&&!S.spin){ffHud(cw,pad,f,shadow)}
-    ctx.font='700 '+f+'px "Pixelify Sans", monospace';
+    ctx.font='700 '+f+'px "RC8","Pixelify Sans", monospace';
   }
   if(S.mode==='fire'&&S.ff==='lava'&&!S.demo){ctx.textAlign='right';shadow('HEARTS',cw-pad,pad+f*.4,'#fff3dc');const hs=Math.max(2,Math.round(f*.13)),mh=S.set==='lavaproof'?4:3,hp=S.hearts==null?mh:S.hearts;for(let i=0;i<mh;i++)heartHud(cw-pad-(mh-i)*(hs*7+6)+6,pad+f*1.2,hs,i<hp);return}
   ctx.textAlign='right';shadow(S.mode==='bear'?'PREY':S.mode==='solo'?'SOLO':'CREW',cw-pad,pad+f*.4,'#fff3dc');
@@ -3015,7 +3020,7 @@ function drawCamp(t){
   // laughing text
   if(laughT>0&&laughId>=0){
     const pos=[[-48,-30],[-27,-30],[0,-51],[27,-30],[48,-30]][laughId];
-    ctx.font='700 6px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#ffe9b8';
+    ctx.font='700 6px "RC8","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#ffe9b8';
     ctx.globalAlpha=Math.min(1,laughT*2);ctx.fillText(STORY?'...':'haha',pos[0],pos[1]-Math.round((1.4-laughT)*4));ctx.globalAlpha=1;
   }
   // warm light wash over the crew
@@ -3570,7 +3575,7 @@ function drawOverArt(g,type,t){
     CHARS.forEach((c,i)=>{const l=look(c),hx=[18,46,150,170,128][i],hy=[100,104,101,105,108][i];px(g,l.hatC||l.hair,hx,hy-3,7,3);px(g,l.brim||l.hair,hx-2,hy,11,1);
       const bx2=[34,160,8,186,60][i],by2=[106,108,108,104,109][i];px(g,l.pack,bx2,by2-6,6,7);px(g,'rgba(0,0,0,.25)',bx2,by2-6,6,2)});
     for(let k=0;k<4;k++){const a=t*1.3+k*1.7;g.globalAlpha=.5+.5*Math.sin(t*3+k);px(g,'#f4e36a',Math.round(40+k*38+Math.sin(a)*8),Math.round(50+Math.cos(a*.8)*10),1,1)}g.globalAlpha=1;
-    g.font='700 8px "Pixelify Sans", monospace';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff3dc';
+    g.font='700 8px "RC8","Pixelify Sans", monospace';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff3dc';
     for(let z=0;z<3;z++){const k=((t*.6+z/3)%1);g.globalAlpha=Math.sin(k*Math.PI);g.fillText(z===2?'Z':'z',Math.round(132+k*8+z*2),Math.round(70-k*18))}g.globalAlpha=1;
     return;
   }
@@ -3578,7 +3583,7 @@ function drawOverArt(g,type,t){
   else{px(g,'#4a3829',0,92,200,20);px(g,'#6c8a3a',0,92,200,3)}
   const crew=(S&&S.mode!=='bear')?[S.leader,...S.crew,...S.lost]:CHARS;
   const hats=()=>crew.slice(0,5).forEach((c,i)=>{const l=look(c);px(g,l.hatC||l.hair,26+i*14,89,7,3);px(g,l.brim||l.hair,24+i*14,91,10,1)});
-  g.font='700 8px "Pixelify Sans", monospace';g.textAlign='center';g.textBaseline='middle';
+  g.font='700 8px "RC8","Pixelify Sans", monospace';g.textAlign='center';g.textBaseline='middle';
   if(type==='eaten'||type==='skunk'||type==='bearwin'){
     hats();g.save();g.translate(112,92);g.scale(2,2);drawBear(g,20,0,type==='bearwin'?0:t,false,false);g.restore();
     if(type==='bearwin'){g.fillStyle='#fff3dc';const k=(t*.6)%1;g.globalAlpha=Math.sin(k*Math.PI);g.fillText('z z',104+k*10,34-k*12);g.globalAlpha=1}
@@ -3602,7 +3607,7 @@ function drawOverMedia(dt){
     repT+=dt;const k=Math.floor(repT*15)%(REP.n+8),idx=Math.min(k,REP.n-1),f=REP.frames[(REP.i-REP.n+idx+REP.cap*2)%REP.cap];
     g.setTransform(1,0,0,1,0,0);g.fillStyle='#0d1611';g.fillRect(0,0,200,112);
     if(f){const s=Math.min(200/f.width,112/f.height),w=f.width*s,h=f.height*s;g.imageSmoothingEnabled=true;g.drawImage(f,(200-w)/2,(112-h)/2,w,h)}
-    g.fillStyle='rgba(0,0,0,.55)';g.fillRect(4,4,46,12);g.fillStyle=Math.floor(artT*2)%2?'#ff5a4a':'#fff3dc';g.fillRect(8,8,4,4);g.fillStyle='#fff3dc';g.font='700 8px "Pixelify Sans", monospace';g.textAlign='left';g.textBaseline='middle';g.fillText('REPLAY',15,10.5);
+    g.fillStyle='rgba(0,0,0,.55)';g.fillRect(4,4,46,12);g.fillStyle=Math.floor(artT*2)%2?'#ff5a4a':'#fff3dc';g.fillRect(8,8,4,4);g.fillStyle='#fff3dc';g.font='700 8px "RC8","Pixelify Sans", monospace';g.textAlign='left';g.textBaseline='middle';g.fillText('REPLAY',15,10.5);
   }else{drawOverArt(g,S?S.dtype:'fall',artT);drawReaction(g,artT)}
 }
 /* ---------- shareable score card ---------- */
@@ -3611,16 +3616,16 @@ function buildCard(){
   const bg=g.createLinearGradient(0,0,0,400);bg.addColorStop(0,'#1b2f24');bg.addColorStop(1,'#0c1410');g.fillStyle=bg;g.fillRect(0,0,300,400);
   g.strokeStyle='#f2a541';g.lineWidth=4;g.strokeRect(8,8,284,384);
   g.textAlign='center';g.textBaseline='middle';
-  g.fillStyle='#f2a541';g.font='700 30px "Pixelify Sans", monospace';g.fillText('RIDGE CREW',150,42);
-  g.fillStyle='#c3b89c';g.font='600 12px "Pixelify Sans", monospace';g.fillText((MODES.find(m=>m.id===S.mode)||MODES[0]).name.toUpperCase()+' RUN',150,64);
+  g.fillStyle='#f2a541';g.font='700 30px "RC8","Pixelify Sans", monospace';g.fillText('RIDGE CREW',150,42);
+  g.fillStyle='#c3b89c';g.font='600 12px "RC8","Pixelify Sans", monospace';g.fillText((MODES.find(m=>m.id===S.mode)||MODES[0]).name.toUpperCase()+' RUN',150,64);
   g.fillStyle='#24382b';g.fillRect(90,80,120,120);
   g.save();g.translate(150,196);g.scale(4,4);if(S.mode==='bear')withSkin(()=>drawBear(g,18,0,0,true,false));else drawHiker(g,S.leader,0,0,0,false);g.restore();
-  g.fillStyle='#fff3dc';g.font='700 40px "Pixelify Sans", monospace';g.fillText(Math.floor(S.dist/12)+' m',150,236);
-  g.font='600 15px "Pixelify Sans", monospace';g.fillStyle='#f2a541';g.fillText('Score '+score().toLocaleString()+'   Pinecones '+S.cones,150,266);
+  g.fillStyle='#fff3dc';g.font='700 40px "RC8","Pixelify Sans", monospace';g.fillText(Math.floor(S.dist/12)+' m',150,236);
+  g.font='600 15px "RC8","Pixelify Sans", monospace';g.fillStyle='#f2a541';g.fillText('Score '+score().toLocaleString()+'   Pinecones '+S.cones,150,266);
   g.fillStyle='#c3b89c';g.font='500 13px Rubik, system-ui, sans-serif';
   const words=(S.reason||'').split(' ');let line='',y=296;for(const w of words){if(g.measureText(line+w).width>250){g.fillText(line.trim(),150,y);y+=17;line=''}line+=w+' '}g.fillText(line.trim(),150,y);
-  g.fillStyle='#fff3dc';g.font='600 13px "Pixelify Sans", monospace';g.fillText('Lv '+level()+' · '+titleOf(level()),150,346);
-  g.fillStyle='#8f8a78';g.font='500 11px "Pixelify Sans", monospace';g.fillText('Outrun the bear. Hold it in.',150,372);
+  g.fillStyle='#fff3dc';g.font='600 13px "RC8","Pixelify Sans", monospace';g.fillText('Lv '+level()+' · '+titleOf(level()),150,346);
+  g.fillStyle='#8f8a78';g.font='500 11px "RC8","Pixelify Sans", monospace';g.fillText('Outrun the bear. Hold it in.',150,372);
   return c;
 }
 let cardCanvas=null;
