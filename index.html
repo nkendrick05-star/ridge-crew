@@ -923,7 +923,7 @@ function genLava(){
   while(S.anX<S.dist+W+260){
     const y=LAVA_Y-(94+Math.random()*26);S.anchors.push({x:S.anX,y,burnT:-1,gone:false,fall:0});
     if(Math.random()<.7){const n=3;for(let i=0;i<n;i++){const ix=S.anX+30+i*12;S.items.push({k:'cone',x:ix,y:y+62+Math.sin(i/2*Math.PI)*8,got:false})}}
-    S.anX+=82+Math.random()*44+Math.min(20,S.anX/3000);
+    S.anX+=90+Math.random()*40+Math.min(20,S.anX/3000);
   }
   const cut=S.dist-200;S.anchors=S.anchors.filter(a=>a.x>cut);S.items=S.items.filter(i=>i.x>cut&&!i.got);S.segs=S.segs.filter(s=>s.x1>cut);
 }
@@ -960,7 +960,7 @@ function lavaUpdate(dt){
     S.y=LAVA_Y-2;S.vy=-660;S.vx=Math.max(S.vx,150);S.grounded=false;S.swing=null;
     for(let i=0;i<10;i++)S.parts.push({x:S.dist+LX,y:LAVA_Y,vx:(Math.random()-.5)*120,vy:-80-Math.random()*150,life:.6,c:i%2?'#ffd166':'#ff6a2a',s:2,g:1});
   }
-  S.camY+=(Math.max(-30,Math.min(34,(S.y-GY)*.4+26))-S.camY)*Math.min(1,dt*3);
+  S.camY+=(Math.max(-40,Math.min(24,(S.y-GY)*.4+14))-S.camY)*Math.min(1,dt*3);
   S.hist.push({d:S.dist,y:S.y});while(S.hist.length&&S.hist[0].d<S.dist-150)S.hist.shift();
   const cy=S.y-11;for(const it of S.items){if(it.got)continue;if(Math.abs(it.x-lx)<10&&Math.abs(it.y-cy)<16){it.got=true;S.cones++;SFX.cone()}}
   S.fireBack=96;S.fireClose=.35;SFX.setFire(.45);S.crackT-=dt;if(S.crackT<=0){SFX.crackle(.6);S.crackT=.1+Math.random()*.3}
@@ -1040,12 +1040,40 @@ function drawBurnable(o,x,t){
   }
   if(b>0&&!PXC){const n=Math.max(1,Math.round(o.w/6));for(let k=0;k<n;k++)drawFlame(ctx,x+3+k*6,gy-Math.round(o.h*.3),6+o.h*.5*(1-Math.max(0,b-2)/1.2),t,o.x+k*3)}
 }
+/* forest fire trees: trunk set back in the background, branch + crown in the crew's plane */
+function ffTrunk(tx,top,bot,burnt,seed){
+  const base=burnt?'#2a1e18':'#5a3d26',c=mixHex(base,P.sky[2]||'#c8b8a0',burnt?.15:.38),dk=mixHex(c,'#000000',.22),lt=mixHex(c,'#ffffff',.12);
+  px(ctx,c,tx-4,top,9,bot-top);px(ctx,lt,tx-4,top,1,bot-top);px(ctx,dk,tx+4,top,1,bot-top);
+  for(let y=top+((seed*7)|0)%7;y<bot-4;y+=7){const o=Math.floor(hash(seed+y*.13)*5);px(ctx,dk,tx-3+o,y,1,4);if(hash(seed+y)<.3)px(ctx,dk,tx-2,y+2,3,1)}
+  px(ctx,c,tx-6,bot-5,13,5);px(ctx,dk,tx-6,bot-1,13,1);
+}
+function ffBranch(ax,ay,tx,st,t,seed){
+  /* st: 0 fresh, >0 burning (seconds), -2 charred */
+  const L=Math.max(6,tx-4-ax),burnt=st===-2||st>1.4,bark=burnt?'#1e1510':'#5a3d26',barkL=burnt?'#3a2a20':'#7a5533',barkD=burnt?'#120c08':'#3f2a19';
+  const nd=burnt?'#2a1e18':'#2f5a3a',ndL=burnt?'#3a2a20':'#3f7048',ndD=burnt?'#140d0a':'#24482e';
+  for(let i=0;i<=L;i++){const k=i/L,x=tx-4-i,y=Math.round(ay-7*Math.pow(1-k,1.4)),th=Math.max(1,Math.round(4.6-3.4*k));px(ctx,bark,x,y-th+1,1,th);px(ctx,barkL,x,y-th+1,1,1);if(th>1)px(ctx,barkD,x,y,1,1)}
+  for(const f of [.35,.68]){const i=Math.round(L*f),x=tx-4-i,y=Math.round(ay-7*Math.pow(1-f,1.4))-2;px(ctx,bark,x,y-3,1,3);px(ctx,bark,x-1,y-4,1,1)}
+  for(let j=0;j<5;j++){const f=.12+j*.19,i=Math.round(L*f),x=tx-4-i,y=Math.round(ay-7*Math.pow(1-f,1.4));
+    px(ctx,nd,x-3,y-4,7,3);px(ctx,nd,x-2,y-5,5,1);px(ctx,ndD,x-3,y-1,7,1);px(ctx,ndL,x-2,y-4,2,1);px(ctx,nd,x-2,y+1,4,1)}
+  px(ctx,nd,ax-2,ay-3,4,2);px(ctx,ndL,ax-1,ay-3,1,1);
+  {const ry=ay-9,rl=9+Math.round(hash(seed)*5);for(let i=0;i<rl;i++){const yy=ry-Math.round(i*.45);px(ctx,bark,tx+5+i,yy-(i<4?1:0),1,i<4?2:1)}
+   for(let j=0;j<2;j++){const xx=tx+8+j*5,yy=ry-2-Math.round((3+j*5)*.45);px(ctx,nd,xx-3,yy-3,7,3);px(ctx,ndD,xx-3,yy,7,1);px(ctx,ndL,xx-2,yy-3,2,1)}}
+  if(st>0&&!PXC){const h=3+Math.min(1,st/2)*7;for(let j=0;j<3;j++)drawFlame(ctx,tx-6-Math.round(L*(.15+j*.32)),Math.round(ay-5+j*2),h*(1-j*.15),t,seed+j*5)}
+}
+function ffCrown(tx,y0,w,h,st,t,seed){
+  const burnt=st===-2||st>1.4,nd=burnt?'#2a1e18':'#2f5a3a',ndL=burnt?'#3a2a20':'#3f7048',ndD=burnt?'#140d0a':'#24482e',snow=SEASON==='winter'&&!burnt&&st<=0;
+  const tiers=4;for(let k=0;k<tiers;k++){const ty=Math.round(y0-h+k*h/tiers),tw=Math.round(w*(k+1.2)/(tiers+.2)),th=Math.round(h/tiers+5);
+    for(let j=0;j<th;j++){const ww=Math.max(2,Math.round(tw*(j+2)/(th+1)));px(ctx,j>th-3?ndD:nd,tx-Math.round(ww/2),ty+j,ww,1);px(ctx,ndL,tx-Math.round(ww/2),ty+j,1,1)}
+    if(snow)px(ctx,'#ffffff',tx-Math.round(tw/4),ty+1,Math.round(tw/2),1)}
+  px(ctx,nd,tx,y0-h-3,1,4);
+  if(st>0&&!PXC){const n=3;for(let j=0;j<n;j++)drawFlame(ctx,tx-8+j*8,Math.round(y0-h*.3-j*4),5+Math.min(1,st/2)*8,t,seed+j*3)}
+}
 function drawBranch(o,x){
-  const bot=Math.round(o.gy-78),t=S.t,tx=x+o.w;
-  px(ctx,'#3f2a19',tx,bot-200,5,200);
-  px(ctx,'#5a3d26',x,bot-4,o.w+2,4);px(ctx,'#6b4a2a',x,bot-4,o.w+2,1);
-  for(let k=0;k<4;k++){px(ctx,'#2f5a3a',x+k*6,bot,4,3+(k%2)*2)}
-  if(!PXC)for(let k=0;k<3;k++)drawFlame(ctx,x+4+k*8,bot-3,5,t,o.x+k*7);
+  const bot=Math.round(o.gy-78),t=S.t,tx=x+o.w+8,g=Math.round(o.gy);
+  ffTrunk(tx,bot-140,g,false,o.x*.01);
+  ffBranch(x,bot+1,tx,1.2,t,o.x);
+  for(let k=0;k<4;k++){const hx=x+3+k*6;px(ctx,'#2f5a3a',hx,bot+1,3,3+(k%2)*2);px(ctx,'#24482e',hx,bot+3+(k%2)*2,3,1)}
+  ffCrown(tx,bot-8,30,46,1.2,t,o.x+7);
 }
 function drawLava(d,bottom){
   const t=S.t,y0=LAVA_Y;
@@ -1059,15 +1087,14 @@ function drawLava(d,bottom){
 function drawAnchors(d){
   const t=S.t,top=Math.round(S.camY-oy-10);
   let cand=null;if(!S.swing&&!S.grounded){const hx=S.dist+LX,hy=S.y-16;let bd=1e9;for(const a of S.anchors){if(a.gone||a.x<hx-18)continue;const dd=Math.hypot(a.x-hx,a.y-hy);if(dd<118&&dd<bd){bd=dd;cand=a}}}
-  for(const a of S.anchors){const x=Math.round(a.x-d),tx=x+12;if(tx<-20||x>W+20)continue;
-    const burnt=a.burnT>1.2||a.gone,bark=burnt?'#1a1210':'#5a3d26';
-    px(ctx,bark,tx,top,6,LAVA_Y-top);px(ctx,burnt?'#2a1e18':'#3f2a19',tx+1,top,1,LAVA_Y-top);
-    if(!a.gone){px(ctx,bark,x,Math.round(a.y)-2,13,3);px(ctx,burnt?'#2a1e18':'#2f5a3a',x+2,Math.round(a.y)-6,8,4);
-      px(ctx,'#8a6a3a',x-1,Math.round(a.y)-1,2,1);px(ctx,'#8a6a3a',x-1,Math.round(a.y),1,3);
-      if(a===cand&&!PXC){ctx.globalAlpha=.5+.4*Math.sin(t*10);ctx.strokeStyle='#fff3a8';ctx.lineWidth=1;ctx.strokeRect(x-4.5,Math.round(a.y)-4.5,8,8);ctx.globalAlpha=1}
-      if(a.burnT>=0&&!PXC){const h=3+Math.min(1,a.burnT/2.4)*8;drawFlame(ctx,x+3,Math.round(a.y)-2,h,t,a.x);drawFlame(ctx,x+9,Math.round(a.y)-2,h*.7,t,a.x+4)}}
-    else if(a.fall<1.2){const fy=Math.round(a.y+a.fall*a.fall*300);px(ctx,'#1a1210',x,fy,13,3);if(!PXC)drawFlame(ctx,x+6,fy,5,t,a.x)}
-    if(a.burnT>=0&&!PXC&&a.x<S.dist+40)for(let k=0;k<3;k++)drawFlame(ctx,tx+3,Math.round(LAVA_Y-8-k*22-hash(a.x+k)*10),7,t,a.x+k*5);
+  for(const a of S.anchors){const x=Math.round(a.x-d),tx=x+30;if(tx<-30||x>W+30)continue;
+    const st=a.gone?-2:a.burnT<0?0:a.burnT,ay=Math.round(a.y);
+    ffTrunk(tx,top,LAVA_Y,a.burnT>1.2||a.gone,a.x*.01);
+    if(!a.gone){ffBranch(x,ay,tx,st,t,a.x);
+      if(a===cand&&!PXC){ctx.globalAlpha=.5+.4*Math.sin(t*10);ctx.strokeStyle='#fff3a8';ctx.lineWidth=1;ctx.strokeRect(x-4.5,ay-4.5,8,8);ctx.globalAlpha=1}}
+    else if(a.fall<1.2){const fy=Math.round(a.y+a.fall*a.fall*300);ffBranch(x,fy,tx,-2,t,a.x);if(!PXC)drawFlame(ctx,x+8,fy-2,5,t,a.x)}
+    ffCrown(tx,ay-12,32,42,a.gone?-2:(a.burnT>=0?a.burnT:(a.x<S.dist+40?1:0)),t,a.x+3);
+    if(a.burnT>=0&&!PXC&&a.x<S.dist+40)for(let k=0;k<2;k++)drawFlame(ctx,tx,Math.round(LAVA_Y-10-k*26-hash(a.x+k)*10),6,t,a.x+k*5);
   }
 }
 function drawFFActors(d){
