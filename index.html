@@ -835,7 +835,7 @@ function genCore(){
         if(Math.random()<.6){
           const q=Math.random();let type=q<.6?'rock':'log';
           if(late&&q<.07)type='moose';else if(late&&q<.14)type='coon';
-          const blz=S.mode==='fire'&&S.ff==='blaze';if(blz&&q>.3&&!(late&&q<.14))type=pickBurn();if(S.mode==='fire'&&S.ff==='ride'&&Math.random()<.3)type='branch';if(S.mode==='fire'&&S.ff!=='lava'&&late&&Math.random()<.07)type='falltree';
+          const blz=S.mode==='fire'&&S.ff==='blaze';if(blz&&q>.3&&!(late&&q<.14))type=pickBurn();if(S.mode==='fire'&&S.ff==='ride'&&Math.random()<.22)type='branch';if(S.mode==='fire'&&S.ff!=='lava'&&late&&Math.random()<.07)type='falltree';
           const dim=type==='falltree'?[34,0]:type==='branch'?[26,0]:BURN[type]&&blz?[BURN[type].w,BURN[type].h]:{rock:[14,11],log:[24,9],moose:[22,20],coon:[12,8]}[type];
           if(S.mode==='fire'&&S.ff==='ride'&&type==='log'&&late&&Math.random()<.35&&ox+dim[0]+80<x1-30)S.obs.push({type:'branch',x:ox+dim[0]+52,w:26,h:0,hit:false,gy:segY(seg,ox+dim[0]+60),vx:0});
           if(ox+dim[0]<x1-30)S.obs.push({type,x:ox,w:dim[0],h:dim[1],hit:false,gy:segY(seg,ox+dim[0]/2),vx:type==='coon'?-55:0,burnable:blz&&!!BURN[type],state:type==='falltree'?'up':undefined});
@@ -897,7 +897,7 @@ function hit(){
 /* ---------- forest fire mode: three random variants ---------- */
 const FF_INFO={
   blaze:{name:'The Crew Is the Fire',intro:l=>nm(l)+' caught fire! Burn stuff to stay lit. Dodge the water!'},
-  lava:{name:'Lava Floor Forest',intro:()=>'The floor is lava! Hold to grab a branch, let go to swing.'},
+  lava:{name:'Lava Floor Forest',intro:()=>'The floor is lava! Hold to grab and climb, let go to swing.'},
   ride:{name:'Ride the Bear',intro:()=>'Everybody on the bear! Get to the lake at 1,500 m!'}
 };
 let LAVA_Y=GY+18;
@@ -959,8 +959,8 @@ function genLavaCore(){
   while(S.anX<S.dist+W+260){
     const r=Math.random(),kind=r<.5?'branch':r<.68?'vine':r<.84?'rope':'short';
     const hang=kind==='vine'?26:kind==='rope'?18:0,L=kind==='vine'?86:kind==='rope'?74:kind==='short'?50:66;
-    const by=LAVA_Y-(100+Math.random()*24);
-    const a={x:S.anX,y:by+hang,by,kind,L,hang,burnT:-1,gone:false,fall:0,collapse:S.anX>1400&&Math.random()<.15,colT:-1,treeFall:null};
+    const by=LAVA_Y-(118+Math.random()*24);
+    const a={x:S.anX,y:by+hang,by,kind,L,hang,burnT:-1,gone:false,fall:0,collapse:false,colT:-1,treeFall:null};
     S.anchors.push(a);
     if(S.prevA&&Math.random()<.8){const A=S.prevA,x0=A.x+34,x1=a.x-12,n=5;if(x1-x0>40)for(let i=0;i<n;i++){const k=i/(n-1);S.items.push({k:'cone',x:x0+(x1-x0)*k,y:Math.min(A.y,a.y)+40-Math.sin(k*Math.PI)*34,got:false})}}
     if(S.anX>1200&&Math.random()<.24)S.rafts.push({x:S.anX+36,w:30+Math.round(Math.random()*16),kind:Math.random()<.5?'log':'rock',sink:0,sinkT:-1});
@@ -980,7 +980,7 @@ function lavaHit(){
   for(let i=0;i<14;i++)S.parts.push({x:S.dist+LX,y:LAVA_Y,vx:(Math.random()-.5)*140,vy:-80-Math.random()*170,life:.7,c:i%2?'#ffd166':'#ff6a2a',s:2,g:1});
   return false;
 }
-function endAir(){const a=S.air;if(!a)return;if(!a.hit&&a.minGap<12){S.burnPts+=50;say('Close call! +50',LX,GY-58,'#bfe39a')}S.air=null}
+function endAir(){S.air=null}
 function lavaChain(dt){
   const n=S.crew.length,ax=S.dist+LX,ay=S.y;
   if(!S.chain||S.chain.length!==n){S.chain=[];for(let k=0;k<n;k++){const x=ax-(k+1)*16,y=ay+(k+1)*8;S.chain.push({x,y,px:x,py:y})}}
@@ -992,8 +992,8 @@ function lavaUpdate(dt){
   let lx=S.dist+LX;S.grabCD=Math.max(0,(S.grabCD||0)-dt);S.pantsT=Math.max(0,(S.pantsT||0)-dt);
   const gy=groundY(lx);
   if(S.swing){
-    const s=S.swing,a=s.a;s.L+=(a.L-s.L)*Math.min(1,dt*3);
-    s.w+=-(G/s.L)*Math.sin(s.th)*dt;s.w*=1+.22*dt;s.w=Math.max(-5,Math.min(5,s.w));s.th+=s.w*dt;
+    const s=S.swing,a=s.a;if(S.hold){const nl=Math.max(30,s.L-15*dt);s.w*=Math.pow(s.L/nl,1.2);s.L=nl}
+    s.w+=-(G/s.L)*Math.sin(s.th)*dt;s.w*=1+.22*dt;s.w=Math.max(-6,Math.min(6,s.w));s.th+=s.w*dt;
     const hx=a.x+s.L*Math.sin(s.th),hy=a.by+s.L*Math.cos(s.th);lx=hx;S.y=hy+16;
     S.vx=s.L*s.w*Math.cos(s.th);S.vy=-s.L*s.w*Math.sin(s.th);
     if(a.burnT>=0)a.burnT+=dt;
@@ -1001,7 +1001,6 @@ function lavaUpdate(dt){
       const spd=Math.hypot(S.vx,S.vy),top=s.th>.5&&S.vx>0&&S.vy<0;S.swing=null;
       if(top&&!a.gone){S.vx*=1.22;S.vy*=1.12;say('BIG LAUNCH!',LX+30,GY-62,'#ffd166')}
       S.vx=Math.max(S.vx,95);S.grabCD=.12;if(a.gone)say('The branch snapped!',LX,GY-50,'#ffb38a');
-      if(spd>430&&!a.gone)S.flip={t:0,dur:.7,ok:true};
       S.air={peakDone:false,minGap:99,hit:false};
     }
   }else if(S.raft){
@@ -1017,7 +1016,6 @@ function lavaUpdate(dt){
     if(gy!=null&&S.y>=gy&&S.vy>=0&&py<=gy+8){S.y=gy;S.vy=0;S.grounded=true;endAir()}
     for(const r of S.rafts){const top=LAVA_Y-4+r.sink;if(S.vy>=0&&lx>r.x&&lx<r.x+r.w&&S.y>=top&&py<=top+6&&r.sink<10){S.y=top;S.vy=0;S.raft=r;S.grounded=true;if(r.sinkT<0)r.sinkT=0;SFX.land();endAir();break}}
     for(const m of S.shrooms){if(S.vy>0&&Math.abs(lx-m.x)<10&&S.y>=m.y&&py<=m.y+5){S.vy=-650;S.vx=Math.max(S.vx,150);m.sq=.25;SFX.jump();say('BOING',LX,GY-50,'#f2d36a');break}}
-    if(S.air){S.air.minGap=Math.min(S.air.minGap,LAVA_Y-S.y);if(!S.air.peakDone&&S.y<GY-128){S.air.peakDone=true;S.burnPts+=50;say('Big air! +50',LX,GY-70,'#ffd166')}}
   }
   for(const m of S.shrooms)m.sq=Math.max(0,m.sq-dt);
   for(const r of S.rafts){if(r.sinkT>=0){r.sinkT+=dt;r.sink=Math.max(0,(r.sinkT-.9)*9)}}
@@ -1033,13 +1031,13 @@ function lavaUpdate(dt){
     if(a.treeFall!=null)a.treeFall+=dt;
     if(a.burnT>=0&&!a.gone){if(!(S.swing&&S.swing.a===a))a.burnT+=dt;if(a.burnT>2.4)a.gone=true}if(a.gone)a.fall+=dt;if(!a.gone&&a.burnT<0&&a.x<S.dist+10)a.burnT=0}
   /* 29. eruptions */
-  S.erIn=(S.erIn==null?5:S.erIn)-dt;if(S.erIn<=0&&S.dist>900){S.erIn=3.5+Math.random()*4;S.erupts.push({x:lx+130+Math.random()*130,t:0})}
+  
   let erHit=false;for(const e of S.erupts){e.t+=dt;if(e.t>1.2&&e.t<2.4){const h=Math.min(95,(e.t-1.2)*320);if(Math.abs(lx-e.x)<8&&S.y>LAVA_Y-h)erHit=true}}
   S.erupts=S.erupts.filter(e=>e.t<2.7);
   S.dist=lx-LX;genLava();if(mode==='play'){ffShared(dt);checkBadges()}
   if(S.y>=LAVA_Y-1||erHit){if(lavaHit())return}
-  const onStart=S.grounded&&!S.raft&&groundY(S.dist+LX)!=null;S.chainOn=!onStart;if(S.chainOn)lavaChain(dt);else S.chain=null;
-  S.camY+=(Math.max(-40,Math.min(24,(S.y-GY)*.4+14))-S.camY)*Math.min(1,dt*3);
+  S.chainOn=false;S.chain=null;
+  S.camY+=(Math.max(-50,Math.min(24,(S.y-GY)*.4+11))-S.camY)*Math.min(1,dt*3);
   S.hist.push({d:S.dist,y:S.y});while(S.hist.length&&S.hist[0].d<S.dist-150)S.hist.shift();
   const cy=S.y-11;for(const it of S.items){if(it.got)continue;if(Math.abs(it.x-lx)<10&&Math.abs(it.y-cy)<16){it.got=true;S.cones++;SFX.cone()}}
   if(S.chain)for(const nd of S.chain)for(const it of S.items){if(!it.got&&it.k==='cone'&&Math.abs(it.x-nd.x)<9&&Math.abs(it.y-(nd.y-11))<14){it.got=true;S.cones++;SFX.cone()}}
@@ -1072,7 +1070,7 @@ function drawLavaActors(d){
   if(S.pantsT>0&&!PXC)drawFlame(ctx,LX-3,Math.round(S.y)-7,3+S.pantsT*1.5,t,77);
 }
 /* --- ride: the whole crew on the bear --- */
-function rideStack(){const n=1+S.crew.length,duck=S.duckT>0,sp=duck?6:19,top=duck?S.y-12-n*sp:S.y-20-(n-1)*sp-28;return {n,duck,sp,top}}
+function rideStack(){const n=1+S.crew.length,duck=S.duckT>0,sp=duck?6:15,top=duck?S.y-12-n*sp:S.y-20-(n-1)*sp-28;return {n,duck,sp,top}}
 function rideSlide(){if(!S||S.dead||mode!=='play')return;if(S.duckT<=0)SFX.land();S.duckT=.85;if(!S.grounded)S.vy=Math.max(S.vy,320)}
 function rideKnock(why){
   S.invuln=1.1;S.shake=6;SFX.hit();S.lastKnock=S.t;
@@ -1111,7 +1109,7 @@ function rideUpdate(dt,lx){
   if(S.duckT>0&&S.grounded&&Math.random()<dt*30)S.parts.push({x:lx+18,y:S.y-1,vx:-60-Math.random()*80,vy:-40-Math.random()*50,life:.45,c:'#a0866a',s:2,g:1});
   const st=rideStack();
   for(const o of S.obs){if(o.type!=='branch'||o.done)continue;
-    if(lx+10>o.x&&lx-14<o.x+o.w){const bot=o.gy-78;if(st.top<bot&&S.invuln<=0){o.done=true;rideKnock('Branch!')}}
+    if(lx+10>o.x&&lx-14<o.x+o.w){const bot=o.gy-92;if(st.top<bot&&S.invuln<=0){o.done=true;rideKnock('Branch!')}}
     else if(lx-14>=o.x+o.w){o.done=true;S.ducked++;if(st.duck)say('Slid under!',LX,GY-60,'#bfe39a')}}
   S.fireBack=60+S.drag.length*32+Math.sin(S.t*.7)*8+(S.cool||0)*14;S.fireClose=.45;SFX.setFire(.5);S.crackT-=dt;if(S.crackT<=0){SFX.crackle(.6);S.crackT=.1+Math.random()*.3}
 }
@@ -1354,7 +1352,7 @@ function ffCrown(tx,y0,w,h,st,t,seed){
   if(st>0&&!PXC){const n=3;for(let j=0;j<n;j++)drawFlame(ctx,tx-Math.round(w*.25)+j*Math.round(w*.25),Math.round(y0-h*.35-j*h*.12),5+Math.min(1,st/2)*9,t,seed+j*3)}
 }
 function drawBranch(o,x){
-  const bot=Math.round(o.gy-78),t=S.t,tx=x+o.w+8,g=Math.round(o.gy);
+  const bot=Math.round(o.gy-92),t=S.t,tx=x+o.w+8,g=Math.round(o.gy);
   const sz=.7+hash(o.x*.37)*.9,chh=Math.round(56+70*sz),cw=Math.round(chh*(.34+hash(o.x*.91)*.14)),tw=Math.round(6+5*sz),cTop=bot+12-chh;
   ffTrunk(tx,cTop+6,g,false,o.x*.01,tw);
   ffCrown(tx,bot+12,cw,chh,1.2,t,o.x+7);
@@ -1411,8 +1409,8 @@ function drawAnchors(d){
     const st=a.gone?-2:a.burnT<0?0:a.burnT,by=Math.round(a.by),ay=Math.round(a.y);
     const sz=.7+hash(a.x*.37)*.9,chh=Math.round(52+64*sz),cw=Math.round(chh*(.34+hash(a.x*.91)*.14)),tw=Math.round(6+6*sz);
     if(a.treeFall!=null){const ang=Math.min(1.45,a.treeFall*a.treeFall*2.2);if(ang<1.45||a.treeFall<2){ctx.save();ctx.translate(tx,LAVA_Y);ctx.rotate(ang);ffTrunk(0,by+16-chh+6-LAVA_Y,0,true,a.x*.01,tw);ffCrown(0,by+16-LAVA_Y,cw,chh,-2,t,a.x+3);if(!PXC)for(let k=0;k<3;k++)drawFlame(ctx,-4+k*4,Math.round(by-LAVA_Y-k*12),8,t,a.x+k);ctx.restore()}continue}
-    ffTrunk(tx,by+16-chh+6,LAVA_Y,a.burnT>1.2||a.gone,a.x*.01,tw);
-    ffCrown(tx,by+16,cw,chh,a.gone?-2:(a.burnT>=0?a.burnT:(a.x<S.dist+40?1:0)),t,a.x+3);
+    ffTrunk(tx,by-8-chh+6,LAVA_Y,a.burnT>1.2||a.gone,a.x*.01,tw);
+    ffCrown(tx,by-8,cw,chh,a.gone?-2:(a.burnT>=0?a.burnT:(a.x<S.dist+40?1:0)),t,a.x+3);
     if(!a.gone){ffBranch(x,by,tx,st,t,a.x);
       if(a.hang&&!(S.swing&&S.swing.a===a)){const sw=Math.round(Math.sin(t*1.6+a.x)*2);ctx.strokeStyle=a.kind==='vine'?'#3f7a35':'#8a6a3a';ctx.lineWidth=a.kind==='rope'?1.5:1;ctx.beginPath();ctx.moveTo(x+.5,by+.5);ctx.lineTo(x+sw+.5,ay+.5);ctx.stroke();
         if(a.kind==='vine'){px(ctx,'#4f8a3a',x+sw-1,ay-8,2,2);px(ctx,'#4f8a3a',x+sw+1,ay-16,2,2)}else{px(ctx,'#6b4a2a',x+sw-1,ay-1,3,3)}}
@@ -1476,7 +1474,7 @@ function ffHud(cw,pad,f,shadow){
         ctx.font='700 '+Math.round(f*.55)+'px "Pixelify Sans", monospace';ctx.textAlign='left';shadow('x'+n,x0+i*gap+isz*.3,yy+isz*.2,'#fff3dc');ctx.textAlign='center'})}}
   }else if(S.ff==='lava'){
     shadow('THE FLOOR IS LAVA',cw/2,pad+f*.4,'#ff8a2a');ctx.font='700 '+Math.round(f*.7)+'px "Pixelify Sans", monospace';
-    shadow(S.t<9?'Hold: grab  ·  Let go: swing':'Swings '+S.swings,cw/2,pad+f*1.3,'#fff3dc');
+    shadow(S.t<9?'Hold: grab + climb  ·  Let go: swing':'Swings '+S.swings,cw/2,pad+f*1.3,'#fff3dc');
   }else{
     shadow('RIDE THE BEAR',cw/2,pad+f*.4,'#ffb347');ctx.font='700 '+Math.round(f*.7)+'px "Pixelify Sans", monospace';
     shadow(S.t<9?'Tap: jump  ·  Swipe down: slide  ·  Swipe up: steady':(S.lakeX&&S.lakeX-S.dist<3000?'Lake ahead!  ·  ':'Lake in '+Math.max(0,Math.round((18000-S.dist)/12))+' m  ·  ')+'Riders '+(1+S.crew.length)+(S.drag.length?'  ·  '+S.drag.length+' hanging on':''),cw/2,pad+f*1.3,'#fff3dc');
@@ -2908,7 +2906,6 @@ const BADGES=[
  {id:'ff_burn',ic:'100',name:'Arsonist',desc:'Burn 100 things in The Crew Is the Fire'},
  {id:'ff_inferno',ic:'HOT',name:'Inferno',desc:'Go full inferno'},
  {id:'ff_swing',ic:'50',name:'Tarzan',desc:'50 swings in one Lava Floor run without a lava hit'},
- {id:'ff_flip',ic:'10',name:'Show-off',desc:'Land 10 flips in one Lava Floor run'},
  {id:'ff_pyramid',ic:'5UP',name:'Human Pyramid',desc:'Ride 500 m with the whole pyramid'},
  {id:'ff_lake',ic:'H2O',name:'Splashdown',desc:'Ride the bear all the way to the lake'},
  {id:'ff_all',ic:'3/3',name:'Firestarter',desc:'Play all three Forest Fire versions'}
