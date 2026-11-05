@@ -1175,6 +1175,7 @@ function hit(){
   if(S.shield>0){S.shield=0;S.shieldAt=S.dist;S.invuln=.8;S.shake=4;
     if(S.leader.id==='camo'&&S.hitObs){const o=S.hitObs;o.smashed=.01;o.passed=true;S.boost=Math.max(S.boost,.7);S.mood=Math.min(100,S.mood+30);say('TANK SMASH!',LX,GY-40,'#f2a541');for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:40+Math.random()*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#a19d93':'#f2a541',s:2,g:1});return}
     say('Shrugged it off',LX,GY-34,'#f2a541');return}
+  if(S.distract>0&&S.mode!=='fire'&&S.mode!=='bear'){S.invuln=.8;S.shake=4;S.snackSaves=(S.snackSaves||0)+1;say(pick(['Stumbled! The bear is busy eating','Close one. The bear is still munching','Tripped, but the bear did not notice']),LX,GY-40,'#f2d9a8');return}
   if(S.mode==='solo'){caughtEat(nm(S.leader)+' went down with nobody to help. The bear did not wait.');return}
   if(S.mode==='fire'){
     if(S.ff==='blaze'&&S.infernoT>0){S.burnPts+=50;S.shake=4;say('Even rocks burn now! +50',LX,GY-36,'#ff8a2a');return}
@@ -2424,7 +2425,7 @@ noBearBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagatio
 noBearBtn.addEventListener('click',e=>{e.preventDefault();noBear()});
 function throwSnack(){
   if(!S||mode!=='play'||S.snacks<=0||S.fart||S.eat||S.dead)return;
-  S.snacks--;S.stats.snacks++;S.distract=6;SFX.throwS();say('Snack for the bear!',LX,GY-40,'#f2a541');
+  S.snacks--;S.stats.snacks++;S.distract=6;SFX.throwS();say('Snack for the bear! Crew is safe for 6s',LX,GY-40,'#f2a541');
   S.parts.push({x:S.dist+LX,y:S.y-14,vx:-210,vy:-170,life:1.1,c:'#d9c08a',s:4,g:1});
 }
 snackBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();throwSnack()});
@@ -3109,7 +3110,7 @@ function drawHud(){
     else if(S.mood>=30)ctx.fillRect(pad+2*u,fy+5*u,4*u,u);
     else{ctx.fillRect(pad+2*u,fy+5*u,4*u,u);ctx.fillRect(pad+1.5*u,fy+5.6*u,u,u);ctx.fillRect(pad+5.5*u,fy+5.6*u,u,u)}
     ctx.font='700 '+Math.round(f*.62)+'px "RCD","Pixelify Sans", monospace';
-    const tag=S.boost>0?'BOOST':S.coffee>0?'SLOW-MO':S.mood<30?'GRUMPY':S.mood>85?'HYPED':'';
+    const tag=S.distract>0&&S.mode!=='fire'?'SNACK SAFE '+Math.ceil(S.distract)+'s':S.boost>0?'BOOST':S.coffee>0?'SLOW-MO':S.mood<30?'GRUMPY':S.mood>85?'HYPED':'';
     if(tag)shadow(tag,pad+fs+6,fy+fs/2,mc);
     if(S.mode==='fire'&&!S.spin){ffHud(cw,pad,f,shadow)}
     ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';
