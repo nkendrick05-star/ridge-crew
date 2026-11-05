@@ -1924,7 +1924,7 @@ function drawYetiSleep(g,x,y,t,flip,peek){
 }
 function drawBear(g,x,y,t,open,air){
   x=Math.round(x);y=Math.round(y);
-  const P0=BPAL||BEAR_SKINS[0].pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ph=Math.floor(t*10)%2;
+  const P0=BPAL||bearSkin().pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ph=Math.floor(t*10)%2;
   const off=air?[0,0,0,0]:(ph?[-1,1,1,-1]:[1,-1,-1,1]),lh=air?5:8;
   [[x-32,0,far],[x-17,1,far]].forEach(([lx,i,c])=>{px(g,c,lx+off[i],y-lh,4,lh);px(g,k,lx+off[i],y-1,5,1)});
   px(g,b,x-34,y-22,24,14);px(g,b,x-29,y-25,13,3);px(g,b,x-35,y-20,1,10);px(g,far,x-33,y-9,22,1);
@@ -1940,7 +1940,7 @@ function drawBear(g,x,y,t,open,air){
   if(P0.zombie){px(g,'#d02a2a',x-8,y-23,1,1);px(g,'#2a2a1a',x-26,y-21,1,5);px(g,'#2a2a1a',x-27,y-20,3,1);px(g,'#2a2a1a',x-27,y-18,3,1);px(g,'#4a5640',x-20,y-15,3,2)}
   if(P0.robo){for(const [rx,ry] of [[-32,-20],[-26,-20],[-20,-20],[-32,-12],[-20,-12]])px(g,'#d8dee4',x+rx,y+ry,1,1);px(g,'#ff3a3a',x-9,y-23,2,1);px(g,'#5a6068',x-11,y-31,1,3);px(g,(Math.floor(t*4)%2||PXC)?'#ff3a3a':'#ffd0d0',x-11,y-32,1,1)}
   if(P0.spirit&&!PXC){const tt=t||performance.now()/1000;spiritShimmer(g,[[x-34,y-22,24,14],[x-29,y-25,13,3],[x-14,y-26,10,11]],tt);for(let n=0;n<4;n++){if(Math.floor(tt*3+n*1.7)%3)continue;px(g,['#f6d8ff','#ffe0f0','#e0ffe8','#ffffff'][n],x-32+Math.round(hash(n*3.3)*26),y-24+Math.round(hash(n*5.1)*14),1,1)}}
-  if(BPAL&&BACC&&BACC!=='none')drawBearAcc(g,x,y,BACC);
+  {const AC=BPAL?BACC:((typeof equip!=='undefined'&&equip.bearAcc)||null);if(AC&&AC!=='none')drawBearAcc(g,x,y,AC)}
 }
 function drawBearAcc(g,x,y,a){
   if(a==='party'){const R=[[0,1],[-1,3],[-1,3],[-2,5],[-2,5],[-3,7]];R.forEach(([o,w],i)=>px(g,i%2?'#f2c03a':'#d0305a',x-10+o,y-35+i,w,1));px(g,'#ffffff',x-10,y-36,1,1);px(g,'#2a9d8f',x-12,y-30,1,1)}
@@ -1988,7 +1988,7 @@ function drawHikerBack(g,c,x,y,wide){
 /* sleeping bear: lying on his belly, head on paws, facing left (flip=true faces right) */
 function drawBearSleep(g,x,y,t,flip,peek){
   x=Math.round(x);y=Math.round(y);
-  const P0=BPAL||BEAR_SKINS[0].pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ax=x-23;
+  const P0=BPAL||bearSkin().pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ax=x-23;
   g.save();if(flip){g.translate(ax*2,0);g.scale(-1,1)}
   const br=Math.sin(t*1.7)>0?1:0;
   if(!PXC){g.globalAlpha=.28;px(g,'#000',x-47,y-1,49,2);g.globalAlpha=1}
@@ -2240,7 +2240,7 @@ const PZ_FIRE_CAP={
   ride:['The bear needed one too.','Even the bear joined in.','Five guys and a bear. Nobody look.']
 };
 function drawBearBack(g,x,y,wide){
-  const b='#5b3a22',d='#46291a',l='#8a6040';
+  const P0=BPAL||bearSkin().pal,b=P0.b,d=P0.far,l=P0.l;
   if(wide){px(g,b,x-10,y-9,6,9);px(g,b,x+4,y-9,6,9);px(g,d,x-11,y-1,7,1);px(g,d,x+4,y-1,7,1)}else{px(g,b,x-7,y-9,6,9);px(g,b,x+1,y-9,6,9)}
   px(g,b,x-9,y-27,18,19);px(g,b,x-8,y-29,16,2);px(g,d,x+6,y-27,3,19);px(g,l,x-8,y-27,2,10);
   px(g,b,x-12,y-25,3,11);px(g,b,x+9,y-25,3,11);px(g,d,x-12,y-15,3,1);px(g,d,x+9,y-15,3,1);
