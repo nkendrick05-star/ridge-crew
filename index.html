@@ -1869,6 +1869,17 @@ function ffHud(cw,pad,f,shadow){
 function die(reason,type){if(S.dead)return;S.dead=true;S.reason=reason;S.dtype=type||'fall';S.shake=6}
 
 /* ---------- bear + farts ---------- */
+/* spirit bear: a soft aurora shimmer (lavender, pink, mint) that drifts across the fur */
+const SPIRIT_C=['#c4a2f0','#f2a6d2','#9fe8b8','#d7b8ff','#f8bce0','#b8f0cc'];
+function spiritShimmer(g,rects,t){
+  const a0=g.globalAlpha;
+  for(const [rx,ry,rw,rh] of rects)for(let yy=0;yy<rh;yy++)for(let xx=0;xx<rw;xx++){
+    const X=rx+xx,Y=ry+yy,w=Math.sin(X*.32+Y*.22-t*2.6)+.55*Math.sin(X*.11-Y*.37+t*1.7);
+    if(w<.3)continue;const ci=((Math.floor((X*.5+Y*.3-t*6)/4)%6)+6)%6;
+    g.globalAlpha=a0*Math.min(.85,(w-.3)*1.1);g.fillStyle=SPIRIT_C[ci];g.fillRect(X,Y,1,1);
+  }
+  g.globalAlpha=a0;
+}
 function drawBear(g,x,y,t,open,air){
   x=Math.round(x);y=Math.round(y);
   const P0=BPAL||BEAR_SKINS[0].pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ph=Math.floor(t*10)%2;
@@ -1886,7 +1897,7 @@ function drawBear(g,x,y,t,open,air){
   }
   if(P0.zombie){px(g,'#d02a2a',x-8,y-23,1,1);px(g,'#2a2a1a',x-26,y-21,1,5);px(g,'#2a2a1a',x-27,y-20,3,1);px(g,'#2a2a1a',x-27,y-18,3,1);px(g,'#4a5640',x-20,y-15,3,2)}
   if(P0.robo){for(const [rx,ry] of [[-32,-20],[-26,-20],[-20,-20],[-32,-12],[-20,-12]])px(g,'#d8dee4',x+rx,y+ry,1,1);px(g,'#ff3a3a',x-9,y-23,2,1);px(g,'#5a6068',x-11,y-31,1,3);px(g,(Math.floor(t*4)%2||PXC)?'#ff3a3a':'#ffd0d0',x-11,y-32,1,1)}
-  if(P0.spirit&&!PXC){const tt=t||performance.now()/1000;for(let n=0;n<4;n++){if(Math.floor(tt*3+n*1.7)%3)continue;px(g,'#ffe680',x-32+Math.round(hash(n*3.3)*26),y-24+Math.round(hash(n*5.1)*14),1,1)}}
+  if(P0.spirit&&!PXC){const tt=t||performance.now()/1000;spiritShimmer(g,[[x-34,y-22,24,14],[x-29,y-25,13,3],[x-14,y-26,10,11]],tt);for(let n=0;n<4;n++){if(Math.floor(tt*3+n*1.7)%3)continue;px(g,['#f6d8ff','#ffe0f0','#e0ffe8','#ffffff'][n],x-32+Math.round(hash(n*3.3)*26),y-24+Math.round(hash(n*5.1)*14),1,1)}}
   if(BPAL&&BACC&&BACC!=='none')drawBearAcc(g,x,y,BACC);
 }
 function drawBearAcc(g,x,y,a){
@@ -1946,6 +1957,7 @@ function drawBearSleep(g,x,y,t,flip,peek){
   px(g,b,x-41,y-4,13,4);px(g,k,x-42,y-2,2,1);px(g,k,x-42,y-4,1,1);
   px(g,b,x-40,y-12,12,9);px(g,b,x-38,y-14,3,2);px(g,l,x-37,y-13,1,1);px(g,b,x-32,y-14,3,2);
   px(g,l,x-46,y-9,7,5);px(g,b,x-45,y-10,5,1);px(g,k,x-47,y-9,2,2);px(g,k,x-45,y-5,3,1);
+  if(P0.spirit&&!PXC)spiritShimmer(g,[[x-31,y-11-br,27,10+br],[x-28,y-13-br,21,2],[x-40,y-12,12,9]],t||performance.now()/1000);
   if(peek){px(g,k,x-37,y-10,2,2);px(g,'#fff',x-37,y-10,1,1)}else px(g,k,x-38,y-9,3,1);
   g.restore();
 }
