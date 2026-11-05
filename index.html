@@ -566,10 +566,10 @@ try{document.fonts&&document.fonts.load('700 10px RCD','5');document.fonts&&docu
 (function(){
 const CHARS=[
  {id:'patch',def:'Sam',ability:'Double jump',desc:'Tap again in mid-air',hat:'camo',hatC:'#6c6a48',brim:'#4f4d34',patch:'#e08a33',hair:'#3b2a1e',shirt:'#d4d2cc',pants:'#8a7c62',pack:'#25282b',skin:'#f1c6a2'},
- {id:'curly',def:'Josiah',ability:'Long legs',desc:'Jumps way higher',curly:true,hair:'#2e2019',shirt:'#eeede8',pants:'#7c6f5a',pack:'#3a6cc0',skin:'#e6b28c'},
- {id:'camo',def:'Henry',ability:'Tank',desc:'Shrugs off a hit every 300 m',hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#22304d',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'},
+ {id:'curly',def:'Josiah',ability:'Long legs',desc:'Jumps higher. Tap again mid-air to dash',curly:true,hair:'#2e2019',shirt:'#eeede8',pants:'#7c6f5a',pack:'#3a6cc0',skin:'#e6b28c'},
+ {id:'camo',def:'Henry',ability:'Tank',desc:'Smashes through a hit every 240 m',hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#22304d',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'},
  {id:'stache',def:'Blake',ability:'Cone magnet',desc:'Pulls in nearby pinecones',hat:'tan',hatC:'#9b8c69',brim:'#7a6d50',hair:'#2b1f18',stache:true,shirt:'#d8d6d0',pants:'#5b5a55',pack:'#2f4f84',skin:'#c8946f'},
- {id:'nathan',def:'Nathan',ability:'Hype man',desc:'Every pinecone counts double',guest:true,hair:'#8a5a30',stache:true,shirt:'#a19b94',shred:true,pants:'#9a8c70',pack:'#5d7a3c',skin:'#f0c29c'}
+ {id:'nathan',def:'Nathan',ability:'Hype man',desc:'Pinecones count double for the shop',guest:true,hair:'#8a5a30',stache:true,shirt:'#a19b94',shred:true,pants:'#9a8c70',pack:'#5d7a3c',skin:'#f0c29c'}
 ];
 const byId=id=>CHARS.find(c=>c.id===id);
 
@@ -642,7 +642,7 @@ const SLOTS=['hat','pack','shirt','face','extra'];
 const CATALOG={hat:HATS,pack:PACKS,shirt:SHIRTS,face:FACES,extra:EXTRAS};
 const SETS=[
  {id:'lumber',name:'Lumberjack',items:{hat:'beanie',shirt:'flannel',face:'beard'},perk:'+20% pinecones'},
- {id:'ranger',name:'Ranger',items:{hat:'bucket',shirt:'camotee',pack:'orange'},perk:'A free hit every run'},
+ {id:'ranger',name:'Ranger',items:{hat:'bucket',shirt:'camotee',pack:'orange'},perk:'Start every run with 2 snacks'},
  {id:'cowboy',name:'Cowboy',items:{hat:'cowboy',extra:'bandana',face:'handlebar'},perk:'Longer No Bear! window'},
  {id:'owl',name:'Night Owl',items:{hat:'headlamp',extra:'shades',pack:'purple'},perk:'See farther at night'},
  {id:'bruin',name:'Bruin',items:{hat:'bcap',shirt:'belmont'},perk:'Trail mix gives two snacks'},
@@ -759,16 +759,16 @@ function drawReaction(g,t){
   if(S.newBest&&Math.floor(t*3)%2){g.font='700 7px "RCD","Pixelify Sans", monospace';g.textAlign='center';g.fillStyle='#f2a541';g.fillText('NEW BEST',x,y-36)}
 }
 const UPGRADES=[
- {id:'boots',name:'Sturdy boots',desc:'Every leader starts the run able to shrug off one hit.',max:1,prices:[300]},
+ {id:'boots',name:'Sturdy boots',desc:'Your first fall off a ledge each run does not end it. You scramble back up.',max:1,prices:[300]},
  {id:'snack',name:'Snack stash',desc:'Trail mix shows up more often.',max:3,prices:[160,320,640]},
  {id:'pouch',name:'Big pouch',desc:'Each pinecone has a chance to count twice.',max:3,prices:[200,440,900]}
 ];
 const SKILLS=[
  {id:'ab_patch',who:'patch',name:'Triple jump',desc:'Sam gets a third jump in mid-air.',price:600},
- {id:'ab_curly',who:'curly',name:'Even longer legs',desc:"Josiah's jumps go 12% higher.",price:600},
- {id:'ab_camo',who:'camo',name:'Quick recharge',desc:"Henry's free hit comes back every 180 m.",price:600},
+ {id:'ab_curly',who:'curly',name:'Even longer legs',desc:"Higher jumps, a longer air dash that recharges faster, and longer reach in Lava Floor.",price:600},
+ {id:'ab_camo',who:'camo',name:'Quick recharge',desc:"Henry's smash comes back every 150 m (every 4 swings in Lava Floor).",price:600},
  {id:'ab_stache',who:'stache',name:'Super magnet',desc:'Blake pulls pinecones from twice as far.',price:600},
- {id:'ab_nathan',who:'nathan',name:'Mega hype',desc:'Pinecones count triple when Nathan leads.',price:600}
+ {id:'ab_nathan',who:'nathan',name:'Mega hype',desc:'Pinecones count triple for the shop when Nathan leads.',price:600}
 ];
 let wallet=0,owned={},equip={},ups={},xp=0;
 try{wallet=+localStorage.getItem('rc_wallet')||0;owned=JSON.parse(localStorage.getItem('rc_owned')||'{}')||{};equip=JSON.parse(localStorage.getItem('rc_equip')||'{}')||{};ups=JSON.parse(localStorage.getItem('rc_ups')||'{}')||{};xp=+localStorage.getItem('rc_xp')||0}catch(e){}
@@ -1007,13 +1007,14 @@ function newRun(leaderId,demo,rm){
   rm=demo?'classic':(rm||'classic');
   const leader=byId(leaderId),set=demo?null:setOf(leaderId);
   const s={leader,demo,mode:rm,set:set?set.id:null,crew:(rm==='solo'||rm==='bear')?[]:CHARS.filter(c=>c.id!==leaderId),lost:[],sitters:[],dist:0,y:GY,vy:0,grounded:true,
-    jumps:0,coy:0,buf:0,invuln:0,shield:(leader.id==='camo'||ups.boots||(set&&set.id==='ranger'))?1:0,shieldAt:0,cones:0,
+    jumps:0,coy:0,buf:0,invuln:0,shield:leader.id==='camo'?1:0,shieldAt:0,cones:0,
     segs:[{x0:-300,x1:720,y0:GY,slope:0}],genX:720,gy:GY,terr:{k:'flat',slope:0},terrUntil:1100,rollSign:1,camY:0,bgBase:0,lastGY:GY,biome:0,prevBiome:0,bk:1,biomeAt:6500+Math.random()*2500,waterProx:0,
     obs:[],items:[],hist:[],texts:[],t:0,at:0,shake:0,dead:false,deadT:0,reason:'',dtype:'',bearBack:90,fartIn:8+Math.random()*8,fart:null,cloud:null,eat:null,saved:0,ev:null,evIn:28+Math.random()*20,flash:0,tut:null,
     mood:70,snacks:0,parts:[],bubble:null,chatIn:6+Math.random()*5,roarIn:7,distract:0,boost:0,slowT:0,coffee:0,chainT:0,fartWasChain:false,lastFarter:null,
     stats:{jumps:0,clears:0,near:0,snacks:0,animals:0,biome:{},fartsBy:{}},rivers:[],muds:[],rollIn:2,stepT:0,revives:0,banked:0,applied:null,appliedFB:{},muddy:false,lastOwl:-1,chal:null,chalDone:false,
     prey:null,gapX:0,chomps:0,stun:0,win:false,fireBack:200,crackT:0,ff:null,heat:100,combo:0,lastBurn:-9,bestCombo:0,burned:0,burnPts:0,water:[],waterIn:3.5,trail:[],dodged:0,splashes:0,anchors:[],anX:null,swing:null,hold:false,swings:0,grabCD:0,duckT:0,tail:null,drag:[],emberFx:[],fleers:[],hopTree:null,hopPrev:null,hopT:0,lean:0,lastKnock:0,hitch:false,squirrel:false,mooseT:0,leap:false,swimming:false,lakeX:0,lakeDone:false,winT:-1,rafts:[],shrooms:[],erupts:[],chain:null,chainOn:false,raft:null,flip:null,air:null,pantsT:0,burnTypes:{},infernoT:0,ring:null,mallows:[],rainCloud:null,cloudIn:20,plane:null,smokeB:null,cool:0,spin:null,flips:0,ducked:0,lastMeter:0};
   if(rm==='night')s.ev={type:'night',t:5,dur:1e12};
+  if(set&&set.id==='ranger'&&rm!=='bear')s.snacks=2;
   if(rm==='uphill'&&!demo)Object.assign(s,{upNext:0,upCamps:[],upBonus:0,upMax:UP_BASE,yeti:false,banner:null,summited:false,rollIn:5});
   if(rm==='bear'){s.prey=CHARS.slice().sort(()=>Math.random()-.5);s.gapX=80;Object.assign(s,{stam:100+25*(ups.bl_lungs||0),chargeT:0,roarCd:2,freezeT:0,bearPts:0,lastChomp:-9,pounce:null,bits:[],snacksEaten:0,hits:0,hypeT:0,hypeIn:9,shoved:false,shortcut:false,throwIn:4,talkIn:2,eatT:0,doubles:0,roars:0})}
   if(rm==='fire'){s.fartIn=1e12;LAVA_Y=GY+18;s.ff=(typeof window!=='undefined'&&window.__FF)||pick(['blaze','lava','ride']);s.fireBack=s.ff==='blaze'?400:96}
@@ -1026,13 +1027,13 @@ const nb=()=>S.leader.id==='nathan'?(ups.ab_nathan?3:2):1;
 const reachR=()=>S.leader.id==='curly'?(ups.ab_curly?160:150):118;
 const isLava=()=>S.mode==='fire'&&S.ff==='lava';
 function dashOK(){return S&&S.leader.id==='curly'&&S.mode!=='bear'&&!isLava()&&!S.demo&&!S.dead&&!S.eat}
-function doDash(){if(mode!=='play'||!dashOK()||S.spin||S.grounded||S.airDashed)return false;{const g0=groundY(S.dist+LX);if(g0!=null&&g0-S.y<16&&S.vy>0)return false}const d=ups.ab_curly?.42:.32;S.airDashed=true;S.dashT=d;S.vy=Math.min(S.vy,-40);S.invuln=Math.max(S.invuln,d+.15);S.dashes=(S.dashes||0)+1;SFX.jump();buzz(15);say('DASH!',LX+16,S.y-40,'#bfe3ff');puff(S.dist+LX-6,S.y-8,6);return true}
+function doDash(){if(mode!=='play'||!dashOK()||S.spin||S.grounded||S.airDashed||(S.dashCd||0)>0)return false;{const g0=groundY(S.dist+LX);if(g0!=null&&g0-S.y<16&&S.vy>0)return false}const d=ups.ab_curly?.42:.32;S.airDashed=true;S.dashT=d;S.dashCd=ups.ab_curly?2:2.5;S.vy=Math.min(S.vy,-40);S.invuln=Math.max(S.invuln,d+.15);S.dashes=(S.dashes||0)+1;SFX.jump();buzz(15);say('DASH!',LX+16,S.y-40,'#bfe3ff');puff(S.dist+LX-6,S.y-8,6);return true}
 function skillInfo(){const id=S.leader.id,m=S.mode,lava=isLava(),blaze=m==='fire'&&S.ff==='blaze';if(m==='bear')return null;
   if(id==='patch')return lava?null:{n:'Double Jump',t:'2X JUMP'};
   if(id==='curly')return lava?{n:'Long Reach',t:'REACH'}:{n:'Air Dash',t:'AIR DASH'};
   if(id==='camo')return {n:'Tank',t:'TANK'};
   if(id==='stache')return {n:'Magnet',t:'MAGNET'};
-  if(id==='nathan'){const k=nb()+'X';return {n:'Cone Bonus',t:blaze?k+' CONES+BURN':k+' CONES'}}
+  if(id==='nathan'){const k=nb()+'X';return {n:'Cone Bonus',t:k+' CONES'}}
   return null}
 function upBearAdj(){
   if(S.yeti)return -6;
@@ -1171,7 +1172,9 @@ function histY(back){
 function hit(){
   if(S.invuln>0||S.boost>0)return;
   SFX.hit();buzz(30);S.mood=Math.max(0,S.mood-20);
-  if(S.shield>0){S.shield=0;S.shieldAt=S.dist;S.invuln=.8;S.shake=4;say('Shrugged it off',LX,GY-34,'#f2a541');return}
+  if(S.shield>0){S.shield=0;S.shieldAt=S.dist;S.invuln=.8;S.shake=4;
+    if(S.leader.id==='camo'&&S.hitObs){const o=S.hitObs;o.smashed=.01;o.passed=true;S.boost=Math.max(S.boost,.7);S.mood=Math.min(100,S.mood+30);say('TANK SMASH!',LX,GY-40,'#f2a541');for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:40+Math.random()*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#a19d93':'#f2a541',s:2,g:1});return}
+    say('Shrugged it off',LX,GY-34,'#f2a541');return}
   if(S.mode==='solo'){caughtEat(nm(S.leader)+' went down with nobody to help. The bear did not wait.');return}
   if(S.mode==='fire'){
     if(S.ff==='blaze'&&S.infernoT>0){S.burnPts+=50;S.shake=4;say('Even rocks burn now! +50',LX,GY-36,'#ff8a2a');return}
@@ -1209,7 +1212,7 @@ const ffOn=v=>S&&S.mode==='fire'&&(!v||S.ff===v);
 function burnIt(o){
   const b=BURN[o.type];o.hit=true;o.burning=0.001;
   if(S.t-S.lastBurn<1.6)S.combo=Math.min(9,S.combo+1);else S.combo=1;S.lastBurn=S.t;S.bestCombo=Math.max(S.bestCombo,S.combo);
-  const pts=b.pts*S.combo*nb();S.burnPts+=pts;S.burned++;S.heat=Math.min(100,S.heat+b.heat);
+  const pts=b.pts*S.combo;S.burnPts+=pts;S.burned++;S.heat=Math.min(100,S.heat+b.heat);
   S.burnTypes[o.type]=(S.burnTypes[o.type]||0)+1;if(o.type==='outhouse')markSeen('ff_outhouse');if(S.combo>=9)unlockBadge('ff_combo9');if(BIGBURN[o.type]){S.kabooms=(S.kabooms||0)+1;if(S.kabooms>=3)unlockBadge('ff_kaboom')}
   if(S.combo>=5&&S.infernoT<=0){S.infernoT=4.5;unlockBadge('ff_inferno');markSeen('ff_inferno');say('INFERNO!',LX,GY-70,'#ff5a1a');SFX.roar();S.shake=8}
   SFX.crackle(1);SFX.crackle(.8);if(BIGBURN[o.type]){SFX.roar();S.shake=7;say('KABOOM! +'+pts,LX,GY-46,'#ffd166');
@@ -1413,8 +1416,8 @@ function lavaUpdate(dt){
   S.chainOn=false;S.chain=null;
   S.camY+=(Math.max(-50,Math.min(24,(S.y-GY)*.4+11))-S.camY)*Math.min(1,dt*3);
   S.hist.push({d:S.dist,y:S.y});while(S.hist.length&&S.hist[0].d<S.dist-150)S.hist.shift();
-  const cy=S.y-11,lmag=S.leader.id==='stache'?(ups.ab_stache?160:80):0;for(const it of S.items){if(it.got)continue;if(lmag){const dx=lx-it.x,dy=cy-it.y,d=Math.hypot(dx,dy);if(d<lmag&&d>0){it.x+=dx/d*320*dt;it.y+=dy/d*320*dt}}if(Math.abs(it.x-lx)<10&&Math.abs(it.y-cy)<16){it.got=true;S.cones+=nb();SFX.cone()}}
-  if(S.leader.id==='camo'&&!S.shield&&S.swings-(S.shieldSw||0)>=(ups.ab_camo?5:8)){S.shield=1;say('Tank ready',LX,GY-56,'#f2a541')}
+  const cy=S.y-11,lmag=S.leader.id==='stache'?(ups.ab_stache?160:80):0;for(const it of S.items){if(it.got)continue;if(lmag){const dx=lx-it.x,dy=cy-it.y,d=Math.hypot(dx,dy);if(d<lmag&&d>0){it.x+=dx/d*320*dt;it.y+=dy/d*320*dt}}if(Math.abs(it.x-lx)<10&&Math.abs(it.y-cy)<16){it.got=true;S.cones+=nb();S.natX=(S.natX||0)+nb()-1;SFX.cone()}}
+  if(S.leader.id==='camo'&&!S.shield&&S.swings-(S.shieldSw||0)>=(ups.ab_camo?4:7)){S.shield=1;say('Tank ready',LX,GY-56,'#f2a541')}
   if(S.chain)for(const nd of S.chain)for(const it of S.items){if(!it.got&&it.k==='cone'&&Math.abs(it.x-nd.x)<9&&Math.abs(it.y-(nd.y-11))<14){it.got=true;S.cones++;SFX.cone()}}
   S.fireBack=96+(S.cool||0)*14;S.fireClose=.35;SFX.setFire(.45);S.crackT-=dt;if(S.crackT<=0){SFX.crackle(.6);S.crackT=.1+Math.random()*.3}
   if(S.pantsT>0&&Math.random()<dt*20)S.parts.push({x:S.dist+LX-3,y:S.y-8,vx:-40-Math.random()*30,vy:-20-Math.random()*30,life:.5,c:'#6e6662',s:2,g:0});
@@ -2608,7 +2611,7 @@ function update(dt){
   S.dist+=spd*dt;gen();
   if(S.mode==='uphill'&&!S.demo)upUpdate(dt);
   const lx=S.dist+LX;
-  S.buf-=dt;S.coy-=dt;S.invuln-=dt;S.dashT=Math.max(0,(S.dashT||0)-dt);S.lsq=Math.max(0,(S.lsq||0)-dt);S.jsq=Math.max(0,(S.jsq||0)-dt);
+  S.buf-=dt;S.coy-=dt;S.invuln-=dt;S.dashT=Math.max(0,(S.dashT||0)-dt);S.dashCd=Math.max(0,(S.dashCd||0)-dt);S.lsq=Math.max(0,(S.lsq||0)-dt);S.jsq=Math.max(0,(S.jsq||0)-dt);
   if(S.grounded){S.coy=.12;S.jumps=(S.leader.id==='patch'&&S.mode!=='bear')?(ups.ab_patch?2:1):0;S.airDashed=false}
   if(S.buf>0){
     if(S.grounded||S.coy>0)jump();
@@ -2641,6 +2644,7 @@ function update(dt){
       if(r.lake&&S.lakeDone&&S.winT<0){S.winT=.9;markSeen('ff_lake');SFX.splash();for(let i=0;i<24;i++)S.parts.push({x:lx,y:r.wy,vx:(Math.random()-.5)*220,vy:-90-Math.random()*200,life:.9,c:i%2?'#9fd0e8':'#e8f6fb',s:2,g:1})}
       else if(Math.random()<dt*10)S.parts.push({x:lx-14,y:r.wy,vx:-50,vy:-30,life:.4,c:'#cfe3ef',s:2,g:1});break}
     splash(r);if(S.dead)return;break}
+  if(S.y>S.lastGY+150&&ups.boots&&!S.bootsUsed&&S.mode!=='bear'&&!S.demo&&!S.dead){const lx2=S.dist+LX,sg=S.segs.find(q=>q.x0>=lx2-4&&!q.kind)||S.segs.find(q=>q.x1>lx2+40);if(sg){S.bootsUsed=true;S.dist=sg.x0+24-LX;S.y=segY(sg,sg.x0+24);S.lastGY=S.y;S.camY=S.y-GY;S.hist=[];S.vy=0;S.grounded=true;S.invuln=1.5;const lx3=S.dist+LX;S.obs=S.obs.filter(o=>o.x>lx3+100||o.x+o.w<lx3);SFX.win();buzz(20);say('Sturdy boots! Scrambled back up',LX,GY-56,'#9fd67a');return}}
   if(S.y>S.lastGY+150){die(S.mode==='bear'?'The bear tumbled off the ridge.':nm(S.leader)+' walked right off the ridge.',S.mode==='bear'?'bearlose':'fall');return}
   if(S.demo)return;
   moveObs(dt);
@@ -2660,7 +2664,7 @@ function update(dt){
         o.hit=true;
         if(o.type==='skunk'){skunked();return}
         if(o.type==='coon'){const k=Math.min(5,S.cones);S.cones-=k;SFX.coon();say('Raccoon stole '+k+'!',LX,GY-40,'#ffb38a');continue}
-        hit();if(S.dead)return;
+        S.hitObs=o;hit();S.hitObs=null;if(S.dead)return;
       }
     }else if(lx-4>=o.x+o.w){
       o.passed=true;S.stats.clears++;if(o.type==='goat')markSeen('goat');if(o.type!=='rock'&&o.type!=='log')S.stats.animals++;
@@ -2676,11 +2680,11 @@ function update(dt){
       if(it.k==='roar'){S.roars=(S.roars||0)+1;if(S.roars>=3)unlockBadge('ff_roar');SFX.roar();S.shake=7;let n=0;for(const o of S.obs){if(o.type!=='branch'&&!o.hit&&o.x>lx&&o.x-lx<280){o.hit=true;o.passed=true;o.smashed=.01;n++}}say('ROAR! Path cleared',LX,GY-56,'#ffd166');continue}
       if(it.k==='leap'){S.leap=true;SFX.win();say('Next jump is a MEGA LEAP',LX,GY-56,'#bfe39a');continue}
       if(it.k==='hitch'){markSeen('ff_hitch');S.hitch=true;SFX.cone();say('A raccoon hopped on top!',LX,GY-56,'#f2d36a');continue}
-      if(it.k==='mallow'){markSeen('ff_mallow');S.mallows.push({t:0});S.burnPts+=30*nb();SFX.cone();say('Marshmallow +'+30*nb(),LX,GY-40,'#f2e6c8');continue}
+      if(it.k==='mallow'){markSeen('ff_mallow');S.mallows.push({t:0});S.burnPts+=30;SFX.cone();say('Marshmallow +30',LX,GY-40,'#f2e6c8');continue}
       if(it.k==='cone'){
         let v=S.leader.id==='nathan'?(ups.ab_nathan?3:2):1;if(S.mode==='solo')v*=2;
         if(Math.random()<.12*(ups.pouch||0))v*=2;if(S.set==='lumber'&&Math.random()<.2)v+=1;if(S.mood>85&&Math.random()<.1)v+=1;
-        S.cones+=v;S.mood=Math.min(100,S.mood+.5);S.coneK=S.t-(S.coneT??-9)<.7?(S.coneK||0)+1:0;S.coneT=S.t;SFX.cone(S.coneK);
+        S.cones+=v;{const nf=nb();if(nf>1)S.natX=(S.natX||0)+v-v/nf}S.mood=Math.min(100,S.mood+.5);S.coneK=S.t-(S.coneT??-9)<.7?(S.coneK||0)+1:0;S.coneT=S.t;SFX.cone(S.coneK);
         S.texts.push({s:'+'+v,x:Math.round(it.x-S.dist),y:Math.round(it.y)-8,t:.7,color:S.coneK>3?'#ffd166':'#fff3dc'});
       }else if(it.k==='mix'){
         S.mood=Math.min(100,S.mood+20);
@@ -2697,7 +2701,7 @@ function update(dt){
     }
   }
   checkBadges();
-  if(S.leader.id==='camo'&&!S.shield&&S.dist-S.shieldAt>(ups.ab_camo?2160:3600)){S.shield=1;say('Tank ready',LX,GY-34,'#f2a541')}
+  if(S.leader.id==='camo'&&!S.shield&&S.dist-S.shieldAt>(ups.ab_camo?1800:2880)){S.shield=1;say('Tank ready',LX,GY-34,'#f2a541')}
   if(S.chal&&!S.chalDone&&score()>S.chal.best){S.chalDone=true;toast('You passed '+S.chal.name+"'s best!");SFX.badge()}
 }
 function stepKind(x){
@@ -2706,7 +2710,7 @@ function stepKind(x){
   if(SEASON==='winter'||S.biome===2)return 'snow';
   return 'dirt';
 }
-const score=()=>S.mode==='bear'?(S.bearPts||0)+S.cones*5:Math.floor(S.dist/12)+S.cones*5+(S.burnPts||0)+(S.upBonus||0);
+const score=()=>S.mode==='bear'?(S.bearPts||0)+S.cones*5:Math.floor(S.dist/12)+Math.max(0,Math.round(S.cones-(S.natX||0)))*5+(S.burnPts||0)+(S.upBonus||0);
 
 
 /* ---------- render ---------- */
@@ -3093,7 +3097,7 @@ function drawHud(){
   ctx.save();ctx.translate(pad+5,pad+f*1.6);ctx.scale(2,2);drawCone(ctx,0,0);ctx.restore();
   shadow('x '+S.cones,pad+18,pad+f*1.6,'#fff3dc');
   if(!S.demo&&!S.dead&&!S.spin){const sk=skillInfo();if(sk){let t=sk.t,c='#ffd166',al=1;const cid=S.leader.id;
-    if(cid==='curly'&&!isLava()&&S.airDashed&&!S.grounded){c='#c9bfa8';al=.6}
+    if(cid==='curly'&&!isLava()&&(S.dashCd>0||(S.airDashed&&!S.grounded))){c='#c9bfa8';al=.6;if(S.dashCd>0)t='AIR DASH '+S.dashCd.toFixed(1)+'s'}
     if(cid==='camo'&&!S.shield){t='TANK RECHARGING';c='#c9bfa8';al=.7}
     const cw0=ctx.measureText('x '+S.cones).width;ctx.save();ctx.font='700 '+Math.round(f*.55)+'px "RCD","Pixelify Sans", monospace';ctx.globalAlpha=al;shadow(t,pad+18+cw0+12,pad+f*1.6,c);ctx.restore()}}
   if(!S.demo&&!S.dead&&S.mode!=='bear'){const pb=modeBest[ffKey()]||0,sc=score();if(pb>0&&sc>=pb*.9){const pass=sc>pb,on=Math.floor(S.t*(pass?3:2))%2;ctx.save();ctx.font='700 '+Math.round(f*.6)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='left';ctx.globalAlpha=on?1:.55;shadow(pass?'NEW BEST SCORE!':'BEST '+pb.toLocaleString()+' - so close!',pad,Math.round(pad+f*(S.mode==='fire'?4.6:3.9)),pass?'#9fd67a':'#f2a541');ctx.restore();if(pass&&!S.scorePB){S.scorePB=1;buzz(20)}}}
