@@ -1144,7 +1144,7 @@ function genCore(){
       if(S.mode!=='bear'&&Math.random()<.08+.06*(ups.snack||0))S.items.push({k:'mix',x:x0+len*.55,y:segY(seg,x0+len*.55)-44,got:false});
       if(S.mode==='bear'&&!S.demo&&len>60){if(Math.random()<.5)S.items.push({k:'berry',x:x0+len*.3,y:segY(seg,x0+len*.3)-7,got:false});if(Math.random()<.2){const hv={k:'honey',x:x0+len*.72,y:segY(seg,x0+len*.72)-48,gy:segY(seg,x0+len*.72),got:false};S.items.push(hv);(S.htrees||(S.htrees=[])).push(hv)}}
       if(S.mode==='fire'&&S.ff==='ride'&&late&&Math.random()<.12){const ix=x0+len*.45;S.items.push({k:pick(['roar','leap','hitch']),x:ix,y:segY(seg,ix)-30,got:false})}
-      if(late&&S.mode!=='bear'&&Math.random()<.11){const k=pick(['coffee','hammock','whistle']),ix=x0+len*.3;S.items.push({k,x:ix,y:segY(seg,ix)-34,got:false})}
+      if(late&&S.mode!=='bear'&&Math.random()<.11){const k=pick(['coffee','sbag','whistle']),ix=x0+len*.3;S.items.push({k,x:ix,y:segY(seg,ix)-34,got:false})}
     }
     S.genX=x1;
   }
@@ -2694,7 +2694,7 @@ function update(dt){
         else if(S.mode==='fire'){if(S.ff==='blaze'){S.heat=Math.min(100,S.heat+20);say('Trail mix! Fuel up',LX,GY-40,'#ffb347')}else{S.cones+=5;say('+5 pinecones',LX,GY-40,'#f2a541')}SFX.cone()}
         else{const n=S.set==='bruin'?2:1;S.snacks+=n;SFX.cone();say('+'+n+' snack to throw',LX,GY-40,'#f2a541')}
       }else if(it.k==='coffee'||it.k==='bar'){S.boost=3.5;S.invuln=Math.max(S.invuln,3.5);SFX.win();say('Coffee! Speed burst',LX,GY-40,'#f2a541')}
-      else if(it.k==='hammock'){S.coffee=5;SFX.win();say('Hammock break. Slow motion!',LX,GY-40,'#f2a541')}
+      else if(it.k==='sbag'){S.coffee=5;SFX.win();say('Sleeping bag nap. Slow motion!',LX,GY-40,'#f2a541')}
       else if(it.k==='whistle'){
         SFX.whistle();
         if(S.lost.length){S.crew.push(...S.lost.splice(0));S.sitters=[];say('Everybody back in line!',LX,GY-40,'#bfe39a')}else{S.cones+=10;say('+10 whistle bonus',LX,GY-40,'#f2a541')}
@@ -2839,8 +2839,10 @@ function drawItem(it,x,y){
   if(it.k==='mallow'){x=Math.round(x);y=Math.round(y);px(ctx,'#f2ece0',x-2,y-3,5,6);px(ctx,'#ffffff',x-2,y-3,2,2);px(ctx,'#c8b8a0',x+2,y-3,1,6);px(ctx,'#e0d6c4',x-2,y+2,5,1);return}
   x=Math.round(x);y=Math.round(y);
   if(!PXC){ctx.globalAlpha=.35+.25*Math.sin(S.t*6);px(ctx,'#fff3a8',x-6,y-6,12,12);ctx.globalAlpha=1}
-  if(it.k==='hammock'){const sw=Math.round(Math.sin(S.t*3));px(ctx,'#6b4423',x-7,y-5,2,10);px(ctx,'#6b4423',x+5,y-5,2,10);px(ctx,'#4a2e17',x-7,y-6,2,1);px(ctx,'#4a2e17',x+5,y-6,2,1);
-    for(let k=0;k<11;k++){const xx=x-5+k,sag=Math.round(Math.sin(k/10*Math.PI)*3)+(k>2&&k<8?sw:0);px(ctx,k%3===1?'#3a8fd0':'#e8b04a',xx,y-4+sag,1,2)}px(ctx,'#e8e2d0',x-6,y-5,1,1);px(ctx,'#e8e2d0',x+5,y-5,1,1)}
+  if(it.k==='sbag'){px(ctx,'#3a7a4a',x-6,y-3,11,7);px(ctx,'#3a7a4a',x-7,y-2,1,5);px(ctx,'#4f9a5e',x-6,y-3,11,2);px(ctx,'#2a5a36',x-6,y+3,11,1);
+    px(ctx,'#2a2018',x-3,y-3,1,7);px(ctx,'#2a2018',x+2,y-3,1,7);px(ctx,'#c9a24a',x-3,y,1,1);px(ctx,'#c9a24a',x+2,y,1,1);
+    px(ctx,'#4f9a5e',x+5,y-2,2,5);px(ctx,'#2a5a36',x+5,y,2,1);px(ctx,'#e8e2d0',x+6,y-1,1,1);
+    const zf=Math.floor(S.t*2)%3;if(zf&&!PXC){const zx=x+2+zf,zy=y-9-zf*2;px(ctx,'#fff3dc',zx,zy,4,1);px(ctx,'#fff3dc',zx+2,zy+1,1,1);px(ctx,'#fff3dc',zx+1,zy+2,1,1);px(ctx,'#fff3dc',zx,zy+3,4,1)}}
   else if(it.k==='coffee'){px(ctx,'#e8e2d0',x-3,y-2,6,7);px(ctx,'#e8e2d0',x+3,y,2,3);px(ctx,'#6b4423',x-2,y-1,4,1);px(ctx,'#ffffff',x-1,y-5+(Math.floor(S.t*4)%2),1,2);px(ctx,'#ffffff',x+1,y-6+(Math.floor(S.t*4+1)%2),1,2)}
   else if(it.k==='whistle'){px(ctx,'#d8b23a',x-4,y-1,7,4);px(ctx,'#f2d36a',x-4,y-1,7,1);px(ctx,'#a8861f',x+3,y,2,2);px(ctx,'#c9a26a',x-6,y-2,2,1)}
 }
