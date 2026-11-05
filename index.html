@@ -1088,7 +1088,7 @@ function hit(){
   if(S.invuln>0||S.boost>0)return;
   SFX.hit();buzz(30);S.mood=Math.max(0,S.mood-20);
   if(S.shield>0){S.shield=0;S.shieldAt=S.dist;S.invuln=.8;S.shake=4;say('Shrugged it off',LX,GY-34,'#f2a541');return}
-  if(S.mode==='solo'){die(nm(S.leader)+' went down with nobody to help.','solo');return}
+  if(S.mode==='solo'){caughtEat(nm(S.leader)+' went down with nobody to help. The bear did not wait.');return}
   if(S.mode==='fire'){
     if(S.ff==='blaze'&&S.infernoT>0){S.burnPts+=50;S.shake=4;say('Even rocks burn now! +50',LX,GY-36,'#ff8a2a');return}
     if(S.ff==='blaze'){S.invuln=.8;S.shake=5;S.heat-=12;S.combo=1;say(pick(['Rocks do not burn!','Ouch, not flammable','That one is a rock']),LX,GY-36,'#ffb38a');return}
@@ -1099,7 +1099,15 @@ function hit(){
     S.lost.push(c);const sx=S.dist+LX-CB(i),sgy=groundY(sx),sit={c,x:sx,y:sgy!=null?sgy:histY(CB(i))};S.sitters.push(sit);
     S.invuln=1.2;S.shake=5;say(nm(c)+' needs a breather',LX,GY-36,'#ffb38a');
     S.bubble={sit,text:pick(Math.random()<.5?LOST_GEN:(LOST_LINES[c.id]||LOST_GEN)),t:0};SFX.voice(c.id,3);
-  }else die(nm(S.leader)+' ran out of crew. Everyone is taking a breather.','crew');
+  }else caughtEat(nm(S.leader)+' ran out of crew, and the bear caught up. Dinner is served.');
+}
+/* last crew member down: the bear catches up and eats the leader instead of the run just stopping */
+function caughtEat(reason){
+  hideNoBear();S.fart=null;
+  const v=Object.assign({c:S.leader,eaten:false},hikerPos(-1)),g=groundY(S.dist+v.x);if(g!=null)v.y=g;v.air=false;
+  S.eatType='eaten';S.caught=true;
+  S.eat={x:LX-S.bearBack,y0:histY(S.bearBack),t:0,victims:[v],chomp:.45,bits:[],after:0,reason};
+  S.shake=6;SFX.growl();unlockBadge('eaten');setTip(null);say('The bear caught up!',LX,GY-46,'#ff6b5a');
 }
 /* ---------- forest fire mode: three random variants ---------- */
 const FF_INFO={
@@ -3656,6 +3664,7 @@ const OVER_CAP={
  lava:['The floor was, in fact, lava.','Should have held on tighter.','Ow ow ow ow ow.'],
  ride:['The bear did not sign up for this.','Five guys is a lot of guys.','Hold on to the fur next time.'],
  eaten:['Five-course meal.','He did not even say grace.','Should have held it in.'],
+ caught:['Should have tied your shoes.','The bear says thanks.','Nobody left to carry you.','Watch the rocks next time.'],
  skunk:['Smells like defeat.','The skunk sends its regards.'],
  fall:['Gravity: 1, Crew: 0.','Should have jumped.','That first step is a big one.'],
  crew:['Everyone is taking a breather.','Lonely at the front.','Nobody left to complain to.'],
@@ -3871,8 +3880,8 @@ function showOver(){
   const gained=S.cones-S.banked;wallet+=gained;S.banked=S.cones;
   const res=applyRun();
   if(S.mode==='classic')submitScore(sc,Math.floor(S.dist/12),S.dtype==='eaten'||S.dtype==='skunk');
-  $('overTitle').textContent=OVER_TITLE[S.dtype]||'Trip over';
-  $('reason').textContent=S.reason+' '+pick(OVER_CAP[S.dtype]||OVER_CAP.crew);
+  $('overTitle').textContent=S.caught?'Caught!':(OVER_TITLE[S.dtype]||'Trip over');
+  $('reason').textContent=S.reason+' '+pick(OVER_CAP[S.caught?'caught':S.dtype]||OVER_CAP.crew);
   countUp($('sDist'),Math.floor(S.dist/12),700);countUp($('sCones'),S.cones,700);countUp($('sScore'),sc,1000);
   const top=Object.entries(S.stats.biome).sort((a,b)=>b[1]-a[1])[0];
   const chips=$('chips');chips.innerHTML='';
@@ -3892,9 +3901,9 @@ function showOver(){
 }
 function secondChance(){
   if(!S||S.revives>0||wallet<100)return;wallet-=100;persist();S.revives++;
-  if(S.eat){S.eat=null}
-  if(S.dtype==='crew'&&S.lost.length){S.crew.push(...S.lost.splice(0,Math.min(2,S.lost.length)));S.sitters=[]}
-  if(S.dtype==='fall'||S.dtype==='solo'||S.y>S.lastGY+20){
+  const wasCaught=!!S.caught;if(S.eat){S.eat=null}S.caught=false;
+  if((S.dtype==='crew'||wasCaught)&&S.lost.length){S.crew.push(...S.lost.splice(0,Math.min(2,S.lost.length)));S.sitters=[]}
+  if(S.dtype==='fall'||S.dtype==='solo'||(wasCaught&&S.mode==='solo')||S.y>S.lastGY+20){
     const lx=S.dist+LX,seg=S.segs.find(s=>s.x0>=lx-4&&!s.kind)||S.segs.find(s=>s.x1>lx+40);
     if(seg){S.dist=seg.x0+24-LX;S.y=segY(seg,seg.x0+24);S.lastGY=S.y;S.camY=S.y-GY;S.hist=[]}
   }
