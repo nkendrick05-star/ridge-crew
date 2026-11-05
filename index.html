@@ -661,7 +661,8 @@ const BEAR_SKINS=[
  {id:'cinnamon',name:'Cinnamon bear',price:600,desc:'Warm, spicy, and very fast.',pal:{b:'#9a5a2a',far:'#7a4420',l:'#c48a58',k:'#1a1210'}},
  {id:'zombie',name:'Zombie bear',price:1000,desc:'Hungry for more than snacks.',pal:{b:'#6b7a5a',far:'#4a5640',l:'#8a9a76',k:'#1a1a14',zombie:1}},
  {id:'spirit',name:'Spirit bear',price:1300,lvl:5,desc:'Rare, glowing, and mysterious.',pal:{b:'#efe6cf',far:'#d4c8a8',l:'#f7efd8',k:'#2a2420',spirit:1}},
- {id:'robo',name:'Robo bear',price:1800,lvl:10,desc:'Model B-34R. Runs on hikers.',pal:{b:'#8a929a',far:'#5a6068',l:'#b8c0c8',k:'#1a1d22',robo:1}}
+ {id:'robo',name:'Robo bear',price:1800,lvl:10,desc:'Model B-34R. Runs on hikers.',pal:{b:'#8a929a',far:'#5a6068',l:'#b8c0c8',k:'#1a1d22',robo:1}},
+ {id:'yeti',name:'Yeti',price:0,secret:'up_summit',desc:'Secret. Earned at 14,505 ft. Not technically a bear.',pal:{b:'#eef3f6',far:'#c6d3dd',l:'#6f8fa8',k:'#141c24',yeti:1}}
 ];
 const BEAR_UPS=[
  {id:'bl_lungs',name:'Big lungs',desc:'More stamina, so you can charge more often.',max:2,prices:[300,600]},
@@ -942,7 +943,7 @@ const BIOMES=[
  {name:'Above the Clouds',sky:['#2b4c9a','#6a86c8','#e8b8c8','#ffd8a8'],far:'#ffffff',mid:'#eef2f8',midT:'#dfe6f0',near:'#c8d0dc',nearT:'#aab6c6',trees:0,
   dirt:'#5e6270',edge:'#454956',grass:'#f2f5fa',grass2:'#cfd8e4',speck:'#4d515c',speck2:'#7c8290',tuft:'#ffffff',falls:0}
 ];
-const UP_BASE=5200,UP_FT=2.6,UP_CAMPS=[{ft:7000,n:'Camp 1',c:'#e0702b'},{ft:9000,n:'Camp 2',c:'#3a8fd0'},{ft:11000,n:'Camp 3',c:'#e0b83a'},{ft:13000,n:'High Camp',c:'#8a4ad0'},{ft:14505,n:'The Summit',c:'#d83a3a',summit:1}];
+const UP_BASE=5200,UP_FT=2.1,UP_CAMPS=[{ft:7000,n:'Camp 1',c:'#e0702b'},{ft:9000,n:'Camp 2',c:'#3a8fd0'},{ft:11000,n:'Camp 3',c:'#e0b83a'},{ft:13000,n:'High Camp',c:'#8a4ad0'},{ft:14505,n:'The Summit',c:'#d83a3a',summit:1}];
 const upAlt=y=>UP_BASE+(GY-y)*UP_FT;
 const YETI_PAL={b:'#e9eff3',far:'#b9c7d2',l:'#86a4bc',k:'#1a2430'};
 function mixHex(a,b,t){
@@ -1056,7 +1057,7 @@ function upUpdate(dt){
   if(S.banner){S.banner.t+=dt;if(S.banner.t>3.4)S.banner=null}
   const lx=S.dist+LX;
   for(const c of S.upCamps){if(c.done){c.t+=dt;continue}if(lx<c.x+(UP_CAMPS[c.i].summit?6:46)||S.dead)continue;c.done=true;const C=UP_CAMPS[c.i];
-    if(C.summit){S.summited=true;S.upBonus+=1000;S.banner={s:'SUMMIT!',sub:'14,505 ft  +1000',t:0,big:1};S.slowT=1.1;SFX.win();setTimeout(()=>SFX.win(),450);buzz(40);S.shake=4;markSeen('summit');unlockBadge('up_summit');if(S.crew.length>=4)unlockBadge('up_rope');
+    if(C.summit){S.summited=true;S.upBonus+=1000;S.banner={s:'SUMMIT!',sub:'14,505 ft  +1000',t:0,big:1};S.slowT=1.1;SFX.win();setTimeout(()=>SFX.win(),450);buzz(40);S.shake=4;markSeen('summit');{const first=!badges.up_summit;unlockBadge('up_summit');if(first)setTimeout(()=>toast('Secret bear skin unlocked: the Yeti!'),4600)}if(S.crew.length>=4)unlockBadge('up_rope');
       for(let i=0;i<40;i++)S.parts.push({x:c.x+30,y:c.gy-40,vx:(Math.random()-.5)*260,vy:-120-Math.random()*200,life:1.4,c:['#d83a3a','#ffd166','#3a8fd0','#9fd67a','#fff3dc'][i%5],s:2,g:1});
       setTimeout(()=>{if(S&&mode==='play'&&!S.dead){say('Wait... it keeps going?',LX+30,GY-60,'#fff3dc');toast('Beyond the Summit')}},2600)}
     else{S.upBonus+=250;S.banner={s:C.n.toUpperCase(),sub:C.ft.toLocaleString()+' ft  +250',t:0};SFX.win();buzz(20);markSeen('camp');S.mood=Math.min(100,S.mood+25);S.boost=Math.max(S.boost,1.4);
@@ -1925,6 +1926,7 @@ function drawYetiSleep(g,x,y,t,flip,peek){
 function drawBear(g,x,y,t,open,air){
   x=Math.round(x);y=Math.round(y);
   const P0=BPAL||bearSkin().pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ph=Math.floor(t*10)%2;
+  if(P0.yeti){drawYeti(g,x,y,t,open,air);return}
   const off=air?[0,0,0,0]:(ph?[-1,1,1,-1]:[1,-1,-1,1]),lh=air?5:8;
   [[x-32,0,far],[x-17,1,far]].forEach(([lx,i,c])=>{px(g,c,lx+off[i],y-lh,4,lh);px(g,k,lx+off[i],y-1,5,1)});
   px(g,b,x-34,y-22,24,14);px(g,b,x-29,y-25,13,3);px(g,b,x-35,y-20,1,10);px(g,far,x-33,y-9,22,1);
@@ -1989,6 +1991,7 @@ function drawHikerBack(g,c,x,y,wide){
 function drawBearSleep(g,x,y,t,flip,peek){
   x=Math.round(x);y=Math.round(y);
   const P0=BPAL||bearSkin().pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ax=x-23;
+  if(P0.yeti){drawYetiSleep(g,x,y,t,flip,peek);return}
   g.save();if(flip){g.translate(ax*2,0);g.scale(-1,1)}
   const br=Math.sin(t*1.7)>0?1:0;
   if(!PXC){g.globalAlpha=.28;px(g,'#000',x-47,y-1,49,2);g.globalAlpha=1}
@@ -4165,6 +4168,7 @@ function renderBearShop(up){
   pv.append(cv2,el('h3',null,'Your bear: '+bearSkin().name));up.appendChild(pv);
   up.appendChild(el('div','shopsec','Skins'));
   for(const sk of BEAR_SKINS){
+    if(sk.secret&&!badges[sk.secret])continue;
     const has=sk.price===0||owned['bskin_'+sk.id],on=bearSkin().id===sk.id,locked=!has&&sk.lvl&&level()<sk.lvl;
     const row=el('div','up');row.appendChild(el('h3',null,sk.name));const b=el('button','btn');b.type='button';
     if(on)b.textContent='Wearing';else if(has)b.textContent='Wear';else if(locked)b.textContent='Lv '+sk.lvl;else{b.appendChild(coneIcon());b.appendChild(document.createTextNode(String(sk.price)))}
