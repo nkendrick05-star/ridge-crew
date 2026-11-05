@@ -887,7 +887,7 @@ function genCore(){
         if(late&&Math.random()<.22){const hx=x0+len*.6,kind=pick(['puddle','puddle','sprinkler','ranger']);if(!S.obs.some(o=>Math.abs(o.x-hx)<50))S.obs.push({type:kind,x:hx,w:kind==='puddle'?30:kind==='ranger'?10:8,h:kind==='puddle'?2:kind==='ranger'?0:4,hit:false,gy:segY(seg,hx),vx:0})}
       }
       if(S.mode!=='bear'&&Math.random()<.16+.07*(ups.snack||0))S.items.push({k:'mix',x:x0+len*.55,y:segY(seg,x0+len*.55)-44,got:false});
-      if(S.mode==='bear'&&!S.demo&&len>60){if(Math.random()<.5)S.items.push({k:'berry',x:x0+len*.3,y:segY(seg,x0+len*.3)-7,got:false});if(Math.random()<.2)S.items.push({k:'honey',x:x0+len*.72,y:segY(seg,x0+len*.72)-48,gy:segY(seg,x0+len*.72),got:false})}
+      if(S.mode==='bear'&&!S.demo&&len>60){if(Math.random()<.5)S.items.push({k:'berry',x:x0+len*.3,y:segY(seg,x0+len*.3)-7,got:false});if(Math.random()<.2){const hv={k:'honey',x:x0+len*.72,y:segY(seg,x0+len*.72)-48,gy:segY(seg,x0+len*.72),got:false};S.items.push(hv);(S.htrees||(S.htrees=[])).push(hv)}}
       if(S.mode==='fire'&&S.ff==='ride'&&late&&Math.random()<.12){const ix=x0+len*.45;S.items.push({k:pick(['roar','leap','hitch']),x:ix,y:segY(seg,ix)-30,got:false})}
       if(late&&S.mode!=='bear'&&Math.random()<.11){const k=pick(['bar','coffee','whistle']),ix=x0+len*.3;S.items.push({k,x:ix,y:segY(seg,ix)-34,got:false})}
     }
@@ -2438,7 +2438,7 @@ function drawHoneyTree(it,hx){
   if(PXC)return;
   /* root flare */
   px(ctx,P2.t,tx-6,gy-2,13,2);px(ctx,P2.td,tx-8,gy-1,4,1);px(ctx,P2.td,tx+5,gy-1,4,1);
-  /* the branch the hive hangs from, sloping gently up toward the tip */
+  /* the branch the hive hangs from, sloping gently up toward the tip (it stays after the hive is grabbed) */
   const by=hy-12,len=hx+5-tx;
   for(let k=0;k<=len;k++){const y=by+Math.round((1-k/len)*3),th=k<len*.5?3:2;px(ctx,P2.t,tx+k,y,1,th);px(ctx,P2.tl,tx+k,y,1,1);px(ctx,P2.td,tx+k,y+th-1,1,1)}
   px(ctx,P2.t,tx+Math.round(len*.55),by-2,1,2);px(ctx,P2.t,tx+Math.round(len*.55)+1,by-4,1,2);
@@ -2623,7 +2623,7 @@ function render(){
   drawGround(d,bottom);
   if(S.mode==='fire'&&S.ff==='lava'&&!S.demo){drawZip(d);drawAnchors(d)}
   if(S.mode==='fire'&&!S.demo){for(const a of S.fleers)drawFleer(a,d);for(const e of S.emberFx){const k=Math.min(1,e.t/.9),x=Math.round(e.x-d-(1-k)*120),y=Math.round(e.g-(1-k)*(1-k)*140);px(ctx,'#ffd166',x,y,2,2);ctx.globalAlpha=.5;px(ctx,'#ff6a2a',x-3,y-2,2,1);ctx.globalAlpha=1}}
-  if(S.mode==='bear')for(const it of S.items)if(it.k==='honey'&&it.gy!=null)drawHoneyTree(it,Math.round(it.x-d));
+  if(S.mode==='bear'&&S.htrees){S.htrees=S.htrees.filter(it=>it.x>d-120);for(const it of S.htrees)drawHoneyTree(it,Math.round(it.x-d))}
   for(const o of S.obs){const x=Math.round(o.x-d),t=Math.round(o.gy)-o.h;if(x>W+4||x+o.w<-4)continue;if(o.smashed){o.smashed+=1/60;if(o.smashed<.8){ctx.globalAlpha=1-o.smashed;outlined(ctx,()=>drawObstacle(o,Math.round(x+o.smashed*120),Math.round(o.gy-o.h-o.smashed*60)));ctx.globalAlpha=1}continue}
   if(o.type==='branch'){outlined(ctx,()=>drawBranch(o,x));continue}if(o.type==='puddle'){drawPuddle(o,x);continue}if(o.type==='sprinkler'||o.type==='ranger'){drawWaterHazard(o,x);continue}if(!o.burnable&&o.type==='falltree'){drawFallTree(o,x);continue}if(!o.burnable&&o.type==='spot'){drawSpot(o,x);continue}if(o.burnable){outlined(ctx,()=>drawBurnable(o,x,S.t));continue}outlined(ctx,()=>drawObstacle(o,x,t))}
   for(const it of S.items){const x=it.x-d,y=it.y+(it.k==='honey'?Math.sin(S.t*2+it.x)*.5:Math.sin(S.t*4+it.x*.1)*1.5);if(x<-10||x>W+10)continue;if(it.k!=='cone'&&it.k!=='mix')drawItem(it,x,y);outlined(ctx,()=>drawItem(it,x,y))}
