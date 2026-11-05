@@ -149,7 +149,10 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .me{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;background:var(--panel2);border:2px solid var(--line);border-radius:var(--r);padding:6px 8px 6px 14px;font-size:.9rem;color:var(--muted)}
 .me b{color:var(--cream);font-family:var(--display);font-size:1.05rem}
 .linkbtn{background:none;border:0;color:var(--amber);font:700 .95rem var(--display);cursor:pointer;padding:6px 8px}
-.ranks{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.ranks{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden;padding-bottom:10px}
+.mybest{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex:none;padding:9px 12px;border:2px solid var(--amber);border-radius:12px;background:var(--panel2)}
+.mybest b{font:700 .95rem var(--display);color:var(--amber)}
+.mybest span{color:var(--muted);font-size:.8rem;white-space:nowrap}
 .rank{display:grid;grid-template-columns:28px 30px minmax(0,1fr) auto;align-items:center;gap:10px;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:4px 14px 4px 8px;flex:none;height:46px}
 .rank .no{font:700 1.1rem var(--display);color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
 .rank.top .no{color:var(--amber)}
@@ -777,7 +780,6 @@ const MODES=[
  {id:'uphill',name:'Endless Uphill',desc:'The trail only climbs, and it keeps getting steeper.'},
  {id:'solo',name:'Solo Hike',desc:'No crew behind you. One hit ends it, but pinecones count double.'},
  {id:'bear',name:'Bear Mode',desc:'You are the bear. Catch all five before they get away.'},
- {id:'daily',name:'Daily Fire',desc:'Same Forest Fire version and the same trail for everyone today. Beat the crew!'},
  {id:'fire',name:'Forest Fire',desc:'Pure chaos, and different every run: you ARE the fire, the floor is lava, or the crew rides the bear.'}
 ];
 let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}catch(e){}
@@ -789,7 +791,7 @@ const CHAT_GEN=['How much farther?','My legs are cooked.','Anyone else hear that
 const CHAT={patch:['Sam knows a shortcut.','Trust me on this one.'],curly:['I can see the summit.','Long legs, no problem.'],camo:["Tank's feeling good.",'Heavy pack, strong back.'],stache:['Stache stays fresh.','Who moved the trail?'],nathan:["Let's GO boys!",'Hype check!']};
 const GRUMPY=['I want to go home.','Whose idea was this?','My feet hate me.','Nobody talk to me.'];
 function newRun(leaderId,demo,rm){
-  rm=demo?'classic':(rm||'classic');let daily=false;if(rm==='daily'){rm='fire';daily=true}
+  rm=demo?'classic':(rm||'classic');
   const leader=byId(leaderId),set=demo?null:setOf(leaderId);
   const s={leader,demo,mode:rm,set:set?set.id:null,crew:(rm==='solo'||rm==='bear')?[]:CHARS.filter(c=>c.id!==leaderId),lost:[],sitters:[],dist:0,y:GY,vy:0,grounded:true,
     jumps:0,coy:0,buf:0,invuln:0,shield:(leader.id==='camo'||ups.boots||(set&&set.id==='ranger'))?1:0,shieldAt:0,cones:0,
@@ -800,7 +802,7 @@ function newRun(leaderId,demo,rm){
     prey:null,gapX:0,chomps:0,stun:0,win:false,fireBack:200,crackT:0,ff:null,heat:100,combo:0,lastBurn:-9,bestCombo:0,burned:0,burnPts:0,water:[],waterIn:3.5,trail:[],dodged:0,splashes:0,anchors:[],anX:null,swing:null,hold:false,swings:0,grabCD:0,duckT:0,tail:null,drag:[],emberFx:[],fleers:[],hopTree:null,hopPrev:null,hopT:0,lean:0,lastKnock:0,hitch:false,squirrel:false,mooseT:0,leap:false,swimming:false,lakeX:0,lakeDone:false,winT:-1,rafts:[],shrooms:[],erupts:[],chain:null,chainOn:false,raft:null,flip:null,air:null,pantsT:0,burnTypes:{},infernoT:0,ring:null,mallows:[],rainCloud:null,cloudIn:20,plane:null,smokeB:null,cool:0,spin:null,flips:0,ducked:0,lastMeter:0};
   if(rm==='night')s.ev={type:'night',t:5,dur:1e12};
   if(rm==='bear'){s.prey=CHARS.slice();s.gapX=80}
-  if(rm==='fire'){s.fartIn=1e12;LAVA_Y=GY+18;s.daily=daily;if(daily){s.day=utcDay();s.rngS=dailySeed(s.day)}s.ff=daily?dailyFF(s.day):(typeof window!=='undefined'&&window.__FF)||pick(['blaze','lava','ride']);s.fireBack=s.ff==='blaze'?400:96}
+  if(rm==='fire'){s.fartIn=1e12;LAVA_Y=GY+18;s.ff=(typeof window!=='undefined'&&window.__FF)||pick(['blaze','lava','ride']);s.fireBack=s.ff==='blaze'?400:96}
   S=s;gen();
   if(rm==='fire'&&!demo){S.spin={t:0,dur:2.2,final:S.ff,last:-1}}
   return s;
@@ -1312,7 +1314,7 @@ function drawFFOverlay(){
   if(S.spin){const sp=S.spin,u=Math.min(1,sp.t/sp.dur),names=['blaze','lava','ride'],fi=names.indexOf(sp.final),total=15+fi,pos=total*(1-Math.pow(1-u,3)),idx=Math.floor(pos)%3,fr=pos-Math.floor(pos);
     const bw=Math.min(W-30,200),bx=Math.round(W/2-bw/2),by=Math.round(GY+oy-120);
     ctx.fillStyle='rgba(20,14,10,.82)';ctx.fillRect(bx,by,bw,64);ctx.strokeStyle='#f2a541';ctx.lineWidth=2;ctx.strokeRect(bx+.5,by+.5,bw-1,63);
-    ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 10px "Pixelify Sans", monospace';ctx.fillStyle='#ffb347';ctx.fillText(S.daily?'DAILY FIRE':'FOREST FIRE',W/2,by+11);
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 10px "Pixelify Sans", monospace';ctx.fillStyle='#ffb347';ctx.fillText('FOREST FIRE',W/2,by+11);
     ctx.save();ctx.beginPath();ctx.rect(bx+6,by+20,bw-12,36);ctx.clip();ctx.font='700 13px "Pixelify Sans", monospace';
     for(const o of [-1,0,1]){const n=names[(idx+o+3)%3],yy=by+38+(o-fr*(u<1?1:0))*20;ctx.fillStyle=o===0?'#fff3dc':'rgba(255,243,220,.4)';ctx.fillText(FF_INFO[n].name,W/2,yy)}
     ctx.restore();if(u>=1){ctx.strokeStyle='#ffd166';ctx.strokeRect(bx+6.5,by+27.5,bw-13,21)}
@@ -1833,13 +1835,8 @@ function pzCrewPee(list,x0,sp,fyFn,iyFn,opts){
   });
   return flow;
 }
-/* ---------- daily fire ---------- */
-const utcDay=()=>new Date().toISOString().slice(0,10);
-function dailySeed(day){return (parseInt(day.replace(/-/g,''),10)*2654435761)>>>0}
-function dailyFF(day){return ['blaze','lava','ride'][dailySeed(day)%3]}
-function dailyRand(){S.rngS=(S.rngS+0x6D2B79F5)>>>0;let t=S.rngS;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}
-function seeded(fn){if(S&&S.daily&&!S.demo&&Math.random!==dailyRand){const r0=Math.random;Math.random=dailyRand;try{fn()}finally{Math.random=r0}}else fn()}
-const dailyOf=r=>r.dailyDay!=null?{day:r.dailyDay,score:r.dailyScore||0,ff:r.dailyFF}:(r.daily||{});
+/* map generation helper (Daily Fire seeding was removed) */
+function seeded(fn){fn()}
 /* ---------- extra fire pee scenes ---------- */
 function peeBlazeCabin(t,ly){
   const cx=Math.round(W*.46),cw=110,chh=46,x0c=cx-cw/2,top=ly-chh;
@@ -2116,7 +2113,7 @@ function update(dt){
   S.shake=Math.max(0,S.shake-dt*20);S.flash=Math.max(0,S.flash-dt*2);
   updateParts(dt);
   if(S.bubble){S.bubble.t+=dt;if(S.bubble.t>2.6)S.bubble=null}
-  if(S.spin&&!S.dead){S.spin.t+=dt;if(S.spin.t>=S.spin.dur+.45){S.spin=null;SFX.win();markSeen('ff_'+S.ff);if(S.daily)markSeen('ff_daily');S.texts.push({s:FF_INFO[S.ff].name+'!',x:LX+80,y:GY-78,t:-1.6,color:'#ffb347'});S.texts.push({s:FF_INFO[S.ff].intro(S.leader),x:LX+80,y:GY-60,t:-1.6,color:'#fff3dc'});SFX.setFFM(S.ff)}return}
+  if(S.spin&&!S.dead){S.spin.t+=dt;if(S.spin.t>=S.spin.dur+.45){S.spin=null;SFX.win();markSeen('ff_'+S.ff);S.texts.push({s:FF_INFO[S.ff].name+'!',x:LX+80,y:GY-78,t:-1.6,color:'#ffb347'});S.texts.push({s:FF_INFO[S.ff].intro(S.leader),x:LX+80,y:GY-60,t:-1.6,color:'#fff3dc'});SFX.setFFM(S.ff)}return}
   if(S.dead){
     S.deadT+=dt;
     if(!S.grounded&&S.y<S.lastGY+200){S.vy+=G*dt;S.y+=S.vy*dt}
@@ -2969,7 +2966,6 @@ const BADGES=[
  {id:'skunk',ic:'P.U.',name:'Skunked',desc:'Run into a skunk'},
  {id:'squad',ic:'5/5',name:'Full Squad',desc:'Reach 800 m with all five in line'},
  {id:'drip',ic:'FIT',name:'Drip Check',desc:'Own 5 pieces of gear'},
- {id:'ff_daily',ic:'DAY',name:'Daily Grind',desc:'Finish a Daily Fire run'},
  {id:'ff_combo9',ic:'x9',name:'Pyromaniac',desc:'Hit a x9 burn combo'},
  {id:'ff_kaboom',ic:'BOOM',name:'Chain Reaction',desc:'Set off 3 big explosions in one run'},
  {id:'ff_climb',ic:'UP',name:'Rope Climber',desc:'Climb all the way up a rope'},
@@ -3076,8 +3072,8 @@ const ACC={id:null,code:null};try{ACC.id=localStorage.getItem('rc_pid');ACC.code
 const LB={rows:[],state:'loading',uid:ACC.id,noWrite:false,user:null};
 async function refreshBoard(){
   try{
-    const rows=await sb('/rest/v1/scores?select=player_id,name,who,best,best_m,runs,eaten,farts,farts_by,lvl,daily_day,daily_score,daily_ff&order=best.desc&limit=80');
-    const all=(rows||[]).map(r=>({id:r.player_id,name:r.name,who:r.who,best:r.best,bestM:r.best_m,runs:r.runs,eaten:r.eaten,farts:r.farts,fartsBy:r.farts_by||{},lvl:r.lvl,dailyDay:r.daily_day,dailyScore:r.daily_score,dailyFF:r.daily_ff}));LB.all=all;LB.rows=all.filter(r=>(r.best||0)>0).slice(0,50);LB.state='ok';
+    const rows=await sb('/rest/v1/scores?select=player_id,name,who,best,best_m,runs,eaten,farts,farts_by,lvl,mode_best&order=best.desc&limit=80');
+    const all=(rows||[]).map(r=>({id:r.player_id,name:r.name,who:r.who,best:r.best,bestM:r.best_m,runs:r.runs,eaten:r.eaten,farts:r.farts,fartsBy:r.farts_by||{},lvl:r.lvl,modes:r.mode_best||{}}));LB.all=all;LB.rows=all.filter(r=>(r.best||0)>0).slice(0,50);LB.state='ok';
   }catch(e){if(LB.state!=='ok')LB.state='off'}
   renderRanks();
 }
@@ -3099,7 +3095,8 @@ async function submitScore(sc,meters,eaten){
     refreshBoard();
   }catch(e){}
 }
-async function submitDaily(sc){try{await ensurePlayer();await rpc('rc_submit_daily',{p_code:ACC.code,p_day:S.day,p_score:sc,p_ff:S.ff});refreshBoard()}catch(e){}}
+async function submitModes(m){try{await ensurePlayer();await rpc('rc_submit_modes',{p_code:ACC.code,p_modes:m});refreshBoard()}catch(e){}}
+setTimeout(()=>{if(ACC.code){const m=boardModes();if(Object.keys(m).length)submitModes(m)}},2500);
 function pushName(){if(ACC.code)rpc('rc_set_name',{p_code:ACC.code,p_name:myName||'',p_who:myWho||''}).then(refreshBoard).catch(()=>{})}
 const SYNC_KEYS=['rc_wallet','rc_owned','rc_equip','rc_ups','rc_xp','rc_badges','rc_missions','rc_journal','rc_life','rc_modebest','rc_best','rc_sel','rc_mode','rc_tut','rc_me','rc_name','rc_mute'];
 let pushT=null;
@@ -3172,7 +3169,6 @@ const JOURNAL=[
  {id:'ff_blaze',ic:'HT',name:'Human Torch',desc:'Burn everything. Avoid water.',g:'fire'},
  {id:'ff_lava',ic:'LF',name:'Lava Floor',desc:'Hold to climb, let go to fling.',g:'fire'},
  {id:'ff_ride',ic:'BX',name:'Bear Express',desc:'One bear, five riders.',g:'fire'},
- {id:'ff_daily',ic:'DF',name:'Daily Fire',desc:'Same trail for everyone today.',g:'fire'},
  {id:'ff_bomber',ic:'WB',name:'Water Bomber',desc:'Soaks the whole trail.',g:'fire'},
  {id:'ff_timber',ic:'TM',name:'Falling Tree',desc:'Watch for the shadow.',g:'fire'},
  {id:'ff_smoke',ic:'SM',name:'Smoke Bank',desc:'Cannot see a thing.',g:'fire'},
@@ -3388,7 +3384,6 @@ function showModes(){
     const b=el('button','modebtn');b.type='button';b.setAttribute('aria-pressed',String(m.id===runMode));
     const t=el('div');t.append(el('b',null,m.name),el('span',null,m.desc));b.appendChild(t);
     if(m.id==='fire'){const parts=[['blaze','Fire'],['lava','Lava'],['ride','Bear']].filter(([k])=>modeBest['fire_'+k]).map(([k,n])=>n+' '+modeBest['fire_'+k].toLocaleString());if(parts.length)b.appendChild(el('i',null,'Best: '+parts.join(' \u00b7 ')))}
-    else if(m.id==='daily'){const dd=utcDay(),db2=modeBest['daily_'+dd];b.appendChild(el('i',null,'Today: '+FF_INFO[dailyFF(dd)].name+(db2?'  \u00b7  Your best '+db2.toLocaleString():'')))}
     else if(modeBest[m.id])b.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
     b.addEventListener('click',()=>{runMode=m.id;save('rc_mode',m.id);showHome()});box.appendChild(b);
   }
@@ -3410,7 +3405,7 @@ function showOver(){
   (S.dtype==='bearwin'||S.dtype==='lake')?SFX.win():SFX.lose();
   const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode;
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
-  if(S.daily){unlockBadge('ff_daily');const dk='daily_'+S.day;if(sc>(modeBest[dk]||0)){modeBest[dk]=sc;save('rc_modebest',JSON.stringify(modeBest))}submitDaily(sc)}
+  if(!S.demo){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode;if(BOARDS.some(b=>b[0]===bk))submitModes({[bk]:sc})}
   if(S.mode==='fire'){ffPlayed[S.ff]=1;save('rc_ffplayed',JSON.stringify(ffPlayed));if(ffPlayed.blaze&&ffPlayed.lava&&ffPlayed.ride)unlockBadge('ff_all')}
   if(S.mode==='classic'&&sc>best){best=sc;save('rc_best',String(best))}
   const gained=S.cones-S.banked;wallet+=gained;S.banked=S.cones;
@@ -3428,7 +3423,7 @@ function showOver(){
   else if(S.mode==='fire'){chip('still holding on',1+S.crew.length+S.drag.length);chip('branches',S.ducked);chip('jumps',S.stats.jumps);chip('version','Bear ride')}
   else if(S.mode==='bear'){chip('chomped',S.chomps+'/5');chip('jumps',S.stats.jumps);chip('obstacles',S.stats.clears);chip('biome',top?top[0].split(' ')[0]:'Pine')}
   else{chip('jumps',S.stats.jumps);chip('no bears',S.saved);chip('close calls',S.stats.near);chip('top biome',top?top[0].split(' ')[0]:'Pine')}
-  $('bestLine').textContent=(isBest?'New '+(S.mode==='classic'?'':S.daily?'Daily Fire ':S.mode==='fire'?FF_INFO[S.ff].name+' ':MODES.find(m=>m.id===S.mode).name+' ')+'best!':'Best: '+prevMode.toLocaleString())+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
+  $('bestLine').textContent=(isBest?'New '+(S.mode==='classic'?'':S.mode==='fire'?FF_INFO[S.ff].name+' ':MODES.find(m=>m.id===S.mode).name+' ')+'best!':'Best: '+prevMode.toLocaleString())+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
   $('bankLine').textContent='+'+gained+' pinecones, +'+res.gain+' XP. You have '+wallet+' pinecones.';
   const cost=100,can=S.mode!=='bear'&&S.mode!=='fire'&&S.revives===0&&S.dtype!=='bearwin';
   $('secondBtn').hidden=!can;$('secondBtn').textContent='Second chance (100)';$('secondBtn').disabled=wallet<cost;
@@ -3526,7 +3521,7 @@ function showWho(next){
     box.appendChild(b);
   }
 }
-let rankTab='all';
+let rankTab='classic';
 function showRanks(){mode='menu';screen('ranksScr');renderRanks()}
 let rankSeq=0;
 async function renderRanks(){
@@ -3540,19 +3535,22 @@ async function renderRanks(){
   if(LB.state==='loading')return msg('Loading the crew board...');
   if(LB.state==='slow')return msg("Can't reach the leaderboard right now. Your scores still save on this phone.");
   if(LB.state==='off')return msg("Can't reach the crew board right now. Check your connection. Your progress still saves on this phone.");
-  let tabs=$('rankTabs');if(!tabs){tabs=el('div','cats');tabs.id='rankTabs';tabs.style.cssText='display:flex;gap:6px;margin:4px 0 6px';$('rankList').parentNode.insertBefore(tabs,$('shame'))}
-  tabs.innerHTML='';for(const [id,label] of [['all','All-time'],['daily','Daily Fire']]){const b=el('button','cat',label);b.type='button';b.setAttribute('aria-selected',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;renderRanks()});tabs.appendChild(b)}
-  if(rankTab==='daily'){
-    shame.hidden=true;const today=utcDay(),drows=(LB.all||LB.rows).filter(r=>{const d=dailyOf(r);return d.day===today&&(d.score||0)>0}).sort((a,b)=>dailyOf(b).score-dailyOf(a).score);
-    list.innerHTML='';list.appendChild(el('div','empty',"Today's Daily Fire: "+FF_INFO[dailyFF(today)].name));
-    if(!drows.length){list.appendChild(el('div','empty','No Daily Fire scores yet today. Be the first!'));return}
-    drows.slice(0,Math.max(3,Math.floor((list.clientHeight+6)/52)-1)).forEach((r,i)=>{const row=el('div','rank'+(r.id===LB.uid?' mine':'')+(i<3?' top':''));row.appendChild(el('span','no',String(i+1)));
-      const c=r.who&&byId(r.who);if(c)row.appendChild(portrait(c,1));else{const d=el('span','dot');d.style.background='#e0702b';row.appendChild(d)}
-      const n=el('div','nm');n.append(el('b',null,(c?nm(c):(r.name||'Someone'))+(r.id===LB.uid?' (you)':'')),el('span',null,FF_INFO[dailyOf(r).ff]?FF_INFO[dailyOf(r).ff].name:'Daily Fire'));
-      row.append(n,el('span','sc',String(dailyOf(r).score)));list.appendChild(row)});
-    return;
+  let tabs=$('rankTabs');if(!tabs){tabs=el('div','cats');tabs.id='rankTabs';tabs.style.cssText='display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:4px 0 6px';$('rankList').parentNode.insertBefore(tabs,$('shame'))}
+  tabs.innerHTML='';for(const [id,label] of BOARDS){const b=el('button','cat',label);b.type='button';b.style.cssText='flex:none;padding:8px 12px;white-space:nowrap';b.setAttribute('aria-selected',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;renderRanks()});tabs.appendChild(b)}
+  {const on=tabs.querySelector('[aria-selected="true"]');if(on)tabs.scrollLeft=Math.max(0,on.offsetLeft-tabs.offsetLeft-40)}
+  list.style.overflowY='auto';list.style.overscrollBehavior='contain';
+  const bval=r=>rankTab==='classic'?(r.best||0):((r.modes||{})[rankTab]||0);
+  const brows=(LB.all||LB.rows).filter(r=>bval(r)>0).sort((a,b)=>bval(b)-bval(a)).map((r,i)=>Object.assign({rank:i+1,sc:bval(r)},r));
+  const meR=brows.find(r=>r.id===LB.uid),myB=Math.max(meR?meR.sc:0,boardModes()[rankTab]||0),lbl=BOARDS.find(b=>b[0]===rankTab)[1];
+  const sum=el('div','mybest');sum.append(el('b',null,myB?'Your best: '+myB.toLocaleString():"You haven't played "+lbl+' yet'),el('span',null,meR?'#'+meR.rank+' of '+brows.length:brows.length?brows.length+' on the board':'Nobody yet. Be first!'));
+  const centerMine=()=>{const m=list.querySelector('.mine');if(m)list.scrollTop=Math.max(0,m.offsetTop-list.offsetTop-list.clientHeight/2)};
+  if(rankTab!=='classic'){
+    shame.hidden=true;const ps=await boardPs(brows.map(r=>r.id));if(seq!==rankSeq||$('ranksScr').hidden)return;
+    list.innerHTML='';list.appendChild(sum);
+    for(const r of brows)rankRow(list,r,ps,r.sc,'Lv '+(r.lvl||1),[]);
+    centerMine();return;
   }
-  if(!LB.rows.length)return msg('No scores yet. Finish a Classic run to get on the board.');
+  if(!brows.length){list.innerHTML='';list.appendChild(sum);shame.hidden=true;return}
   const agg={};for(const r of LB.rows)for(const k in (r.fartsBy||{}))agg[k]=(agg[k]||0)+(r.fartsBy[k]||0);
   const worst=Object.entries(agg).sort((a,b)=>b[1]-a[1])[0];
   if(worst&&worst[1]>0&&byId(worst[0])){shame.hidden=false;shame.textContent='Hall of shame: '+nm(byId(worst[0]))+' has ripped '+worst[1]+' on the trail.'}else shame.hidden=true;
@@ -3560,21 +3558,20 @@ async function renderRanks(){
   topBy('eaten','Most Eaten');topBy('farts','Iron Gut');topBy('runs','Grinder');topBy('lvl','Veteran');
   const ps={};await null;
   if(seq!==rankSeq||$('ranksScr').hidden)return;
-  list.innerHTML='';
-  const fit=Math.max(3,Math.floor((list.clientHeight+6)/52));
-  const rows=LB.rows.map((r,i)=>Object.assign({rank:i+1},r));
-  let show=rows.slice(0,fit);const mine=rows.find(r=>r.id===LB.uid);
-  if(mine&&!show.includes(mine)){show=rows.slice(0,fit-1);show.push(mine)}
-  for(const r of show){
-    const row=el('div','rank'+(r.id===LB.uid?' mine':'')+(r.rank<=3?' top':''));
-    row.appendChild(el('span','no',String(r.rank)));
-    const c=r.who&&byId(r.who),p=ps[r.id];
-    if(c)row.appendChild(portrait(c,1));else{const d=el('span','dot');d.style.background=['#e0702b','#2a9d8f','#6d4bb0','#d8b23a','#3a6cc0'][(r.id||'').charCodeAt(0)%5||0];row.appendChild(d)}
-    const n=el('div','nm'),nb=el('b',null,(c?nm(c):(r.name||'Someone'))+(r.id===LB.uid?' (you)':''));
-    for(const t of (titles[r.id]||[]))nb.appendChild(el('em','ttl',t));
-    n.append(nb,el('span',null,(r.bestM||0)+' m best · Lv '+(r.lvl||1)+' · eaten '+(r.eaten||0)+'x'));
-    row.append(n,el('span','sc',String(r.best||0)));list.appendChild(row);
-  }
+  list.innerHTML='';list.appendChild(sum);
+  for(const r of brows)rankRow(list,r,ps,r.sc,(r.bestM||0)+' m best · Lv '+(r.lvl||1)+' · eaten '+(r.eaten||0)+'x',titles[r.id]||[]);
+  centerMine();
+}
+const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Uphill'],['solo','Solo'],['bear','Bear Mode'],['fire_blaze','Human Torch'],['fire_lava','Lava Floor'],['fire_ride','Bear Ride']];
+function boardModes(){const m={};for(const [k] of BOARDS){const v=k==='classic'?Math.max(modeBest.classic||0,best||0):(modeBest[k]||0);if(v>0)m[k]=v}return m}
+async function boardPs(ids){try{return LB.user&&LB.user.profiles?(await LB.user.profiles(ids))||{}:{}}catch(e){return {}}}
+function rankRow(list,r,ps,sc,sub,tt){
+  const row=el('div','rank'+(r.id===LB.uid?' mine':'')+(r.rank<=3?' top':''));row.appendChild(el('span','no',String(r.rank)));
+  const c=r.who&&byId(r.who),p=ps[r.id];
+  if(c)row.appendChild(portrait(c,1));else{const d=el('span','dot');d.style.background=(p&&p.color)||['#e0702b','#2a9d8f','#6d4bb0','#d8b23a','#3a6cc0'][(r.id||'').charCodeAt(0)%5||0];row.appendChild(d)}
+  const n=el('div','nm'),nb=el('b',null,(c?nm(c):((p&&p.name)||r.name||'Someone'))+(r.id===LB.uid?' (you)':''));
+  for(const t of tt)nb.appendChild(el('em','ttl',t));
+  n.append(nb,el('span',null,sub));row.append(n,el('span','sc',sc.toLocaleString()));list.appendChild(row);
 }
 /* ---------- goals: missions, badges, journal, stories ---------- */
 let gTab='missions';
