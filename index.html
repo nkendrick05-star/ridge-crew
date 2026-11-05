@@ -2431,16 +2431,21 @@ function drawObstacle(o,x,t){
 }
 /* background tree holding a beehive (you can't run into it, only the hive is a pickup) */
 function drawHoneyTree(it,hx){
-  const gy=Math.round(it.gy),hy=Math.round(it.y),tx=hx-18,top=gy-118,sd=it.x*.013;
-  if(hx<-60||hx>W+60)return;
-  px(ctx,'#3e2c1f',tx,top+30,7,gy-top-30);px(ctx,'#4e3828',tx+1,top+30,2,gy-top-30);px(ctx,'#2e2017',tx+5,top+30,2,gy-top-30);
-  px(ctx,'#3e2c1f',tx-2,gy-3,11,3);px(ctx,'#3e2c1f',tx-3,gy-1,2,1);px(ctx,'#3e2c1f',tx+9,gy-1,3,1);
-  px(ctx,'#3e2c1f',tx+6,hy-12,hx-tx-3,3);px(ctx,'#4e3828',tx+6,hy-12,hx-tx-3,1);px(ctx,'#3e2c1f',hx+2,hy-13,4,2);
-  px(ctx,'#3a6a3e',hx+2,hy-16,5,3);px(ctx,'#2f5a34',hx-2,hy-15,4,2);
-  const blobs=[[0,0,30,22],[-16,8,24,18],[14,10,22,16],[-4,-12,22,16],[6,22,26,14],[-20,24,18,12]];
-  for(let i=0;i<blobs.length;i++){const [ox,oy,w,h]=blobs[i],cx=tx+3+ox+Math.round(Math.sin(sd+i)*2),cy=top+12+oy;
-    for(let r=0;r<h;r++){const k=1-Math.pow((r-h/2)/(h/2),2),ww=Math.round(w*Math.sqrt(Math.max(0,k)));px(ctx,r<h*.35?'#4a7c46':r<h*.7?'#3a6a3e':'#2a5230',cx-(ww>>1),cy-(h>>1)+r,ww,1)}}
-  for(let i=0;i<10;i++)px(ctx,'#5b8e52',tx-16+Math.round(hash(it.x+i)*42),top+2+Math.round(hash(it.x+i*3.1)*40),2,1);
+  if(hx<-70||hx>W+70)return;
+  const gy=Math.round(it.gy),hy=Math.round(it.y),r=hash(it.x*.173),r2=hash(it.x*.311);
+  const w=[64,72,80][Math.floor(r*3)],h=r2<.5?144:160,tx=hx-22-Math.round(r*6),P2=TREE_PAL.live;
+  drawTreeSprite('round',tx,gy,w,h,'live',false);
+  if(PXC)return;
+  /* root flare */
+  px(ctx,P2.t,tx-6,gy-2,13,2);px(ctx,P2.td,tx-8,gy-1,4,1);px(ctx,P2.td,tx+5,gy-1,4,1);
+  /* the branch the hive hangs from, sloping gently up toward the tip */
+  const by=hy-12,len=hx+5-tx;
+  for(let k=0;k<=len;k++){const y=by+Math.round((1-k/len)*3),th=k<len*.5?3:2;px(ctx,P2.t,tx+k,y,1,th);px(ctx,P2.tl,tx+k,y,1,1);px(ctx,P2.td,tx+k,y+th-1,1,1)}
+  px(ctx,P2.t,tx+Math.round(len*.55),by-2,1,2);px(ctx,P2.t,tx+Math.round(len*.55)+1,by-4,1,2);
+  /* leaf clusters on the branch */
+  [[len*.55,-6,6],[len+1,-3,5],[len*.25,-4,4]].forEach(([ox,oy,rr],n)=>{const cx=Math.round(tx+ox),cy=by+oy;
+    for(let yy=-rr+2;yy<=rr-2;yy++){const hw=Math.round(Math.sqrt(rr*rr-yy*yy));px(ctx,yy<0?P2.leafL:yy<2?P2.leafM:P2.leafD,cx-hw,cy+yy,hw*2,1)}
+    px(ctx,P2.leafL,cx-1+n,cy-rr+2,2,1)});
 }
 function drawItem(it,x,y){
   if(it.k==='cone')return drawCone(ctx,x,y);
