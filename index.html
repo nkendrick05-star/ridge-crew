@@ -277,7 +277,7 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .up.crate{border-color:rgba(242,165,65,.5);background:rgba(242,165,65,.08)}
 #cats{display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 #cats::-webkit-scrollbar{display:none}
-#cats .cat{flex:none;padding:9px 12px!important}
+#cats .cat{flex:1 0 auto;padding:9px 12px!important}
 .shopsec{grid-column:1/-1;font:700 .84rem var(--display);color:var(--amber);margin:6px 2px 0;flex:none}
 .crownic{display:inline-block;width:13px;height:9px;margin-right:5px;background:#f2c03a;clip-path:polygon(0 100%,0 15%,25% 55%,50% 0,75% 55%,100% 15%,100% 100%);vertical-align:0}
 #cats .cat{font-size:.74rem;padding:9px 0;letter-spacing:-.02em}
@@ -354,8 +354,8 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
         <button class="btn ghost modepick" id="modeBtn" type="button" aria-label="Change mode">Classic</button>
       </div>
       <div class="dock">
-        <button class="dockbtn" id="dCrew" type="button"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><path d="M15.5 14.5c3 0 5.5 2 5.5 5"/></svg>Crew</button>
-        <button class="dockbtn" id="dShop" type="button"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>Shop</button>
+        <button class="dockbtn" id="dCrew" type="button"><svg viewBox="0 0 24 24"><path d="M10 5.5a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6.9V9"/><path d="M12 9 3 16.5c-.6.5-.3 1.5.5 1.5h17c.8 0 1.1-1 .5-1.5z"/></svg>Closet</button>
+        <button class="dockbtn" id="dShop" type="button"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>Store</button>
         <button class="dockbtn" id="dRanks" type="button"><svg viewBox="0 0 24 24"><path d="M4 20V13h4v7"/><path d="M10 20V8h4v12"/><path d="M16 20v-5h4v5"/></svg>Ranks</button>
         <button class="dockbtn" id="dBadges" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5L7 21l5-2.5 5 2.5-1.5-7.5"/></svg>Goals</button>
       </div>
@@ -376,7 +376,7 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
   <div class="screen full" id="shopScr" hidden>
     <div class="head">
       <button class="back" data-home type="button" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <h2>Trail shop</h2>
+      <h2 id="shopTitle">Camp store</h2>
       <span class="pill"><span class="cone"></span><span id="walletAmt">0</span></span>
     </div>
     <div class="crewstrip" id="crewPick"></div>
@@ -435,7 +435,7 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
         <div class="frow small">
           <button class="btn ghost" data-home type="button">Home</button>
           <button class="btn ghost" id="overRanks" type="button">Ranks</button>
-          <button class="btn ghost" id="overShop" type="button">Shop</button>
+          <button class="btn ghost" id="overShop" type="button">Store</button>
           <button class="btn ghost" id="shareBtn" type="button">Share</button>
         </div>
       </div>
@@ -3767,9 +3767,10 @@ function secondChance(){
   mode='play';screen(null);toast('Second chance. Go!');SFX.win();
 }
 /* ---------- shop ---------- */
-let shopChar=sel,cat='hat';
+let shopChar=sel,cat='pets',shopGroup='game';
+const SHOP_GROUPS={outfit:{title:'Crew closet',cats:['hat','pack','shirt','face','extra']},game:{title:'Camp store',cats:['pets','style','bear','ups','skills']}};
 const CATS=[['hat','Hat'],['pack','Pack'],['shirt','Shirt'],['face','Face'],['extra','Extra'],['pets','Pets'],['style','Style'],['bear','Bear'],['ups','Boost'],['skills','Skill']];
-function showShop(){mode='menu';shopChar=sel;screen('shopScr');renderShop()}
+function showShop(g){shopGroup=g==='outfit'?'outfit':'game';if(!SHOP_GROUPS[shopGroup].cats.includes(cat))cat=SHOP_GROUPS[shopGroup].cats[0];mode='menu';shopChar=sel;screen('shopScr');renderShop()}
 function priceTag(txt,cone){const p=el('span','price');if(cone)p.appendChild(coneIcon());p.appendChild(document.createTextNode(txt));return p}
 function renderBearShop(up){
   const pv=el('div','up bearpv'),cv2=document.createElement('canvas');cv2.width=136;cv2.height=64;cv2.style.cssText='width:136px;height:64px;image-rendering:pixelated';
@@ -3823,12 +3824,13 @@ function openCrate(){
   if(!pool.length){toast('You already own everything!');return}
   wallet-=150;const g=pick(pool);owned[g.it.id]=true;equip[shopChar]=equip[shopChar]||{};equip[shopChar][g.slot]=g.it.id;persist();
   SFX.badge();toast('Crate: '+g.it.name+'! '+nm(byId(shopChar))+' is wearing it.');
-  if(Object.keys(owned).length>=5)unlockBadge('drip');cat=g.slot;renderShop();
+  if(Object.keys(owned).length>=5)unlockBadge('drip');cat=g.slot;shopGroup='outfit';renderShop();
 }
 function renderShop(){
   $('walletAmt').textContent=wallet;const L=level();
   const cs=$('cats');cs.innerHTML='';
-  for(const [id,label] of CATS){const b=el('button','cat',label);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(cat===id));b.addEventListener('click',()=>{cat=id;renderShop()});cs.appendChild(b)}
+  $('shopTitle').textContent=SHOP_GROUPS[shopGroup].title;
+  for(const [id,label] of CATS.filter(([id])=>SHOP_GROUPS[shopGroup].cats.includes(id))){const b=el('button','cat',label);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(cat===id));b.addEventListener('click',()=>{cat=id;renderShop()});cs.appendChild(b)}
   const gear=SLOTS.includes(cat);
   $('crewPick').hidden=!gear;$('shopMain').hidden=!gear;$('upsPane').hidden=gear;
   if(gear){
@@ -3983,9 +3985,9 @@ $('modeBtn').addEventListener('click',showModes);
 $('leadGo').addEventListener('click',start);
 $('again').addEventListener('click',start);
 $('homeLead').addEventListener('click',showLeader);
-$('dCrew').addEventListener('click',showLeader);
-$('dShop').addEventListener('click',showShop);
-$('overShop').addEventListener('click',showShop);
+$('dCrew').addEventListener('click',()=>showShop('outfit'));
+$('dShop').addEventListener('click',()=>showShop('game'));
+$('overShop').addEventListener('click',()=>showShop('game'));
 $('helpBtn').addEventListener('click',()=>screen('howScr'));
 $('dRanks').addEventListener('click',()=>myWho?showRanks():showWho(showRanks));
 $('overRanks').addEventListener('click',()=>myWho?showRanks():showWho(showRanks));
