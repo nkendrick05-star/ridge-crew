@@ -855,7 +855,7 @@ function say(s,lx,ly,color){S.texts.push({s,x:lx,y:ly,t:0,color:color||'#fff3dc'
 function jump(mult){
   let base=S.mode==='bear'?440:S.leader.id==='curly'?(ups.ab_curly?560:500):420;
   if(S.mood<30&&S.mode!=='bear')base*=.94;
-  if(S.mode==='fire'&&S.ff==='ride')base=470;
+  if(S.mode==='fire'&&S.ff==='ride'){base=470;S.duckT=0}
   S.vy=-base*(mult||1);S.buf=0;S.coy=0;S.grounded=false;
   if(!S.demo){SFX.jump();S.stats.jumps++}
 }
@@ -884,7 +884,7 @@ function hit(){
 const FF_INFO={
   blaze:{name:'The Crew Is the Fire',intro:l=>nm(l)+' caught fire! Burn stuff to stay lit. Dodge the water!'},
   lava:{name:'Lava Floor Forest',intro:()=>'The floor is lava! Hold to grab a branch, let go to swing.'},
-  ride:{name:'Ride the Bear',intro:()=>'Everybody on the bear! Tap the bottom to jump, the top to duck.'}
+  ride:{name:'Ride the Bear',intro:()=>'Everybody on the bear! Tap to jump, swipe down to slide.'}
 };
 const LAVA_Y=GY+18;
 const BURN={bush:{w:12,h:9,pts:40,heat:7},tree:{w:12,h:30,pts:80,heat:13},tent:{w:22,h:14,pts:90,heat:15},log:{w:24,h:9,pts:50,heat:9},
@@ -967,7 +967,8 @@ function lavaUpdate(dt){
   if(S.dist/12>S.lastMeter+0){S.lastMeter=S.dist/12}
 }
 /* --- ride: the whole crew on the bear --- */
-function rideStack(){const n=1+S.crew.length,duck=S.duckT>0,sp=duck?9:18,top=S.y-20-(n-1)*sp-(duck?18:28);return {n,duck,sp,top}}
+function rideStack(){const n=1+S.crew.length,duck=S.duckT>0,sp=duck?6:19,top=duck?S.y-12-n*sp:S.y-20-(n-1)*sp-28;return {n,duck,sp,top}}
+function rideSlide(){if(!S||S.dead||mode!=='play')return;if(S.duckT<=0)SFX.land();S.duckT=.85;if(!S.grounded)S.vy=Math.max(S.vy,320)}
 function rideKnock(why){
   S.invuln=1.1;S.shake=6;SFX.hit();
   if(S.crew.length){const c=S.crew.pop();
@@ -978,10 +979,12 @@ function rideKnock(why){
 }
 function rideUpdate(dt,lx){
   S.duckT=Math.max(0,S.duckT-dt);
+  if(S.swipe&&!S.swipe.done&&performance.now()-S.swipe.t>160){S.swipe.done=true;S.buf=.12}
+  if(S.duckT>0&&S.grounded&&Math.random()<dt*30)S.parts.push({x:lx+18,y:S.y-1,vx:-60-Math.random()*80,vy:-40-Math.random()*50,life:.45,c:'#a0866a',s:2,g:1});
   const st=rideStack();
   for(const o of S.obs){if(o.type!=='branch'||o.done)continue;
     if(lx+10>o.x&&lx-14<o.x+o.w){const bot=o.gy-78;if(st.top<bot&&S.invuln<=0){o.done=true;rideKnock('Branch!')}}
-    else if(lx-14>=o.x+o.w){o.done=true;S.ducked++;if(st.duck)say('Duck!',LX,GY-60,'#bfe39a')}}
+    else if(lx-14>=o.x+o.w){o.done=true;S.ducked++;if(st.duck)say('Slid under!',LX,GY-60,'#bfe39a')}}
   S.fireBack=60+Math.sin(S.t*.7)*8;S.fireClose=.45;SFX.setFire(.5);S.crackT-=dt;if(S.crackT<=0){SFX.crackle(.6);S.crackT=.1+Math.random()*.3}
 }
 function drawFlame(g,x,y,h,t,seed){
@@ -1111,10 +1114,16 @@ function drawFFActors(d){
     if(S.swing){const a=S.swing.a;ctx.strokeStyle='#8a6a3a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(Math.round(a.x-d)+.5,Math.round(a.y)+.5);ctx.lineTo(LX+2.5,Math.round(S.y)-15.5);ctx.stroke()}
   }else if(S.ff==='ride'){
     const st=rideStack(),bob=S.grounded?(Math.floor(S.at*10)%2):0,blink=S.invuln>0&&Math.floor(t*16)%2===0;
-    shd(LX+2,S.y,36);outlined(ctx,()=>drawBear(ctx,LX+20,S.y,S.at,true,!S.grounded));
-    if(S.tail){ctx.save();ctx.translate(LX-20,Math.round(S.y)-12);ctx.rotate(-1.35+Math.sin(t*14)*.18);outlined(ctx,()=>drawHiker(ctx,S.tail,0,0,t,true));ctx.restore()}
     const riders=[S.leader,...S.crew];
-    riders.forEach((c,i)=>{const y=Math.round(S.y)-20-i*st.sp-bob,x=LX-2+(i%2?1:-1)*(i?Math.round(Math.sin(t*6+i)):0);if(blink&&i===riders.length-1)return;outlined(ctx,()=>drawHiker(ctx,c,x,y,0,!S.grounded,st.duck?'sit':undefined))});
+    if(st.duck){
+      shd(LX-2,S.y,46);outlined(ctx,()=>drawBearSleep(ctx,LX+22,S.y,t*3,true,true));
+      if(S.tail){ctx.save();ctx.translate(LX-30,Math.round(S.y)-2);ctx.rotate(-1.57);outlined(ctx,()=>drawHiker(ctx,S.tail,0,0,t,true));ctx.restore()}
+      riders.forEach((c,i)=>{if(blink&&i===riders.length-1)return;ctx.save();ctx.translate(LX-15+[0,3,-2,2,-1][i%5],Math.round(S.y)-15-i*st.sp);ctx.rotate(Math.PI/2);outlined(ctx,()=>drawHiker(ctx,c,0,0,0,false));ctx.restore()});
+    }else{
+      shd(LX+2,S.y,36);outlined(ctx,()=>drawBear(ctx,LX+20,S.y,S.at,true,!S.grounded));
+      if(S.tail){ctx.save();ctx.translate(LX-20,Math.round(S.y)-12);ctx.rotate(-1.35+Math.sin(t*14)*.18);outlined(ctx,()=>drawHiker(ctx,S.tail,0,0,t,true));ctx.restore()}
+      riders.forEach((c,i)=>{const sway=i?Math.round(Math.sin(t*5+i*.9)*Math.min(2,i*.6)):0,y=Math.round(S.y)-20-i*st.sp-bob,x=LX-2+sway;if(blink&&i===riders.length-1)return;outlined(ctx,()=>drawHiker(ctx,c,x,y,0,i===0&&!S.grounded))});
+    }
   }
 }
 function ffHud(cw,pad,f,shadow){
@@ -1129,7 +1138,7 @@ function ffHud(cw,pad,f,shadow){
     shadow(S.t<9?'Hold: grab  ·  Let go: swing':'Swings '+S.swings,cw/2,pad+f*1.3,'#fff3dc');
   }else{
     shadow('RIDE THE BEAR',cw/2,pad+f*.4,'#ffb347');ctx.font='700 '+Math.round(f*.7)+'px "Pixelify Sans", monospace';
-    shadow(S.t<9?'Tap top: duck  ·  Tap bottom: jump':'Riders '+(1+S.crew.length)+(S.tail?' + 1 on the tail':''),cw/2,pad+f*1.3,'#fff3dc');
+    shadow(S.t<9?'Tap: jump  ·  Swipe down: slide':'Riders '+(1+S.crew.length)+(S.tail?' + 1 on the tail':''),cw/2,pad+f*1.3,'#fff3dc');
   }
   ctx.textAlign='left';
 }
@@ -2202,16 +2211,18 @@ function frame(now){
 
 /* ---------- input ---------- */
 function press(e){if(mode!=='play'||S.dead)return;
-  if(S.mode==='fire'&&S.ff==='ride'&&e&&e.clientY!=null){const r=cv.getBoundingClientRect();if(e.clientY-r.top<r.height*.45){S.duckT=.75;return}}
+  if(S.mode==='fire'&&S.ff==='ride'&&e&&e.clientY!=null){S.swipe={y:e.clientY,t:performance.now(),done:false};return}
   S.buf=.12;if(S.mode==='fire'&&S.ff==='lava')S.hold=true}
 cv.addEventListener('pointerdown',e=>{e.preventDefault();press(e)});
+cv.addEventListener('pointermove',e=>{if(S&&S.swipe&&!S.swipe.done&&e.clientY-S.swipe.y>22){S.swipe.done=true;rideSlide()}});
+window.addEventListener('pointerup',()=>{if(S&&S.swipe){if(!S.swipe.done&&mode==='play'&&!S.dead)S.buf=.12;S.swipe=null}});
 const unhold=()=>{if(S)S.hold=false};window.addEventListener('pointerup',unhold);window.addEventListener('pointercancel',unhold);window.addEventListener('blur',unhold);
 window.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW')unhold()});
 window.addEventListener('keydown',e=>{
   if(mode!=='play')return;
   if(e.code==='KeyB'||e.code==='KeyN'||e.code==='Enter'){e.preventDefault();noBear();return}
   if(e.code==='KeyT'){e.preventDefault();throwSnack();return}
-  if((e.code==='ArrowDown'||e.code==='KeyS')&&S&&S.mode==='fire'&&S.ff==='ride'){e.preventDefault();S.duckT=.75;return}
+  if((e.code==='ArrowDown'||e.code==='KeyS')&&S&&S.mode==='fire'&&S.ff==='ride'){e.preventDefault();rideSlide();return}
   if(e.repeat&&S&&S.mode==='fire'&&S.ff==='lava'){e.preventDefault();return}
   if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW'){e.preventDefault();press()}
 });
