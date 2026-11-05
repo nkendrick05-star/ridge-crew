@@ -790,7 +790,7 @@ function newRun(leaderId,demo,rm){
     obs:[],items:[],hist:[],texts:[],t:0,at:0,shake:0,dead:false,deadT:0,reason:'',dtype:'',bearBack:90,fartIn:8+Math.random()*8,fart:null,cloud:null,eat:null,saved:0,ev:null,evIn:28+Math.random()*20,flash:0,tut:null,
     mood:70,snacks:0,parts:[],bubble:null,chatIn:6+Math.random()*5,roarIn:7,distract:0,boost:0,slowT:0,coffee:0,chainT:0,fartWasChain:false,lastFarter:null,
     stats:{jumps:0,clears:0,near:0,snacks:0,animals:0,biome:{},fartsBy:{}},rivers:[],muds:[],rollIn:2,stepT:0,revives:0,banked:0,applied:null,appliedFB:{},muddy:false,lastOwl:-1,chal:null,chalDone:false,
-    prey:null,gapX:0,chomps:0,stun:0,win:false,fireBack:200,crackT:0,ff:null,heat:100,combo:0,lastBurn:-9,bestCombo:0,burned:0,burnPts:0,water:[],waterIn:3.5,trail:[],dodged:0,splashes:0,anchors:[],anX:null,swing:null,hold:false,swings:0,grabCD:0,duckT:0,tail:null,drag:[],emberFx:[],fleers:[],lean:0,lastKnock:0,hitch:false,squirrel:false,mooseT:0,leap:false,swimming:false,lakeX:0,lakeDone:false,winT:-1,rafts:[],shrooms:[],erupts:[],chain:null,chainOn:false,raft:null,flip:null,air:null,pantsT:0,burnTypes:{},infernoT:0,ring:null,mallows:[],rainCloud:null,cloudIn:20,plane:null,smokeB:null,cool:0,spin:null,flips:0,ducked:0,lastMeter:0};
+    prey:null,gapX:0,chomps:0,stun:0,win:false,fireBack:200,crackT:0,ff:null,heat:100,combo:0,lastBurn:-9,bestCombo:0,burned:0,burnPts:0,water:[],waterIn:3.5,trail:[],dodged:0,splashes:0,anchors:[],anX:null,swing:null,hold:false,swings:0,grabCD:0,duckT:0,tail:null,drag:[],emberFx:[],fleers:[],hopTree:null,hopPrev:null,hopT:0,lean:0,lastKnock:0,hitch:false,squirrel:false,mooseT:0,leap:false,swimming:false,lakeX:0,lakeDone:false,winT:-1,rafts:[],shrooms:[],erupts:[],chain:null,chainOn:false,raft:null,flip:null,air:null,pantsT:0,burnTypes:{},infernoT:0,ring:null,mallows:[],rainCloud:null,cloudIn:20,plane:null,smokeB:null,cool:0,spin:null,flips:0,ducked:0,lastMeter:0};
   if(rm==='night')s.ev={type:'night',t:5,dur:1e12};
   if(rm==='bear'){s.prey=CHARS.slice();s.gapX=80}
   if(rm==='fire'){s.fartIn=1e12;LAVA_Y=GY+18;s.daily=daily;if(daily){s.day=utcDay();s.rngS=dailySeed(s.day)}s.ff=daily?dailyFF(s.day):(typeof window!=='undefined'&&window.__FF)||pick(['blaze','lava','ride']);s.fireBack=s.ff==='blaze'?400:96}
@@ -970,6 +970,15 @@ function genLavaCore(){
   const cut=S.dist-200;S.anchors=S.anchors.filter(a=>a.x>cut);S.items=S.items.filter(i=>i.x>cut&&!i.got);S.segs=S.segs.filter(s=>s.x1>cut);
   S.rafts=S.rafts.filter(r=>r.x+r.w>cut&&r.sink<12);S.shrooms=S.shrooms.filter(m=>m.x>cut);
 }
+function hopPathPos(k){return {x:S.dist+LX-SPACE*(k+1),y:histY(SPACE*(k+1)),air:false}}
+function hopTrunkPos(a,k){return {x:a.x+(a.kind==='short'?22:30)-6,y:a.by+30+k*14}}
+function hopPos(k){
+  if(!S.hopTree)return hopPathPos(k);
+  const to=hopTrunkPos(S.hopTree,k),u=Math.max(0,Math.min(1,(S.hopT-k*.07)/.32));
+  if(u>=1)return {x:to.x,y:to.y,air:false};
+  const fr=S.hopPrev&&S.hopPrev[k]?S.hopPrev[k]:hopPathPos(k);
+  return {x:fr.x+(to.x-fr.x)*u,y:fr.y+(to.y-fr.y)*u-Math.sin(u*Math.PI)*14,air:true};
+}
 function lavaHit(){
   if(S.invuln<=0){
     if(S.crew.length){const c=S.crew.pop();S.lost.push(c);say(nm(c)+' burned his butt and bailed!',LX,GY-46,'#ff8a5a');SFX.hit();S.invuln=1;S.shake=6}
@@ -1018,11 +1027,13 @@ function lavaUpdate(dt){
     for(const m of S.shrooms){if(S.vy>0&&Math.abs(lx-m.x)<10&&S.y>=m.y&&py<=m.y+5){S.vy=-650;S.vx=Math.max(S.vx,150);m.sq=.25;SFX.jump();say('BOING',LX,GY-50,'#f2d36a');break}}
   }
   for(const m of S.shrooms)m.sq=Math.max(0,m.sq-dt);
+  S.hopT=(S.hopT||0)+dt;
   for(const r of S.rafts){if(r.sinkT>=0){r.sinkT+=dt;r.sink=Math.max(0,(r.sinkT-.9)*9)}}
   if(!S.swing&&S.hold&&S.grabCD<=0&&!S.grounded){
     const hx=lx,hy=S.y-16;let best=null,bd=1e9;
     for(const a of S.anchors){if(a.gone||a.x<hx-18)continue;const d=Math.hypot(a.x-hx,a.y-hy);if(d<118&&d<bd){bd=d;best=a}}
-    if(best){const L=Math.hypot(hx-best.x,hy-best.by),th=Math.atan2(hx-best.x,hy-best.by);S.swing={a:best,L,th,w:(S.vx*Math.cos(th)-S.vy*Math.sin(th))/L};if(best.burnT<0)best.burnT=0;S.swings++;SFX.cone();endAir()}
+    if(best){if(S.hopTree!==best&&S.crew.length){S.hopPrev=S.crew.map((c,k)=>hopPos(k));S.hopTree=best;S.hopT=0;SFX.jump()}
+      const L=Math.hypot(hx-best.x,hy-best.by),th=Math.atan2(hx-best.x,hy-best.by);S.swing={a:best,L,th,w:(S.vx*Math.cos(th)-S.vy*Math.sin(th))/L};if(best.burnT<0)best.burnT=0;S.swings++;SFX.cone();endAir()}
   }
   if(S.flip){S.flip.t+=dt;if(S.flip.t>=S.flip.dur){if(S.flip.ok){S.flips++;S.burnPts+=100;say('FLIP! +100',LX,GY-66,'#ffd166')}S.flip=null}}
   for(const a of S.anchors){
@@ -1059,6 +1070,10 @@ function drawLavaExtras(d){
 }
 function drawLavaActors(d){
   const t=S.t;
+  if(S.hopTree)for(let k=S.crew.length-1;k>=0;k--){const c=S.crew[k],p=hopPos(k),x=Math.round(p.x-d),y=Math.round(p.y);
+    if(x<-20||x>W+20)continue;
+    outlined(ctx,()=>drawHiker(ctx,c,x,y,p.air?t:0,p.air));
+    if(!p.air){const lk=look(c);outlined(ctx,()=>{px(ctx,lk.skin,x+5,y-14,3,2);px(ctx,lk.skin,x+5,y-10,3,2)})}}
   /* 31. crew hanging from each other's ankles */
   if(S.chainOn&&S.chain){let prx=S.dist+LX,pry=S.y;S.chain.forEach((nd,k)=>{const c=S.crew[k];if(!c)return;const dx=prx-nd.x,dy=pry-nd.y,a=Math.atan2(dx,-dy);
     ctx.save();ctx.translate(Math.round(nd.x-d),Math.round(nd.y));ctx.rotate(a);outlined(ctx,()=>drawHiker(ctx,c,0,0,S.at+k*.3,true));ctx.restore();prx=nd.x;pry=nd.y})}
@@ -1079,7 +1094,7 @@ function rideKnock(why){
     say(why+' '+nm(c)+(S.drag.length>1?' grabbed on. Human chain!':' grabbed the bear!'),LX,GY-46,'#ffb38a');SFX.voice&&SFX.voice(c.id,2)}
   else die(nm(S.leader)+' got bucked off the bear.','ride');
 }
-function dragPos(k){let hx=LX-14,y=S.y;for(let j=0;j<=k;j++){const x0=hx-31,g=groundY(S.dist+x0+14),hy=histY(LX-(x0+14));y=g!=null?Math.min(g,hy+12):hy+20+Math.sin(S.t*6+j)*3;if(j===k)return {x0,y};hx=x0}return {x0:hx-31,y}}
+function dragPos(k){return {x0:LX-14-31*(k+1),y:S.y}}
 function rideBalance(){if(!S||S.dead||mode!=='play'||S.mode!=='fire'||S.ff!=='ride')return;if(Math.abs(S.lean)>.25)say('Steady!',LX,GY-70,'#bfe39a');S.lean*=.15;SFX.cone()}
 function rideUpdate(dt,lx){
   S.duckT=Math.max(0,S.duckT-dt);
@@ -2463,7 +2478,7 @@ function render(){
     if(S.distract>0){ctx.font='700 6px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('munch',Math.round(bx)-10,Math.round(by)-33-(Math.floor(S.t*4)%2))}
     }
     if(!(S.mode==='fire'&&S.ff==='ride')){
-    if(!(S.mode==='fire'&&S.ff==='lava'&&S.chainOn))for(let i=S.crew.length-1;i>=0;i--){
+    if(!(S.mode==='fire'&&S.ff==='lava'&&S.hopTree))for(let i=S.crew.length-1;i>=0;i--){
       const back=SPACE*(i+1),y=histY(back);
       const hop=(S.mode==='fire'&&S.ff==='blaze'&&S.trail.some(tr=>tr.t<3&&Math.abs(tr.x-(S.dist+LX-back))<6))?Math.round(Math.abs(Math.sin(S.t*12+i))*5):0;
       const fg=groundY(S.dist+LX-back);shd(LX-back,y,12);outlined(ctx,()=>drawHiker(ctx,S.crew[i],LX-back,y-(typeof hop==='number'?hop:0),S.at+i*.37,(fg!=null&&y<fg-1)||(S.mode==='fire'&&S.ff==='lava'&&fg==null)));
