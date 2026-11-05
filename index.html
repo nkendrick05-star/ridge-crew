@@ -816,13 +816,12 @@ function genCore(){
     if(late&&S.mode!=='uphill'&&r<.06){
       const w=95+Math.random()*30,x0=S.genX,bank=S.gy;
       S.rivers.push({x0,x1:x0+w,wy:bank+16});
-      if(S.mode==='fire'&&S.ff==='ride')S.obs.push({type:'branch',x:x0+w*.45,w:26,h:0,hit:false,gy:bank,vx:0});
       for(const f of [.32,.66])S.segs.push({x0:x0+w*f-8,x1:x0+w*f+8,y0:bank+3,slope:0,kind:'stone'});
       S.genX+=w;special=true;
     }else if(late&&r<.11){
       const w=120+Math.random()*70;S.segs.push({x0:S.genX,x1:S.genX+w,y0:S.gy,slope:0,kind:'bridge'});S.genX+=w;special=true;
     }
-    if(!special&&!S.demo&&S.genX>1100&&Math.random()<Math.min(.55,.28+S.genX/40000)){
+    if(!special&&!S.demo&&S.genX>(S.mode==='fire'&&S.ff==='ride'?4200:1100)&&Math.random()<Math.min(.55,.28+S.genX/40000)){
       const maxG=Math.max(34,spd*0.42)*(S.terr.slope<0?.8:1),gw=28+Math.random()*(maxG-28);
       S.genX+=gw;S.gy+=(S.terr.slope||0)*gw*.5;
     }
@@ -836,15 +835,16 @@ function genCore(){
     if(!S.demo){
       if(late&&len>220&&Math.random()<.14){const mx=x0+50;S.muds.push({x0:mx,x1:mx+50+Math.random()*40})}
       let ox=x0+spd*0.5;const gapMin=spd*0.62;
+      const RIDE=S.mode==='fire'&&S.ff==='ride';
       while(ox<x1-50){
-        if(Math.random()<.6){
+        if(RIDE&&ox<4200){ox+=50;continue}
+        if(Math.random()<(RIDE?.45:.6)){
           const q=Math.random();let type=q<.6?'rock':'log';
           if(late&&q<.07)type='moose';else if(late&&q<.14)type='coon';
-          const blz=S.mode==='fire'&&S.ff==='blaze';if(blz&&q>.3&&!(late&&q<.14))type=pickBurn();if(S.mode==='fire'&&S.ff==='ride'&&Math.random()<.22)type='branch';if(S.mode==='fire'&&S.ff!=='lava'&&late&&Math.random()<.07)type='falltree';
+          const blz=S.mode==='fire'&&S.ff==='blaze';if(blz&&q>.3&&!(late&&q<.14))type=pickBurn();if(RIDE){type=q<.75?'rock':'log';if(ox>7200&&Math.random()<.22)type='branch'}if(S.mode==='fire'&&S.ff==='blaze'&&late&&Math.random()<.07)type='falltree';
           const dim=type==='falltree'?[34,0]:type==='branch'?[26,0]:BURN[type]&&blz?[BURN[type].w,BURN[type].h]:{rock:[14,11],log:[24,9],moose:[22,20],coon:[12,8]}[type];
-          if(S.mode==='fire'&&S.ff==='ride'&&type==='log'&&late&&Math.random()<.35&&ox+dim[0]+80<x1-30)S.obs.push({type:'branch',x:ox+dim[0]+52,w:26,h:0,hit:false,gy:segY(seg,ox+dim[0]+60),vx:0});
           if(ox+dim[0]<x1-30)S.obs.push({type,x:ox,w:dim[0],h:dim[1],hit:false,gy:segY(seg,ox+dim[0]/2),vx:type==='coon'?-55:0,burnable:blz&&!!BURN[type],state:type==='falltree'?'up':undefined});
-          ox+=dim[0]+gapMin*(blz&&BURN[type]?.45:1)+Math.random()*90;
+          ox+=dim[0]+gapMin*(blz&&BURN[type]?.45:RIDE?1.5:1)+Math.random()*90;
         }else ox+=50;
       }
       if(Math.random()<.75){
@@ -1094,7 +1094,7 @@ function drawLavaActors(d){
 function rideStack(){const n=1+S.crew.length,duck=S.duckT>0,sp=duck?6:15,top=duck?S.y-12-n*sp:S.y-20-(n-1)*sp-28;return {n,duck,sp,top}}
 function rideSlide(){if(!S||S.dead||mode!=='play')return;if(S.duckT<=0)SFX.land();S.duckT=.85;if(!S.grounded)S.vy=Math.max(S.vy,320)}
 function rideKnock(why){
-  S.invuln=1.1;S.shake=6;SFX.hit();S.lastKnock=S.t;
+  S.invuln=2;S.shake=6;SFX.hit();S.lastKnock=S.t;
   if(S.hitch){S.hitch=false;say('The raccoon bailed!',LX,GY-60,'#ffb38a');return}
   if(S.crew.length){const c=S.crew.pop();S.drag.unshift(c);if(S.drag.length>=3)unlockBadge('ff_chain');
     say(why+' '+nm(c)+(S.drag.length>1?' grabbed on. Human chain!':' grabbed the bear!'),LX,GY-46,'#ffb38a');SFX.voice&&SFX.voice(c.id,2)}
@@ -1105,11 +1105,11 @@ function rideBalance(){if(!S||S.dead||mode!=='play'||S.mode!=='fire'||S.ff!=='ri
 function rideUpdate(dt,lx){
   S.duckT=Math.max(0,S.duckT-dt);
   /* 37. the pyramid wobbles and slowly tips unless you steady it */
-  const n=S.crew.length;if(n>0&&S.duckT<=0){S.lean+=(S.lean*.32+(Math.random()-.5)*.45)*dt*(.4+n*.16);if(S.grounded&&S.wasAir)S.lean+=(Math.random()<.5?-1:1)*(.12+Math.min(.25,Math.abs(S.landVy||0)/2400));}else S.lean*=1-dt*2;
+  const n=S.crew.length;if(n>0&&S.duckT<=0){S.lean+=(S.lean*.2+(Math.random()-.5)*.3)*dt*(.3+n*.1);if(S.grounded&&S.wasAir)S.lean+=(Math.random()<.5?-1:1)*(.12+Math.min(.25,Math.abs(S.landVy||0)/2400));}else S.lean*=1-dt*2;
   S.wasAir=!S.grounded;if(!S.grounded)S.landVy=S.vy;
-  if(Math.abs(S.lean)>1){const sg=Math.sign(S.lean);S.lean=.25*sg;rideKnock('Wobble!')}
+  if(Math.abs(S.lean)>1){const sg=Math.sign(S.lean);S.lean=.25*sg;if(S.invuln<=0)rideKnock('Wobble!')}
   /* 41. draggers climb back up if you go a while without a hit */
-  if(S.drag.length&&S.t-S.lastKnock>8){const c=S.drag.shift();S.crew.push(c);S.lastKnock=S.t-3;say(nm(c)+' climbed back up!',LX,GY-56,'#bfe39a');SFX.win()}
+  if(S.drag.length&&S.t-S.lastKnock>6){const c=S.drag.shift();S.crew.push(c);S.lastKnock=S.t-3;say(nm(c)+' climbed back up!',LX,GY-56,'#bfe39a');SFX.win()}
   /* 40. draggers scoop up pinecones */
   for(let k=0;k<S.drag.length;k++){const p=dragPos(k),wx=S.dist+p.x0+14;for(const it of S.items){if(!it.got&&it.k==='cone'&&Math.abs(it.x-wx)<12&&Math.abs(it.y-(p.y-5))<14){it.got=true;S.cones++;SFX.cone()}}}
   /* 38. slide sparks on rock, dust elsewhere */
@@ -1124,7 +1124,7 @@ function rideUpdate(dt,lx){
     if(g!=null&&p.y>=g-1&&Math.random()<dt*22)S.parts.push({x:wx-12,y:g-1,vx:-30-Math.random()*60,vy:-30-Math.random()*40,life:.4,c:'#a0866a',s:2,g:1});
     for(const o of S.obs){if(o.type==='branch'||o.burnable)continue;o.dk=o.dk||{};const id=S.drag[k].id;if(o.dk[id])continue;
       if(wx+12>o.x&&wx-12<o.x+o.w&&g!=null&&p.y>o.gy-o.h){o.dk[id]=1;
-        if(Math.random()<.5){const c=S.drag.splice(k,1)[0];S.lost.push(c);say(nm(c)+' hit a rock and let go!',LX-40,GY-40,'#ff8a5a');SFX.hit()}
+        if(Math.random()<.25){const c=S.drag.splice(k,1)[0];S.lost.push(c);say(nm(c)+' hit a rock and let go!',LX-40,GY-40,'#ff8a5a');SFX.hit()}
         else{say('OOF',LX-50,GY-30,'#ffb38a');SFX.land()}break}}}
   if(S.swipe&&!S.swipe.done&&performance.now()-S.swipe.t>160){S.swipe.done=true;S.buf=.12}
   if(S.duckT>0&&S.grounded&&Math.random()<dt*30)S.parts.push({x:lx+18,y:S.y-1,vx:-60-Math.random()*80,vy:-40-Math.random()*50,life:.45,c:'#a0866a',s:2,g:1});
@@ -1189,13 +1189,13 @@ function ffShared(dt){
     else if(o.state==='falling'){o.ft+=dt;if(o.ft>=.75){o.state='down';o.h=10;S.shake=Math.max(S.shake,5);SFX.land();SFX.roar&&noiseThud();if(blaze)o.burnable=true;
       for(let i=0;i<14;i++)S.parts.push({x:o.x+Math.random()*o.w,y:o.gy-4,vx:(Math.random()-.5)*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#ffb347':'#6e6662',s:2,g:1})}}}
   /* 7. embers that land ahead and start spot fires */
-  if(!lava){S.emberIn=(S.emberIn==null?6:S.emberIn)-dt;
+  if(!lava&&!ride){S.emberIn=(S.emberIn==null?6:S.emberIn)-dt;
     if(S.emberIn<=0){S.emberIn=4+Math.random()*5;const x=lx+190+Math.random()*90,g=groundY(x);
       if(g!=null&&!S.obs.some(o=>Math.abs(o.x-x)<40))S.emberFx.push({x,t:0,g})}}
   for(const e of S.emberFx){e.t+=dt;if(!e.done&&e.t>=.9){e.done=true;const g=groundY(e.x);if(g!=null){markSeen('ff_ember');}if(g!=null)S.obs.push({type:'spot',x:e.x-6,w:12,h:blaze?5:6,hit:false,gy:g,vx:0,burnable:blaze,spot:true})}}
   S.emberFx=S.emberFx.filter(e=>e.t<1.2);
   /* 9. firefighting plane */
-  S.planeIn=(S.planeIn==null?18+Math.random()*10:S.planeIn)-dt;
+  S.planeIn=ride?99:(S.planeIn==null?18+Math.random()*10:S.planeIn)-dt;
   if(S.planeIn<=0&&!S.plane){S.planeIn=26+Math.random()*14;S.plane={x:W+50,t:0,dropped:false};markSeen('ff_bomber');SFX.plane&&SFX.plane()}
   if(S.plane){const p=S.plane;p.t+=dt;p.x-=150*dt;
     if(!p.dropped&&p.x<W*(blaze?.92:.55)){p.dropped=true;p.dropT=0;
@@ -1203,7 +1203,7 @@ function ffShared(dt){
       else{S.cool=7;S.cones+=10;say('Water drop! Fire backs off (+10)',LX+40,GY-60,'#9fd0e8')}}
     if(p.dropped)p.dropT+=dt;if(p.x<-60)S.plane=null}
   /* 6. smoke banks */
-  S.smokeIn=(S.smokeIn==null?12+Math.random()*8:S.smokeIn)-dt;
+  S.smokeIn=ride?99:(S.smokeIn==null?12+Math.random()*8:S.smokeIn)-dt;
   if(S.smokeIn<=0&&!S.smokeB){S.smokeIn=16+Math.random()*12;S.smokeB={t:0,dur:4.2};markSeen('ff_smoke');say('Smoke!',LX+60,GY-58,'#d8d0c8')}
   if(S.smokeB){S.smokeB.t+=dt;if(S.smokeB.t>S.smokeB.dur)S.smokeB=null}
   /* 10. animals fleeing alongside */
@@ -2097,7 +2097,7 @@ function update(dt){
   const bbT=(S.mode==='solo'?30:SPACE*S.crew.length+18)+(S.distract>0?80:0);
   S.bearBack+=(bbT-S.bearBack)*Math.min(1,dt*2);
   if(S.mode==='fire'&&S.ff==='lava'&&!S.demo){S.buf-=dt;S.invuln-=dt;lavaUpdate(dt);return}
-  let spd=S.demo?60:speed();if(S.boost>0)spd*=1.35;if(S.mode==='fire'&&S.ff==='ride'){spd*=1.45;if(S.swimming)spd*=.75;else if(S.duckT>0&&S.grounded){const bx0=S.dist+LX,sg=S.segs.find(q=>bx0>=q.x0&&bx0<=q.x1);if(sg&&sg.slope>.04){spd*=1.22;if(Math.random()<.05)say('Belly-slide boost!',LX,GY-56,'#ffd166')}}}
+  let spd=S.demo?60:speed();if(S.boost>0)spd*=1.35;if(S.mode==='fire'&&S.ff==='ride'){spd*=1.1;if(S.swimming)spd*=.75;else if(S.duckT>0&&S.grounded){const bx0=S.dist+LX,sg=S.segs.find(q=>bx0>=q.x0&&bx0<=q.x1);if(sg&&sg.slope>.04){spd*=1.22;if(Math.random()<.05)say('Belly-slide boost!',LX,GY-56,'#ffd166')}}}
   const lx0=S.dist+LX;
   if(!S.demo&&S.grounded){
     if(S.muds.some(m=>lx0>m.x0&&lx0<m.x1)){spd*=.7;S.muddy=true;markSeen('mud');if(Math.random()<.35)S.parts.push({x:lx0,y:S.y-2,vx:-40-Math.random()*60,vy:-60-Math.random()*60,life:.5,c:'#5a3a1c',s:2,g:1})}
