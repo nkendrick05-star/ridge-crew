@@ -1922,37 +1922,38 @@ function drawYetiSlide(g,x,y,t,flip){
   g.restore();
 }
 function drawYetiSleep(g,x,y,t,flip,peek){
-  /* sitting on the ground with his back against a boulder, legs out, hands on his belly, dozing */
+  /* curled up against a boulder: knees to his chest, arms folded on top, head resting on his arms */
   x=Math.round(x);y=Math.round(y);const ax=x-23;
   g.save();if(flip){g.translate(ax*2,0);g.scale(-1,1)}
   const br=Math.sin(t*1.7)>0?1:0;
-  if(!PXC){g.globalAlpha=.28;px(g,'#000',x-48,y-1,51,2);g.globalAlpha=1}
+  if(!PXC){g.globalAlpha=.28;px(g,'#000',x-44,y-1,47,2);g.globalAlpha=1}
   /* the rock */
   px(g,'#7d7a73',x-17,y-20,19,20);px(g,'#7d7a73',x-15,y-23,15,3);px(g,'#7d7a73',x-12,y-25,9,2);
   px(g,'#a19d93',x-13,y-24,6,1);px(g,'#8e8a82',x-15,y-22,4,8);px(g,'#5c5953',x-17,y-2,19,2);px(g,'#5c5953',x,y-18,2,16);px(g,'#6d6a64',x-6,y-12,4,1);px(g,'#6d6a64',x-3,y-7,3,1);
   if(!PXC){px(g,'#6f8a4a',x-2,y-23,3,1);px(g,'#8aa85a',x-1,y-24,1,1)}
-  /* legs stretched out in front */
-  px(g,YF,x-44,y-8,17,7);px(g,YF,x-43,y-9,8,1);px(g,YS,x-44,y-2,17,1);
-  for(let k=0;k<4;k++)px(g,YF,x-42+k*4,y-1,2,1);
-  /* big feet, soles up */
-  px(g,YK,x-48,y-12,4,11);px(g,YKD,x-48,y-2,4,1);px(g,YKD,x-46,y-11,1,8);
-  for(let k=0;k<3;k++)px(g,'#e8e2d0',x-49,y-11+k*3,1,1);
-  /* torso, upright, leaning back on the rock */
-  px(g,YF,x-30,y-25-br,15,19+br);px(g,YF,x-31,y-21-br,1,12);px(g,YF,x-16,y-23-br,2,15);
-  for(let k=0;k<5;k++)px(g,YF,x-32,y-22-br+k*3,1,2);
-  px(g,YS,x-27,y-17-br,1,4);px(g,YS,x-21,y-20-br,1,4);px(g,YS,x-29,y-9,12,1);
-  /* shoulder tufts */
-  px(g,YF,x-30,y-8,15,8);px(g,YF,x-29,y-28-br,13,4);px(g,YF,x-30,y-27-br,1,2);px(g,YF,x-16,y-27-br,1,2);
-  /* arms folded on his belly */
-  px(g,YS,x-31,y-20-br,3,9);px(g,YS,x-30,y-12-br,9,2);px(g,YK,x-23,y-14-br,6,3);px(g,YKD,x-23,y-12-br,6,1);
-  /* head, tipped to one side */
-  const hx=x-31,hy=y-39-br;
+  /* back and seat, leaning on the rock */
+  px(g,YF,x-29,y-25-br,14,25+br);px(g,YF,x-16,y-22-br,2,20);
+  for(let k=0;k<4;k++)px(g,YF,x-15,y-20-br+k*4,1,2);
+  px(g,YF,x-27,y-27-br,4,2);px(g,YF,x-22,y-28-br,4,3);px(g,YF,x-17,y-26-br,2,2);
+  px(g,YS,x-20,y-21-br,1,5);px(g,YS,x-24,y-14,1,5);px(g,YS,x-28,y-2,13,1);
+  /* shins and big feet, tucked in */
+  px(g,YF,x-37,y-13,9,12);px(g,YS,x-37,y-13,1,12);for(let k=0;k<3;k++)px(g,YF,x-38,y-11+k*4,1,2);
+  px(g,YK,x-40,y-3,10,3);px(g,YKD,x-40,y-1,10,1);for(let k=0;k<3;k++)px(g,'#e8e2d0',x-41,y-3+k,1,1);
+  /* knees pulled up to the chest */
+  px(g,YF,x-37,y-23-br,12,11);px(g,YF,x-38,y-21-br,1,7);px(g,YS,x-36,y-13,10,1);px(g,YS,x-31,y-21-br,1,6);
+  /* arms folded on top of the knees */
+  px(g,YS,x-40,y-26-br,16,4);px(g,YF,x-40,y-27-br,15,1);px(g,YF,x-27,y-26-br,3,7);
+  px(g,YK,x-42,y-26-br,4,4);px(g,YKD,x-42,y-23-br,4,1);px(g,'#e8e2d0',x-43,y-25-br,1,1);px(g,'#e8e2d0',x-43,y-23-br,1,1);
+  /* fold lines so the knees, shins and arms read as separate shapes */
+  {const D='#9fb2c2';px(g,D,x-25,y-22-br,1,10);px(g,D,x-37,y-12,12,1);px(g,D,x-28,y-11,1,9);px(g,D,x-40,y-22-br,15,1);px(g,D,x-25,y-26-br,1,4);px(g,D,x-34,y-17,4,1);}
+  /* head resting on the arms, face turned out */
+  const hx=x-38,hy=y-39-br;
   px(g,YF,hx,hy+2,13,11);px(g,YF,hx+2,hy,9,2);px(g,YF,hx+13,hy+4,1,6);px(g,YF,hx+6,hy-1,2,1);px(g,YF,hx+4,hy-2,2,2);px(g,YF,hx-1,hy+5,1,5);
   px(g,YH,hx+2,hy-2,2,2);px(g,YH,hx+1,hy-3,2,1);px(g,YH,hx+9,hy-2,2,2);px(g,YH,hx+10,hy-3,2,1);
-  px(g,YK,hx,hy+4,8,7);px(g,YF,hx,hy+3,9,1);px(g,YKD,hx,hy+4,8,1);
-  if(peek){px(g,'#141c24',hx+1,hy+5,2,2);px(g,'#cfe8ff',hx+1,hy+5,1,1);px(g,'#141c24',hx+5,hy+6,2,1)}
-  else{px(g,'#141c24',hx+1,hy+6,2,1);px(g,'#141c24',hx+5,hy+6,2,1)}
-  const sn=Math.floor(t*1.7)%2;px(g,'#2a1420',hx+2,hy+9,3,1+sn);
+  px(g,YK,hx,hy+5,8,7);px(g,YF,hx,hy+4,9,1);px(g,YKD,hx,hy+5,8,1);
+  if(peek){px(g,'#141c24',hx+1,hy+6,2,2);px(g,'#cfe8ff',hx+1,hy+6,1,1);px(g,'#141c24',hx+5,hy+7,2,1)}
+  else{px(g,'#141c24',hx+1,hy+7,2,1);px(g,'#141c24',hx+5,hy+7,2,1)}
+  const sn=Math.floor(t*1.7)%2;px(g,'#2a1420',hx+2,hy+10,2,1+sn);px(g,'#9fb2c2',hx+1,hy+13,11,1);
   g.restore();
 }
 function drawBear(g,x,y,t,open,air){
@@ -2492,8 +2493,8 @@ function drawPee(){
   }
   ctx.save();ctx.translate(0,oy);pzFireflies(ly,t);
   ctx.font='700 8px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff3dc';
-  const hx=PZ.side>0?bx-40:bx-6;
-  if(!peek)for(let z=0;z<3;z++){const k=((t*.6+z/3)%1);ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillText(z===2?'Z':'z',Math.round(hx-PZ.side*k*6+z),Math.round(ly-16-k*18))}
+  const isY=(S.mode==='uphill'&&PZ.yeti)||!!bearSkin().pal.yeti,hx=isY?(PZ.side>0?bx-40:bx-14):(PZ.side>0?bx-40:bx-6),zy=isY?ly-40:ly-16;
+  if(!peek)for(let z=0;z<3;z++){const k=((t*.6+z/3)%1);ctx.globalAlpha=Math.sin(k*Math.PI);ctx.fillText(z===2?'Z':'z',Math.round(hx-PZ.side*k*6+z),Math.round(zy-k*18))}
   else{ctx.globalAlpha=1;ctx.fillText('?',hx,ly-20)}
   ctx.globalAlpha=1;ctx.restore();
   drawSeason();
