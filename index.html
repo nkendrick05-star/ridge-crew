@@ -703,6 +703,8 @@ function drawMix(g,x,y){
 /* ---------- canvas setup ---------- */
 const cv=document.getElementById('game'),ctx=cv.getContext('2d');
 const H=200,GY=160,LX=104,SPACE=18,G=1400;
+/* how far back crew member i runs; the Human Torch leader gets extra room */
+function CB(i){return SPACE*(i+1)+(S&&S.mode==='fire'&&S.ff==='blaze'?16:0)}
 let dpr=1,cw=1,ch=1,sc=1,W=300,viewH=200,oy=0;
 function resize(){
   dpr=Math.min(2,window.devicePixelRatio||1);
@@ -894,7 +896,7 @@ function hit(){
   }
   if(S.crew.length){
     const c=S.crew.pop(),i=S.crew.length;
-    S.lost.push(c);const sx=S.dist+LX-SPACE*(i+1),sgy=groundY(sx),sit={c,x:sx,y:sgy!=null?sgy:histY(SPACE*(i+1))};S.sitters.push(sit);
+    S.lost.push(c);const sx=S.dist+LX-CB(i),sgy=groundY(sx),sit={c,x:sx,y:sgy!=null?sgy:histY(CB(i))};S.sitters.push(sit);
     S.invuln=1.2;S.shake=5;say(nm(c)+' needs a breather',LX,GY-36,'#ffb38a');
     S.bubble={sit,text:pick(Math.random()<.5?LOST_GEN:(LOST_LINES[c.id]||LOST_GEN)),t:0};SFX.voice(c.id,3);
   }else die(nm(S.leader)+' ran out of crew. Everyone is taking a breather.','crew');
@@ -946,8 +948,8 @@ function blazeUpdate(dt){
   for(const o of S.obs)if(o.burning)o.burning+=dt;
   /* the crew throws water from behind */
   S.waterIn-=dt;
-  if(S.waterIn<=0&&S.crew.length){S.waterIn=2.2+Math.random()*2.6;const t0=.9,g=groundY(S.dist+LX)||S.y,pred=S.grounded?S.y:Math.min(g,S.y+S.vy*t0+.5*G*t0*t0);S.water.push({x:LX-SPACE,y:histY(SPACE)-20,t:0,dur:t0,ty:pred-14});
-    if(S.dist>7200&&S.crew.length>1)S.water.push({x:LX-SPACE*2,y:histY(SPACE*2)-20,t:-.35,dur:t0,ty:S.y-14});say(pick(['Hold still!','Stop drop and roll!','Water incoming!','We are helping!']),LX-40,GY-58,'#9fd0e8')}
+  if(S.waterIn<=0&&S.crew.length){S.waterIn=2.2+Math.random()*2.6;const t0=.9,g=groundY(S.dist+LX)||S.y,pred=S.grounded?S.y:Math.min(g,S.y+S.vy*t0+.5*G*t0*t0);S.water.push({x:LX-CB(0),y:histY(CB(0))-20,t:0,dur:t0,ty:pred-14});
+    if(S.dist>7200&&S.crew.length>1)S.water.push({x:LX-CB(1),y:histY(CB(1))-20,t:-.35,dur:t0,ty:S.y-14});say(pick(['Hold still!','Stop drop and roll!','Water incoming!','We are helping!']),LX-40,GY-58,'#9fd0e8')}
   for(const w of S.water){w.t+=dt;if(!w.done&&w.t>=w.dur){w.done=true;
     if(S.y>w.ty-8&&S.y-24<w.ty+8&&S.infernoT<=0){S.heat-=18;S.splashes++;SFX.splash();S.combo=1;say('PSSHHH',LX,GY-44,'#cfe3ef');for(let i=0;i<10;i++)S.parts.push({x:S.dist+LX,y:S.y-14,vx:(Math.random()-.5)*90,vy:-80-Math.random()*90,life:.6,c:'#cfe3ef',s:2,g:1})}
     else{S.dodged++;say('Dodged!',LX,GY-44,'#bfe39a')}}}
@@ -976,7 +978,7 @@ function genLavaCore(){
   const cut=S.dist-200;S.anchors=S.anchors.filter(a=>a.x>cut);S.items=S.items.filter(i=>i.x>cut&&!i.got);S.segs=S.segs.filter(s=>s.x1>cut);
   S.rafts=S.rafts.filter(r=>r.x+r.w>cut&&r.sink<12);S.shrooms=S.shrooms.filter(m=>m.x>cut);
 }
-function hopPathPos(k){return {x:S.dist+LX-SPACE*(k+1),y:histY(SPACE*(k+1)),air:false}}
+function hopPathPos(k){return {x:S.dist+LX-CB(k),y:histY(CB(k)),air:false}}
 function hopTrunkPos(a,k){return {x:a.x+(a.kind==='short'?22:30)-6,y:a.by+30+k*14}}
 function hopPos(k){
   if(!S.hopTree)return hopPathPos(k);
@@ -1447,7 +1449,7 @@ function drawFFActors(d){
   const t=S.t;
   if(S.ff==='blaze'){
     for(const tr of S.trail){const x=Math.round(tr.x-d),k=1-tr.t/3.6;if(x<-6||x>W+6)continue;const g=groundY(tr.x);if(g==null)continue;drawFlame(ctx,x,Math.round(g),2+k*6,t,tr.x)}
-    for(let i=0;i<S.crew.length;i++){const back=SPACE*(i+1),y=histY(back);px(ctx,'#5aa0d8',LX-back+5,Math.round(y)-12,3,5);px(ctx,'#9fd0f2',LX-back+5,Math.round(y)-12,1,4)}
+    for(let i=0;i<S.crew.length;i++){const back=CB(i),y=histY(back);px(ctx,'#5aa0d8',LX-back+5,Math.round(y)-12,3,5);px(ctx,'#9fd0f2',LX-back+5,Math.round(y)-12,1,4)}
     const inf=S.infernoT>0,hk=inf?2.2:S.heat>80?1.4:S.heat<25?.35:.5+.5*(S.heat/100),y=Math.round(S.y);
     if(hk>1.2&&!PXC){const gl=ctx.createRadialGradient(LX,y-14,2,LX,y-14,inf?44:30);gl.addColorStop(0,'rgba(255,170,60,.55)');gl.addColorStop(1,'rgba(255,120,40,0)');ctx.fillStyle=gl;ctx.fillRect(LX-46,y-60,92,92);
       for(let j=0;j<(inf?9:6);j++){const a=j/(inf?9:6)*Math.PI*2+t*2;drawFlame(ctx,Math.round(LX+Math.cos(a)*(inf?13:10)),Math.round(y-14+Math.sin(a)*(inf?14:11)),5+hk*3,t,j+9)}}
@@ -1960,7 +1962,7 @@ function drawPee(){
 
 const noBearBtn=document.getElementById('noBear'),snackBtn=document.getElementById('snackBtn');
 const nextFart=()=>9+Math.random()*14;
-function hikerPos(i){return i<0?{x:LX,y:S.y}:{x:LX-SPACE*(i+1),y:histY(SPACE*(i+1))}}
+function hikerPos(i){return i<0?{x:LX,y:S.y}:{x:LX-CB(i),y:histY(CB(i))}}
 function startFart(chain){
   if(S.mode==='bear'){
     const n=S.prey.length;S.fartIn=nextFart();if(!n)return;
@@ -2485,7 +2487,7 @@ function render(){
     }
     if(!(S.mode==='fire'&&S.ff==='ride')){
     if(!(S.mode==='fire'&&S.ff==='lava'&&S.hopTree))for(let i=S.crew.length-1;i>=0;i--){
-      const back=SPACE*(i+1),y=histY(back);
+      const back=CB(i),y=histY(back);
       const hop=(S.mode==='fire'&&S.ff==='blaze'&&S.trail.some(tr=>tr.t<3&&Math.abs(tr.x-(S.dist+LX-back))<6))?Math.round(Math.abs(Math.sin(S.t*12+i))*5):0;
       const fg=groundY(S.dist+LX-back);shd(LX-back,y,12);outlined(ctx,()=>drawHiker(ctx,S.crew[i],LX-back,y-(typeof hop==='number'?hop:0),S.at+i*.37,(fg!=null&&y<fg-1)||(S.mode==='fire'&&S.ff==='lava'&&fg==null)));
     }
