@@ -978,6 +978,50 @@ function genLavaCore(){
   const cut=S.dist-200;S.anchors=S.anchors.filter(a=>a.x>cut);S.items=S.items.filter(i=>i.x>cut&&!i.got);S.segs=S.segs.filter(s=>s.x1>cut);
   S.rafts=S.rafts.filter(r=>r.x+r.w>cut&&r.sink<12);S.shrooms=S.shrooms.filter(m=>m.x>cut);
 }
+
+/* --- lava: the crew stays at the ledge, then rides a zipline in the background --- */
+const ZLEDGE=712,ZY=GY-84,ZPOLE=300;
+function zipY(x){const f=((x-ZLEDGE)%ZPOLE+ZPOLE)%ZPOLE/ZPOLE;return ZY+Math.sin(f*Math.PI)*7}
+function zipStandX(k){return ZLEDGE-8-k*14}
+function zipUpdate(dt){
+  const n=S.crew.length,lx=S.dist+LX;
+  if(!S.zip){if(lx>ZLEDGE+40){S.zip={t:0,xs:S.crew.map((c,k)=>Math.min(lx-CB(k),zipStandX(k))),zx:S.crew.map(()=>ZLEDGE),said:false}}return}
+  const z=S.zip;z.t+=dt;
+  if(!z.said&&z.t>.35){z.said=true;say('We will take the zipline!',LX-30,GY-70,'#bfe39a')}
+  for(let k=0;k<n;k++){if(z.t<.9+k*.18)continue;const tg=lx-46-k*17;if(z.zx[k]<tg)z.zx[k]=Math.min(tg,z.zx[k]+Math.max(90*dt,(tg-z.zx[k])*dt*2.2));else z.zx[k]=tg}
+}
+function zipPos(k){
+  const lx=S.dist+LX;
+  if(!S.zip){const x=Math.min(lx-CB(k),zipStandX(k)),cl=x<lx-CB(k);return {x,y:cl?GY:histY(CB(k)),mode:cl?'stand':'run'}}
+  const z=S.zip,t0=.4+k*.18,u=Math.max(0,Math.min(1,(z.t-t0)/.5));
+  if(u<=0)return {x:z.xs[k],y:GY,mode:'stand'};
+  const hy=zipY(ZLEDGE)+30;
+  if(u<1)return {x:z.xs[k]+(ZLEDGE-z.xs[k])*u,y:GY+(hy-GY)*u-Math.sin(u*Math.PI)*10,mode:'climb'};
+  const x=z.zx[k];return {x,y:zipY(x)+30,mode:'zip'};
+}
+function drawZip(d){
+  const t=S.t,x0=Math.floor(d/4)*4-8;
+  /* the cable */
+  ctx.globalAlpha=.85;
+  for(let x=Math.max(x0,ZLEDGE);x<d+W+8;x+=2)px(ctx,'#2a2420',Math.round(x-d),Math.round(zipY(x)),2,1);
+  /* poles */
+  for(let k=Math.max(0,Math.floor((d-ZLEDGE)/ZPOLE));ZLEDGE+k*ZPOLE<d+W+10;k++){const wx=ZLEDGE+k*ZPOLE,x=Math.round(wx-d),top=Math.round(zipY(wx))-4,bot=k===0?GY:Math.round(LAVA_Y);
+    px(ctx,'#3a2c22',x-1,top,3,bot-top);px(ctx,'#5a4232',x-1,top,1,bot-top);px(ctx,'#2a2420',x-3,top,7,2)}
+  ctx.globalAlpha=1;
+}
+function drawZipCrew(d){
+  const t=S.t;
+  for(let k=S.crew.length-1;k>=0;k--){const c=S.crew[k],p=zipPos(k),x=Math.round(p.x-d),y=Math.round(p.y);if(x<-20||x>W+20)continue;
+    if(p.mode==='zip'){const cy=Math.round(zipY(p.x)),sw=Math.round(Math.sin(t*3+k)*1);
+      px(ctx,'#6e6a64',x+1,cy-2,7,3);px(ctx,'#c8c2b8',x+2,cy-2,5,1);px(ctx,'#2a2420',x+4,cy+1,1,3);
+      outlined(ctx,()=>drawHiker(ctx,c,x+sw,y,t*.5+k,true));
+      const lk=look(c);outlined(ctx,()=>{px(ctx,lk.skin,x+2+sw,cy+3,2,3);px(ctx,lk.skin,x+6+sw,cy+3,2,3)})}
+    else{if(p.mode!=='climb')shd(x,y,12);outlined(ctx,()=>drawHiker(ctx,c,x,y,p.mode==='run'?S.at+k*.37:p.mode==='climb'?t:0,p.mode==='climb'))}}
+}
+function heartHud(x,y,s,full){
+  const R=['.##.##.','#######','#######','.#####.','..###..','...#...'];
+  for(let r=0;r<R.length;r++)for(let c=0;c<7;c++)if(R[r][c]==='#'){ctx.fillStyle=full?(r===1&&c===1?'#ffd0c8':'#e0463a'):'rgba(40,24,20,.55)';ctx.fillRect(x+c*s,y+r*s,s,s)}
+}
 function hopPathPos(k){return {x:S.dist+LX-CB(k),y:histY(CB(k)),air:false}}
 function hopTrunkPos(a,k){return {x:a.x+(a.kind==='short'?22:30)-6,y:a.by+30+k*14}}
 function hopPos(k){
@@ -989,8 +1033,9 @@ function hopPos(k){
 }
 function lavaHit(){
   if(S.invuln<=0){
-    if(S.crew.length){const c=S.crew.pop();S.lost.push(c);say(nm(c)+' burned his butt and bailed!',LX,GY-46,'#ff8a5a');SFX.hit();S.invuln=1;S.shake=6}
-    else{die(nm(S.leader)+' touched the lava. Hot foot!','lava');return true}
+    S.hearts=(S.hearts==null?3:S.hearts)-1;
+    if(S.hearts>0){say(S.hearts===1?'Last heart!':'Ouch! 2 hearts left',LX,GY-46,'#ff8a5a');SFX.hit();S.invuln=1.2;S.shake=6}
+    else{die(nm(S.leader)+' touched the lava one too many times. Hot foot!','lava');return true}
   }
   S.y=LAVA_Y-2;S.vy=-660;S.vx=Math.max(S.vx,150);S.grounded=false;S.swing=null;S.raft=null;S.pantsT=2.6;S.lavaHits=(S.lavaHits||0)+1;
   if(S.flip)S.flip.ok=false;if(S.air)S.air.hit=true;say('Pants on fire!',LX+20,GY-60,'#ff8a2a');
@@ -1040,7 +1085,7 @@ function lavaUpdate(dt){
   if(!S.swing&&S.hold&&S.grabCD<=0&&!S.grounded){
     const hx=lx,hy=S.y-16;let best=null,bd=1e9;
     for(const a of S.anchors){if(a.gone||a.x<hx-18)continue;const d=Math.hypot(a.x-hx,a.y-hy);if(d<118&&d<bd){bd=d;best=a}}
-    if(best){if(S.hopTree!==best&&S.crew.length){S.hopPrev=S.crew.map((c,k)=>hopPos(k));S.hopTree=best;S.hopT=0;SFX.jump()}
+    if(best){
       const L=Math.hypot(hx-best.x,hy-best.by),th=Math.atan2(hx-best.x,hy-best.by);S.swing={a:best,L,th,w:(S.vx*Math.cos(th)-S.vy*Math.sin(th))/L};if(best.burnT<0)best.burnT=0;S.swings++;SFX.cone();endAir();if(best.kind==='vine')markSeen('ff_vine')}
   }
   if(S.flip){S.flip.t+=dt;if(S.flip.t>=S.flip.dur){if(S.flip.ok){S.flips++;S.burnPts+=100;say('FLIP! +100',LX,GY-66,'#ffd166')}S.flip=null}}
@@ -1053,7 +1098,7 @@ function lavaUpdate(dt){
   
   let erHit=false;for(const e of S.erupts){e.t+=dt;if(e.t>1.2&&e.t<2.4){const h=Math.min(95,(e.t-1.2)*320);if(Math.abs(lx-e.x)<8&&S.y>LAVA_Y-h)erHit=true}}
   S.erupts=S.erupts.filter(e=>e.t<2.7);
-  S.dist=lx-LX;genLava();if(mode==='play'){ffShared(dt);checkBadges()}
+  S.dist=lx-LX;genLava();zipUpdate(dt);if(mode==='play'){ffShared(dt);checkBadges()}
   if(S.y>=LAVA_Y-1||erHit){if(lavaHit())return}
   S.chainOn=false;S.chain=null;
   S.camY+=(Math.max(-50,Math.min(24,(S.y-GY)*.4+11))-S.camY)*Math.min(1,dt*3);
@@ -1078,10 +1123,6 @@ function drawLavaExtras(d){
 }
 function drawLavaActors(d){
   const t=S.t;
-  if(S.hopTree)for(let k=S.crew.length-1;k>=0;k--){const c=S.crew[k],p=hopPos(k),x=Math.round(p.x-d),y=Math.round(p.y);
-    if(x<-20||x>W+20)continue;
-    outlined(ctx,()=>drawHiker(ctx,c,x,y,p.air?t:0,p.air));
-    if(!p.air){const lk=look(c);outlined(ctx,()=>{px(ctx,lk.skin,x+5,y-14,3,2);px(ctx,lk.skin,x+5,y-10,3,2)})}}
   /* 31. crew hanging from each other's ankles */
   if(S.chainOn&&S.chain){let prx=S.dist+LX,pry=S.y;S.chain.forEach((nd,k)=>{const c=S.crew[k];if(!c)return;const dx=prx-nd.x,dy=pry-nd.y,a=Math.atan2(dx,-dy);
     ctx.save();ctx.translate(Math.round(nd.x-d),Math.round(nd.y));ctx.rotate(a);outlined(ctx,()=>drawHiker(ctx,c,0,0,S.at+k*.3,true));ctx.restore();prx=nd.x;pry=nd.y})}
@@ -1444,6 +1485,7 @@ function drawAnchors(d){
     if(a.burnT>=0&&!PXC&&a.x<S.dist+40)for(let k=0;k<2;k++)drawFlame(ctx,tx,Math.round(LAVA_Y-10-k*26-hash(a.x+k)*10),6,t,a.x+k*5);
   }
   drawLavaExtras(d);
+  if(!S.demo)drawZipCrew(d);
 }
 function drawFFActors(d){
   const t=S.t;
@@ -2457,7 +2499,7 @@ function render(){
   if(S.mode==='fire'&&(S.ff==='lava'||S.ff==='ride')&&!S.demo)drawForest(d,bottom);
   if(S.mode==='fire'&&S.ff==='lava'&&!S.demo)drawLava(d,bottom);
   drawGround(d,bottom);
-  if(S.mode==='fire'&&S.ff==='lava'&&!S.demo)drawAnchors(d);
+  if(S.mode==='fire'&&S.ff==='lava'&&!S.demo){drawZip(d);drawAnchors(d)}
   if(S.mode==='fire'&&!S.demo){for(const a of S.fleers)drawFleer(a,d);for(const e of S.emberFx){const k=Math.min(1,e.t/.9),x=Math.round(e.x-d-(1-k)*120),y=Math.round(e.g-(1-k)*(1-k)*140);px(ctx,'#ffd166',x,y,2,2);ctx.globalAlpha=.5;px(ctx,'#ff6a2a',x-3,y-2,2,1);ctx.globalAlpha=1}}
   for(const o of S.obs){const x=Math.round(o.x-d),t=Math.round(o.gy)-o.h;if(x>W+4||x+o.w<-4)continue;if(o.smashed){o.smashed+=1/60;if(o.smashed<.8){ctx.globalAlpha=1-o.smashed;outlined(ctx,()=>drawObstacle(o,Math.round(x+o.smashed*120),Math.round(o.gy-o.h-o.smashed*60)));ctx.globalAlpha=1}continue}
   if(o.type==='branch'){outlined(ctx,()=>drawBranch(o,x));continue}if(o.type==='puddle'){drawPuddle(o,x);continue}if(o.type==='sprinkler'||o.type==='ranger'){drawWaterHazard(o,x);continue}if(!o.burnable&&o.type==='falltree'){drawFallTree(o,x);continue}if(!o.burnable&&o.type==='spot'){drawSpot(o,x);continue}if(o.burnable){outlined(ctx,()=>drawBurnable(o,x,S.t));continue}outlined(ctx,()=>drawObstacle(o,x,t))}
@@ -2486,7 +2528,7 @@ function render(){
     if(S.distract>0){ctx.font='700 6px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('munch',Math.round(bx)-10,Math.round(by)-33-(Math.floor(S.t*4)%2))}
     }
     if(!(S.mode==='fire'&&S.ff==='ride')){
-    if(!(S.mode==='fire'&&S.ff==='lava'&&S.hopTree))for(let i=S.crew.length-1;i>=0;i--){
+    if(!(S.mode==='fire'&&S.ff==='lava'&&!S.demo))for(let i=S.crew.length-1;i>=0;i--){
       const back=CB(i),y=histY(back);
       const hop=(S.mode==='fire'&&S.ff==='blaze'&&S.trail.some(tr=>tr.t<3&&Math.abs(tr.x-(S.dist+LX-back))<6))?Math.round(Math.abs(Math.sin(S.t*12+i))*5):0;
       const fg=groundY(S.dist+LX-back);shd(LX-back,y,12);outlined(ctx,()=>drawHiker(ctx,S.crew[i],LX-back,y-(typeof hop==='number'?hop:0),S.at+i*.37,(fg!=null&&y<fg-1)||(S.mode==='fire'&&S.ff==='lava'&&fg==null)));
@@ -2547,6 +2589,7 @@ function drawHud(){
     if(S.mode==='fire'&&!S.spin){ffHud(cw,pad,f,shadow)}
     ctx.font='700 '+f+'px "Pixelify Sans", monospace';
   }
+  if(S.mode==='fire'&&S.ff==='lava'&&!S.demo){ctx.textAlign='right';shadow('HEARTS',cw-pad,pad+f*.4,'#fff3dc');const hs=Math.max(2,Math.round(f*.13)),hp=S.hearts==null?3:S.hearts;for(let i=0;i<3;i++)heartHud(cw-pad-(3-i)*(hs*7+6)+6,pad+f*1.2,hs,i<hp);return}
   ctx.textAlign='right';shadow(S.mode==='bear'?'PREY':S.mode==='solo'?'SOLO':'CREW',cw-pad,pad+f*.4,'#fff3dc');
   const list=S.mode==='bear'?S.prey:S.crew,all=S.mode==='bear'?S.prey.length+S.chomps:S.crew.length+S.lost.length,box=Math.round(f*.55);
   for(let i=0;i<all;i++){
