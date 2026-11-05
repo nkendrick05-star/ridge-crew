@@ -2023,7 +2023,7 @@ function drawHikerBack(g,c,x,y,wide){
 function drawBearSleep(g,x,y,t,flip,peek,slide){
   x=Math.round(x);y=Math.round(y);
   const P0=BPAL||bearSkin().pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ax=x-23;
-  if(P0.yeti){if(slide)drawYetiSlide(g,x,y,t,flip);else drawYetiSleep(g,x,y,t,flip,peek);return}
+  if(P0.yeti){if(slide)drawYetiSlide(g,x,y,t,flip);else drawYetiSleep(g,x-4,y,t,flip,peek);return}
   g.save();if(flip){g.translate(ax*2,0);g.scale(-1,1)}
   const br=Math.sin(t*1.7)>0?1:0;
   if(!PXC){g.globalAlpha=.28;px(g,'#000',x-47,y-1,49,2);g.globalAlpha=1}
@@ -2274,8 +2274,24 @@ const PZ_FIRE_CAP={
   lava:['Pee break from a branch. Do not look down.','The lava hisses back.','Doing their part, from up here.'],
   ride:['The bear needed one too.','Even the bear joined in.','Five guys and a bear. Nobody look.']
 };
+function drawYetiBack(g,x,y,wide){
+  /* yeti from behind, standing at the bank with the crew */
+  if(wide){px(g,YF,x-10,y-10,6,10);px(g,YF,x+4,y-10,6,10);px(g,YK,x-11,y-2,7,2);px(g,YK,x+4,y-2,7,2)}
+  else{px(g,YF,x-7,y-10,6,10);px(g,YF,x+1,y-10,6,10);px(g,YK,x-8,y-2,7,2);px(g,YK,x+1,y-2,7,2)}
+  px(g,YS,x-8,y-9,16,1);
+  px(g,YF,x-10,y-29,20,20);for(let k=0;k<6;k++){px(g,YF,x-11,y-27+k*3,1,2);px(g,YF,x+10,y-26+k*3,1,2)}
+  for(let k=0;k<5;k++)px(g,YF,x-9+k*4,y-9,2,1+(k%2));
+  px(g,YS,x+5,y-27,1,16);px(g,YS,x-4,y-24,1,5);px(g,YS,x,y-19,1,5);px(g,YS,x-7,y-15,1,4);
+  px(g,YF,x-15,y-27,5,15);px(g,YF,x+10,y-27,5,15);px(g,YS,x-15,y-27,1,15);px(g,YS,x+14,y-27,1,15);
+  px(g,YK,x-15,y-12,5,3);px(g,YK,x+10,y-12,5,3);
+  px(g,YF,x-9,y-31,4,2);px(g,YF,x-2,y-32,4,3);px(g,YF,x+5,y-31,4,2);
+  px(g,YF,x-7,y-42,14,12);px(g,YF,x-8,y-39,1,7);px(g,YF,x+7,y-39,1,7);px(g,YF,x-2,y-44,3,2);px(g,YF,x+1,y-45,2,3);
+  px(g,YS,x+3,y-41,1,9);px(g,YS,x-4,y-38,1,4);
+  px(g,YH,x-7,y-44,2,2);px(g,YH,x-8,y-45,2,1);px(g,YH,x+5,y-44,2,2);px(g,YH,x+6,y-45,2,1);
+}
 function drawBearBack(g,x,y,wide){
   const P0=BPAL||bearSkin().pal,b=P0.b,d=P0.far,l=P0.l;
+  if(P0.yeti){drawYetiBack(g,x,y,wide);return}
   if(wide){px(g,b,x-10,y-9,6,9);px(g,b,x+4,y-9,6,9);px(g,d,x-11,y-1,7,1);px(g,d,x+4,y-1,7,1)}else{px(g,b,x-7,y-9,6,9);px(g,b,x+1,y-9,6,9)}
   px(g,b,x-9,y-27,18,19);px(g,b,x-8,y-29,16,2);px(g,d,x+6,y-27,3,19);px(g,l,x-8,y-27,2,10);
   px(g,b,x-12,y-25,3,11);px(g,b,x+9,y-25,3,11);px(g,d,x-12,y-15,3,1);px(g,d,x+9,y-15,3,1);
@@ -2412,7 +2428,7 @@ function drawPee(){
   if(v!=='ledge'&&v!=='summit')pzLife(ly,t);
   /* sleeping bear (on the side away from the crew) */
   const bx=PZ.side>0?W-6:52,peek=PZ.yeti&&S.mode==='uphill'?(t+PZ.seed)%6>4.2:(t+PZ.seed)%11>9.3;
-  {const sl=()=>outlined(ctx,()=>drawBearSleep(ctx,bx,ly+2,t,PZ.side<0,peek));if(S.mode==='bear')withSkin(sl);else if(S.mode==='uphill'&&PZ.yeti)outlined(ctx,()=>drawYetiSleep(ctx,bx,ly+2,t,PZ.side<0,peek));else sl();
+  {const sl=()=>outlined(ctx,()=>drawBearSleep(ctx,bx,ly+2,t,PZ.side<0,peek));if(S.mode==='bear')withSkin(sl);else if(S.mode==='uphill'&&PZ.yeti)outlined(ctx,()=>drawYetiSleep(ctx,bx-4,ly+2,t,PZ.side<0,peek));else sl();
    if(S.mode==='uphill'&&!PXC&&(!PZ.yeti||peek)){const zx=PZ.side>0?bx-26:bx+30;ctx.font='700 7px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle=PZ.yeti?'#cfe3f2':'#fff3dc';const zk=(t*.5)%1;ctx.globalAlpha=PZ.yeti?1:Math.sin(zk*Math.PI);ctx.fillText(PZ.yeti?'...':'*wheeze*',zx,Math.round(ly-36-(PZ.yeti?0:zk*6)));ctx.globalAlpha=1}}
   pzCritter(ly,cx,t);
   /* crew */
