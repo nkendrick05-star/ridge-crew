@@ -1044,11 +1044,12 @@ function drawBurnable(o,x,t){
   if(b>0&&!PXC){const n=Math.max(1,Math.round(o.w/6));for(let k=0;k<n;k++)drawFlame(ctx,x+3+k*6,gy-Math.round(o.h*.3),6+o.h*.5*(1-Math.max(0,b-2)/1.2),t,o.x+k*3)}
 }
 /* forest fire trees: trunk set back in the background, branch + crown in the crew's plane */
-function ffTrunk(tx,top,bot,burnt,seed){
+function ffTrunk(tx,top,bot,burnt,seed,tw){
+  tw=tw||9;const hw=Math.floor(tw/2);
   const base=burnt?'#2a1e18':'#5a3d26',c=mixHex(base,P.sky[2]||'#c8b8a0',burnt?.15:.38),dk=mixHex(c,'#000000',.22),lt=mixHex(c,'#ffffff',.12);
-  px(ctx,c,tx-4,top,9,bot-top);px(ctx,lt,tx-4,top,1,bot-top);px(ctx,dk,tx+4,top,1,bot-top);
-  for(let y=top+((seed*7)|0)%7;y<bot-4;y+=7){const o=Math.floor(hash(seed+y*.13)*5);px(ctx,dk,tx-3+o,y,1,4);if(hash(seed+y)<.3)px(ctx,dk,tx-2,y+2,3,1)}
-  px(ctx,c,tx-6,bot-5,13,5);px(ctx,dk,tx-6,bot-1,13,1);
+  px(ctx,c,tx-hw,top,tw,bot-top);px(ctx,lt,tx-hw,top,1,bot-top);px(ctx,dk,tx-hw+tw-1,top,1,bot-top);
+  for(let y=top+((seed*7)|0)%7;y<bot-4;y+=7){const o=Math.floor(hash(seed+y*.13)*(tw-3));px(ctx,dk,tx-hw+1+o,y,1,4);if(hash(seed+y)<.3)px(ctx,dk,tx-hw+2,y+2,Math.min(3,tw-3),1)}
+  px(ctx,c,tx-hw-2,bot-5,tw+4,5);px(ctx,dk,tx-hw-2,bot-1,tw+4,1);
 }
 function ffBranch(ax,ay,tx,st,t,seed){
   /* st: 0 fresh, >0 burning (seconds), -2 charred */
@@ -1073,10 +1074,35 @@ function ffCrown(tx,y0,w,h,st,t,seed){
 }
 function drawBranch(o,x){
   const bot=Math.round(o.gy-78),t=S.t,tx=x+o.w+8,g=Math.round(o.gy);
-  ffTrunk(tx,bot-140,g,false,o.x*.01);
-  ffBranch(x,bot+1,tx,1.2,t,o.x);
+  const sz=.75+hash(o.x*.37)*.8,cw=Math.round(26+24*sz),chh=Math.round(36+44*sz),tw=Math.round(6+5*sz),cTop=bot-8-chh;
+  ffTrunk(tx,cTop+6,g,false,o.x*.01,tw);
+  ffBranch(x,bot+1,tx-Math.floor(tw/2)+4,1.2,t,o.x);
   for(let k=0;k<4;k++){const hx=x+3+k*6;px(ctx,'#2f5a3a',hx,bot+1,3,3+(k%2)*2);px(ctx,'#24482e',hx,bot+3+(k%2)*2,3,1)}
-  ffCrown(tx,bot-8,30,46,1.2,t,o.x+7);
+  ffCrown(tx,bot-8,cw,chh,1.2,t,o.x+7);
+}
+/* dense forest behind the action in Ride the Bear / Lava Floor */
+function forestTree(x,base,h,cw,tw,col,trk,burnt,seed,flames){
+  const top=base-h,cb=top+h*.62;
+  ctx.fillStyle=trk;ctx.fillRect(Math.round(x-tw/2),Math.round(top+h*.12),tw,Math.round(base-top-h*.12));
+  const tiers=4;ctx.fillStyle=col;
+  for(let k=0;k<tiers;k++){const ty=top+k*(cb-top)/tiers,w=cw*(k+1.4)/(tiers+.4),hh=(cb-top)/tiers+h*.07;
+    ctx.beginPath();ctx.moveTo(x,ty-2);ctx.lineTo(x-w/2,ty+hh);ctx.lineTo(x+w/2,ty+hh);ctx.closePath();ctx.fill()}
+  if(flames&&!PXC)for(let j=0;j<3;j++)drawFlame(ctx,Math.round(x-cw*.25+j*cw*.25),Math.round(top+h*(.25+j*.12)),5+hash(seed+j)*7,S.t,seed*10+j);
+}
+function drawForest(d,bottom){
+  const fx=LX-(S.fireBack||0),sky=P.sky[2]||'#c8b8a0',winter=SEASON==='winter';
+  const L=[{f:.55,sp:18,p:.88,h0:120,h1:120,c0:16,c1:26,fade:.6},{f:.8,sp:30,p:.75,h0:105,h1:140,c0:24,c1:30,fade:.35}];
+  for(const l of L){
+    const off=d*l.f,col=mixHex('#24482e',sky,l.fade),trk=mixHex('#4a3220',sky,l.fade),burntC=mixHex('#1a1210',sky,l.fade*.6);
+    for(let i=Math.floor(off/l.sp)-2;i*l.sp-off<W+40;i++){
+      const r=hash(i*1.7+l.f*100);if(r>l.p)continue;
+      const x=Math.round(i*l.sp-off+hash(i+3.3)*l.sp*.6),h=l.h0+hash(i*2.9+l.f)*l.h1,cw=l.c0+hash(i*4.1)*l.c1,tw=Math.max(3,Math.round(cw*.22));
+      const burnt=x<fx+10,fl=!burnt&&x<fx+70&&l.f>.7;
+      forestTree(x,bottom,h+ (bottom-GY-oy>0?0:0),cw,tw,burnt?burntC:col,burnt?burntC:trk,burnt,i,fl||(burnt&&hash(i)<.3&&l.f>.7));
+      if(winter&&!burnt){ctx.fillStyle=mixHex('#ffffff',sky,l.fade*.5);ctx.fillRect(Math.round(x-cw*.18),Math.round(bottom-h+4),Math.round(cw*.36),2)}
+    }
+  }
+  const g=ctx.createLinearGradient(0,bottom-90,0,bottom);g.addColorStop(0,'rgba(10,16,12,0)');g.addColorStop(1,'rgba(10,16,12,.35)');ctx.fillStyle=g;ctx.fillRect(0,bottom-90,W+2,90);
 }
 function drawLava(d,bottom){
   const t=S.t,y0=LAVA_Y;
@@ -1090,13 +1116,14 @@ function drawLava(d,bottom){
 function drawAnchors(d){
   const t=S.t,top=Math.round(S.camY-oy-10);
   let cand=null;if(!S.swing&&!S.grounded){const hx=S.dist+LX,hy=S.y-16;let bd=1e9;for(const a of S.anchors){if(a.gone||a.x<hx-18)continue;const dd=Math.hypot(a.x-hx,a.y-hy);if(dd<118&&dd<bd){bd=dd;cand=a}}}
-  for(const a of S.anchors){const x=Math.round(a.x-d),tx=x+30;if(tx<-30||x>W+30)continue;
+  for(const a of S.anchors){const x=Math.round(a.x-d),tx=x+30;if(tx<-40||x>W+40)continue;if(tx<-30||x>W+30)continue;
     const st=a.gone?-2:a.burnT<0?0:a.burnT,ay=Math.round(a.y);
-    ffTrunk(tx,top,LAVA_Y,a.burnT>1.2||a.gone,a.x*.01);
+    const sz=.75+hash(a.x*.37)*.8,cw=Math.round(26+24*sz),chh=Math.round(34+40*sz),tw=Math.round(6+6*sz);
+    ffTrunk(tx,ay-12-chh+6,LAVA_Y,a.burnT>1.2||a.gone,a.x*.01,tw);
     if(!a.gone){ffBranch(x,ay,tx,st,t,a.x);
       if(a===cand&&!PXC){ctx.globalAlpha=.5+.4*Math.sin(t*10);ctx.strokeStyle='#fff3a8';ctx.lineWidth=1;ctx.strokeRect(x-4.5,ay-4.5,8,8);ctx.globalAlpha=1}}
     else if(a.fall<1.2){const fy=Math.round(a.y+a.fall*a.fall*300);ffBranch(x,fy,tx,-2,t,a.x);if(!PXC)drawFlame(ctx,x+8,fy-2,5,t,a.x)}
-    ffCrown(tx,ay-12,32,42,a.gone?-2:(a.burnT>=0?a.burnT:(a.x<S.dist+40?1:0)),t,a.x+3);
+    ffCrown(tx,ay-12,cw,chh,a.gone?-2:(a.burnT>=0?a.burnT:(a.x<S.dist+40?1:0)),t,a.x+3);
     if(a.burnT>=0&&!PXC&&a.x<S.dist+40)for(let k=0;k<2;k++)drawFlame(ctx,tx,Math.round(LAVA_Y-10-k*26-hash(a.x+k)*10),6,t,a.x+k*5);
   }
 }
@@ -1947,6 +1974,7 @@ function render(){
   if(S.shake>0)ctx.translate((Math.random()-.5)*S.shake,(Math.random()-.5)*S.shake);
   ctx.translate(0,oy-Math.round(S.camY));
   const d=S.dist,bottom=S.camY+viewH-oy+4;
+  if(S.mode==='fire'&&(S.ff==='lava'||S.ff==='ride')&&!S.demo)drawForest(d,bottom);
   if(S.mode==='fire'&&S.ff==='lava'&&!S.demo)drawLava(d,bottom);
   drawGround(d,bottom);
   if(S.mode==='fire'&&S.ff==='lava'&&!S.demo)drawAnchors(d);
