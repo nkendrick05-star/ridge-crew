@@ -938,7 +938,7 @@ const BIOMES=[
  {name:'Above the Clouds',sky:['#2b4c9a','#6a86c8','#e8b8c8','#ffd8a8'],far:'#ffffff',mid:'#eef2f8',midT:'#dfe6f0',near:'#c8d0dc',nearT:'#aab6c6',trees:0,
   dirt:'#5e6270',edge:'#454956',grass:'#f2f5fa',grass2:'#cfd8e4',speck:'#4d515c',speck2:'#7c8290',tuft:'#ffffff',falls:0}
 ];
-const UP_BASE=5200,UP_FT=1.6,UP_CAMPS=[{ft:7000,n:'Camp 1',c:'#e0702b'},{ft:9000,n:'Camp 2',c:'#3a8fd0'},{ft:11000,n:'Camp 3',c:'#e0b83a'},{ft:13000,n:'High Camp',c:'#8a4ad0'},{ft:14505,n:'The Summit',c:'#d83a3a',summit:1}];
+const UP_BASE=5200,UP_FT=2.6,UP_CAMPS=[{ft:7000,n:'Camp 1',c:'#e0702b'},{ft:9000,n:'Camp 2',c:'#3a8fd0'},{ft:11000,n:'Camp 3',c:'#e0b83a'},{ft:13000,n:'High Camp',c:'#8a4ad0'},{ft:14505,n:'The Summit',c:'#d83a3a',summit:1}];
 const upAlt=y=>UP_BASE+(GY-y)*UP_FT;
 const YETI_PAL={b:'#e9eff3',far:'#b9c7d2',l:'#86a4bc',k:'#1a2430'};
 function mixHex(a,b,t){
@@ -1021,7 +1021,7 @@ function newRun(leaderId,demo,rm){
   if(rm==='fire'&&!demo){S.spin={t:0,dur:2.2,final:S.ff,last:-1}}
   return s;
 }
-function speed(){return Math.min(280,150+S.dist*0.011)}
+function speed(){return Math.min(280,150+S.dist*(S.mode==='uphill'?0.006:0.011))}
 const nb=()=>S.leader.id==='nathan'?(ups.ab_nathan?3:2):1;
 const reachR=()=>S.leader.id==='curly'?(ups.ab_curly?160:150):118;
 const isLava=()=>S.mode==='fire'&&S.ff==='lava';
@@ -1095,7 +1095,7 @@ function genCore(){
   while(S.genX<S.dist+W+260){
     if(!S.demo&&S.genX>=S.terrUntil)pickTerrain();
     if(S.mode==='uphill'&&!S.demo&&S.upNext<UP_CAMPS.length&&upAlt(S.gy)>=UP_CAMPS[S.upNext].ft){const c=UP_CAMPS[S.upNext],L=c.summit?620:460;S.segs.push({x0:S.genX,x1:S.genX+L,y0:S.gy,slope:0});S.upCamps.push({x:S.genX+L*.5,gy:S.gy,i:S.upNext,done:false,t:0});S.upNext++;S.genX+=L;continue}
-    const spd=Math.min(280,150+S.genX*0.011),late=!S.demo&&S.genX>1400;
+    const spd=Math.min(280,150+S.genX*(S.mode==='uphill'?0.006:0.011)),late=!S.demo&&S.genX>1400;
     let special=false;const r=Math.random();
     if(late&&S.mode!=='uphill'&&r<.06){
       const w=95+Math.random()*30,x0=S.genX,bank=S.gy;
