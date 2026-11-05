@@ -1839,7 +1839,7 @@ function drawFFActors(d){
       outlined(ctx,()=>{px(ctx,lk.shirt,p.x0+22,y-4,4,2);px(ctx,lk.skin,p.x0+26,y-4,5,2);px(ctx,lk.shirt,p.x0+22,y+1,4,2);px(ctx,lk.skin,p.x0+26,y+1,5,2)});
       if(Math.floor(t*3+k)%4===0){ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(['ow','HOLD ON','aaa','my shirt'][k%4],p.x0+14,y-12)}});
     if(st.duck){
-      shd(LX-2,S.y,46);outlined(ctx,()=>drawBearSleep(ctx,LX+22,S.y,t*3,true,true));
+      shd(LX-2,S.y,46);outlined(ctx,()=>drawBearSleep(ctx,LX+22,S.y,t*3,true,true,true));
       riders.forEach((c,i)=>{if(blink&&i===riders.length-1)return;ctx.save();ctx.translate(LX-15+[0,3,-2,2,-1][i%5],Math.round(S.y)-15-i*st.sp);ctx.rotate(Math.PI/2);outlined(ctx,()=>drawHiker(ctx,c,0,0,0,false));ctx.restore()});
     }else{
       shd(LX+2,S.y,36);outlined(ctx,()=>drawBear(ctx,LX+20,S.y,S.at,true,!S.grounded));
@@ -1909,23 +1909,49 @@ function drawYeti(g,x,y,t,open,air){
   if(open){px(g,YF,x-9,ay+5,13,3);px(g,YK,x+4,ay+4,3,5);for(let k=0;k<3;k++)px(g,'#e8e2d0',x+7,ay+4+k*2,1,1)}
   else{px(g,YS,x-10,ay+1+sw,1,14);px(g,YF,x-9,ay+1+sw,4,14);px(g,YK,x-10,ay+15+sw,5,3);px(g,'#e8e2d0',x-6,ay+18+sw,1,1);px(g,'#e8e2d0',x-8,ay+18+sw,1,1)}
 }
+function drawYetiSlide(g,x,y,t,flip){
+  /* belly-sliding yeti (Bear Ride duck): flat out, arms forward */
+  x=Math.round(x);y=Math.round(y);const ax=x-23;
+  g.save();if(flip){g.translate(ax*2,0);g.scale(-1,1)}
+  px(g,YF,x-34,y-10,28,9);for(let k=0;k<7;k++)px(g,YF,x-33+k*4,y-11,2,1);px(g,YS,x-32,y-2,24,1);
+  px(g,YF,x-6,y-8,8,5);px(g,YK,x+2,y-8,3,4);px(g,YKD,x+2,y-5,3,1);
+  px(g,YF,x-46,y-7,12,4);px(g,YK,x-50,y-8,4,5);for(let k=0;k<3;k++)px(g,'#e8e2d0',x-51,y-8+k*2,1,1);
+  const hx=x-44,hy=y-17;px(g,YF,hx,hy+2,12,10);px(g,YF,hx+2,hy,8,2);px(g,YH,hx+2,hy-2,2,2);px(g,YH,hx+8,hy-2,2,2);
+  px(g,YK,hx,hy+4,7,6);px(g,YF,hx,hy+3,8,1);px(g,'#141c24',hx+1,hy+5,2,1);px(g,'#141c24',hx+4,hy+5,2,1);px(g,'#2a1420',hx+1,hy+8,4,1);
+  g.restore();
+}
 function drawYetiSleep(g,x,y,t,flip,peek){
+  /* sitting on the ground with his back against a boulder, legs out, hands on his belly, dozing */
   x=Math.round(x);y=Math.round(y);const ax=x-23;
   g.save();if(flip){g.translate(ax*2,0);g.scale(-1,1)}
   const br=Math.sin(t*1.7)>0?1:0;
-  if(!PXC){g.globalAlpha=.28;px(g,'#000',x-47,y-1,49,2);g.globalAlpha=1}
-  px(g,YF,x-34,y-20-br,26,20+br);px(g,YF,x-31,y-23-br,20,3);
-  for(let k=0;k<6;k++){px(g,YF,x-35,y-18-br+k*3,1,2);px(g,YF,x-8,y-17-br+k*3,1,2)}
-  px(g,YS,x-30,y-7,20,1);px(g,YS,x-24,y-17-br,1,5);px(g,YS,x-17,y-15-br,1,5);
-  px(g,YF,x-41,y-10,10,8);px(g,YK,x-45,y-3,11,3);px(g,YKD,x-45,y-1,11,1);
-  px(g,YS,x-39,y-14,13,4);px(g,YK,x-42,y-15,4,5);px(g,'#e8e2d0',x-43,y-14,1,1);px(g,'#e8e2d0',x-43,y-12,1,1);px(g,YF,x-29,y-25-br,3,2);px(g,YF,x-22,y-26-br,3,3);px(g,YF,x-15,y-25-br,3,2);
-  const hx=x-46,hy=y-26-br;
-  px(g,YF,hx,hy+2,13,11);px(g,YF,hx+2,hy,9,2);px(g,YF,hx+13,hy+4,1,6);px(g,YF,hx+6,hy-1,2,1);px(g,YF,hx+4,hy-2,2,2);
+  if(!PXC){g.globalAlpha=.28;px(g,'#000',x-48,y-1,51,2);g.globalAlpha=1}
+  /* the rock */
+  px(g,'#7d7a73',x-17,y-20,19,20);px(g,'#7d7a73',x-15,y-23,15,3);px(g,'#7d7a73',x-12,y-25,9,2);
+  px(g,'#a19d93',x-13,y-24,6,1);px(g,'#8e8a82',x-15,y-22,4,8);px(g,'#5c5953',x-17,y-2,19,2);px(g,'#5c5953',x,y-18,2,16);px(g,'#6d6a64',x-6,y-12,4,1);px(g,'#6d6a64',x-3,y-7,3,1);
+  if(!PXC){px(g,'#6f8a4a',x-2,y-23,3,1);px(g,'#8aa85a',x-1,y-24,1,1)}
+  /* legs stretched out in front */
+  px(g,YF,x-44,y-8,17,7);px(g,YF,x-43,y-9,8,1);px(g,YS,x-44,y-2,17,1);
+  for(let k=0;k<4;k++)px(g,YF,x-42+k*4,y-1,2,1);
+  /* big feet, soles up */
+  px(g,YK,x-48,y-12,4,11);px(g,YKD,x-48,y-2,4,1);px(g,YKD,x-46,y-11,1,8);
+  for(let k=0;k<3;k++)px(g,'#e8e2d0',x-49,y-11+k*3,1,1);
+  /* torso, upright, leaning back on the rock */
+  px(g,YF,x-30,y-25-br,15,19+br);px(g,YF,x-31,y-21-br,1,12);px(g,YF,x-16,y-23-br,2,15);
+  for(let k=0;k<5;k++)px(g,YF,x-32,y-22-br+k*3,1,2);
+  px(g,YS,x-27,y-17-br,1,4);px(g,YS,x-21,y-20-br,1,4);px(g,YS,x-29,y-9,12,1);
+  /* shoulder tufts */
+  px(g,YF,x-30,y-8,15,8);px(g,YF,x-29,y-28-br,13,4);px(g,YF,x-30,y-27-br,1,2);px(g,YF,x-16,y-27-br,1,2);
+  /* arms folded on his belly */
+  px(g,YS,x-31,y-20-br,3,9);px(g,YS,x-30,y-12-br,9,2);px(g,YK,x-23,y-14-br,6,3);px(g,YKD,x-23,y-12-br,6,1);
+  /* head, tipped to one side */
+  const hx=x-31,hy=y-39-br;
+  px(g,YF,hx,hy+2,13,11);px(g,YF,hx+2,hy,9,2);px(g,YF,hx+13,hy+4,1,6);px(g,YF,hx+6,hy-1,2,1);px(g,YF,hx+4,hy-2,2,2);px(g,YF,hx-1,hy+5,1,5);
   px(g,YH,hx+2,hy-2,2,2);px(g,YH,hx+1,hy-3,2,1);px(g,YH,hx+9,hy-2,2,2);px(g,YH,hx+10,hy-3,2,1);
-  px(g,YK,hx,hy+4,8,7);px(g,YF,hx,hy+3,9,1);
+  px(g,YK,hx,hy+4,8,7);px(g,YF,hx,hy+3,9,1);px(g,YKD,hx,hy+4,8,1);
   if(peek){px(g,'#141c24',hx+1,hy+5,2,2);px(g,'#cfe8ff',hx+1,hy+5,1,1);px(g,'#141c24',hx+5,hy+6,2,1)}
   else{px(g,'#141c24',hx+1,hy+6,2,1);px(g,'#141c24',hx+5,hy+6,2,1)}
-  px(g,YKD,hx+2,hy+9,3,1);
+  const sn=Math.floor(t*1.7)%2;px(g,'#2a1420',hx+2,hy+9,3,1+sn);
   g.restore();
 }
 function drawBear(g,x,y,t,open,air){
@@ -1993,10 +2019,10 @@ function drawHikerBack(g,c,x,y,wide){
   if(c.lamp)px(g,'#2a2a2a',x-4,hy-5,9,1);
 }
 /* sleeping bear: lying on his belly, head on paws, facing left (flip=true faces right) */
-function drawBearSleep(g,x,y,t,flip,peek){
+function drawBearSleep(g,x,y,t,flip,peek,slide){
   x=Math.round(x);y=Math.round(y);
   const P0=BPAL||bearSkin().pal,b=P0.b,far=P0.far,l=P0.l,k=P0.k,ax=x-23;
-  if(P0.yeti){drawYetiSleep(g,x,y,t,flip,peek);return}
+  if(P0.yeti){if(slide)drawYetiSlide(g,x,y,t,flip);else drawYetiSleep(g,x,y,t,flip,peek);return}
   g.save();if(flip){g.translate(ax*2,0);g.scale(-1,1)}
   const br=Math.sin(t*1.7)>0?1:0;
   if(!PXC){g.globalAlpha=.28;px(g,'#000',x-47,y-1,49,2);g.globalAlpha=1}
