@@ -832,6 +832,9 @@ function drawHead(g,c,x,yb,eb){
   else if(c.glasses){px(g,'#2a2a2a',x+1,yb-6,3,1);px(g,'#2a2a2a',x+1,yb-5,1,1);px(g,'#2a2a2a',x+3,yb-5,1,1)}
   if(c.goggles){px(g,'#2a2a2a',x-4,yb-6,5,1);px(g,'#3a3a3a',x+1,yb-7,4,3);px(g,'#9fd8f2',x+2,yb-6,2,1);px(g,'#ffffff',x+2,yb-6,1,1)}
 }
+/* jersey letters (3x5 pixel font, N is 4 wide) */
+const JERSEY_G={S:['###','#..','###','..#','###'],J:['..#','..#','..#','#.#','###'],H:['#.#','#.#','###','#.#','#.#'],B:['##.','#.#','##.','#.#','##.'],N:['#..#','##.#','#.##','#..#','#..#']};
+const JERSEY_L={patch:'S',curly:'J',camo:'H',stache:'B',nathan:'N'};
 function shirtDeco(g,c,x,top,w,h){
   if(c.stripe)px(g,c.stripe,x,top+3,w,2);
   if(c.plaid){px(g,c.plaid,x+2,top,1,h);px(g,c.plaid,x+w-3,top,1,h);px(g,c.plaid,x,top+4,w,1)}
@@ -839,7 +842,8 @@ function shirtDeco(g,c,x,top,w,h){
   if(c.shine){px(g,'#ffffff',x+1,top+1,1,h-3);px(g,'#e8ecef',x+w-2,top+2,1,2)}
   if(c.zig)for(let i=0;i<w;i++)px(g,i%2?'#f2d29a':'#2a6a8a',x+i,top+3+(i%2),1,1);
   if(c.scorch){px(g,'#1d1714',x+1,top+2,2,2);px(g,'#1d1714',x+w-3,top+5,2,1);px(g,'#ff8a2a',x+2,top+3,1,1);px(g,'#6a5a50',x,top+h-2,w,1)}
-  if(c.num){px(g,'#1d1a17',x+Math.floor(w/2)-1,top+2,1,4);px(g,'#1d1a17',x+Math.floor(w/2)+1,top+2,1,4);px(g,'#1d1a17',x+Math.floor(w/2),top+2,1,1)}
+  if(c.num){const L=JERSEY_L[c.id]||((c.def||'S')[0]||'S').toUpperCase(),gl=JERSEY_G[L]||JERSEY_G.S,gw=gl[0].length,sx=x+Math.floor((w-gw)/2),hx=(c.shirt||'#888888').replace('#',''),lum=parseInt(hx.slice(0,2),16)*.3+parseInt(hx.slice(2,4),16)*.59+parseInt(hx.slice(4,6),16)*.11,col=lum<110?'#f4ead0':'#1d1a17';
+    gl.forEach((row,ry)=>{for(let rx=0;rx<row.length;rx++)if(row[rx]==='#')px(g,col,sx+rx,top+2+ry,1,1)})}
 }
 function drawHiker(g,c,x,y,t,air,pose){
   c=look(c);
