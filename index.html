@@ -227,6 +227,9 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .frow .btn.big{font-size:1.35rem;padding:12px 6px}
 .frow.small .btn{padding:10px 2px;font-size:.92rem}
 .modelist{display:flex;flex-direction:column;gap:6px;text-align:left}
+.modebtn i.fstack{display:flex;flex-direction:column;align-items:flex-end;gap:0;flex:none;line-height:1.2;font-size:.66rem;white-space:nowrap;margin:-2px 0}
+.modebtn i.fstack span{display:block;font:500 .64rem var(--display);color:var(--muted);line-height:1.25}
+.modebtn i.fstack b{font:700 .72rem var(--display);color:var(--amber)}
 .modebtn{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:9px 12px;color:var(--cream);cursor:pointer;text-align:left}
 .modebtn div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .modebtn b{font:700 1.05rem var(--display)}
@@ -288,7 +291,8 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 @media (max-height:540px) and (min-aspect-ratio:4/3){
   .overcard{max-width:760px;width:min(100%,760px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:14px}
   .media canvas{max-height:46vh}
-  .modelist{display:grid;grid-template-columns:1fr 1fr}
+  .mcard:has(.modelist){width:min(100%,760px)}
+  .modelist{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;min-height:0;overflow-y:auto}
   .cardm{max-width:620px;display:grid;grid-template-columns:auto 1fr;align-items:center}
   .cardm img{max-height:78vh;width:auto}
 }
@@ -780,7 +784,7 @@ const MODES=[
  {id:'uphill',name:'Endless Uphill',desc:'The trail only climbs, and it keeps getting steeper.'},
  {id:'solo',name:'Solo Hike',desc:'No crew behind you. One hit ends it, but pinecones count double.'},
  {id:'bear',name:'Bear Mode',desc:'You are the bear. Catch all five before they get away.'},
- {id:'fire',name:'Forest Fire',desc:'Pure chaos, and different every run: you ARE the fire, the floor is lava, or the crew rides the bear.'}
+ {id:'fire',name:'Forest Fire',desc:'Be the fire, swing over lava, or ride the bear.'}
 ];
 let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}catch(e){}
 if(!MODES.find(m=>m.id===runMode))runMode='classic';
@@ -3383,7 +3387,7 @@ function showModes(){
   for(const m of MODES){
     const b=el('button','modebtn');b.type='button';b.setAttribute('aria-pressed',String(m.id===runMode));
     const t=el('div');t.append(el('b',null,m.name),el('span',null,m.desc));b.appendChild(t);
-    if(m.id==='fire'){const parts=[['blaze','Fire'],['lava','Lava'],['ride','Bear']].filter(([k])=>modeBest['fire_'+k]).map(([k,n])=>n+' '+modeBest['fire_'+k].toLocaleString());if(parts.length)b.appendChild(el('i',null,'Best: '+parts.join(' \u00b7 ')))}
+    if(m.id==='fire'){const fb=[['blaze','Torch'],['lava','Lava'],['ride','Ride']];if(fb.some(([k])=>modeBest['fire_'+k])){const st=el('i','fstack');for(const [k,nm2] of fb){const ln=el('span');ln.append(nm2+' ',el('b',null,modeBest['fire_'+k]?modeBest['fire_'+k].toLocaleString():'\u2014'));st.appendChild(ln)}b.appendChild(st)}}
     else if(modeBest[m.id])b.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
     b.addEventListener('click',()=>{runMode=m.id;save('rc_mode',m.id);showHome()});box.appendChild(b);
   }
