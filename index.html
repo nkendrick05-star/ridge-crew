@@ -1950,6 +1950,42 @@ const PZ_CAP={
   creek:['Standing at the creek. The sound helps.','Running water makes it easier, apparently.','Nobody drink downstream.']
 };
 let PZ={v:'line',side:1,critter:null,seed:0};
+const pzWinter=()=>SEASON==='winter'||!!PZ.snowy;
+const PZ_UP_CAP={
+  line:['Trail-side line-up. The air is thin. So is the privacy.','Five guys, one mountain, zero eye contact.','Hydration check at altitude.'],
+  trees:['Last trees before the treeline. Use them while you can.','One guy, one tree. Up here the trees are rare.'],
+  rocks:['Granite makes a great privacy wall.','Every guy got his own boulder. Mountain manners.','Somebody had to climb the big rock.'],
+  ledge:['Pee break off a cliff. Someone down there thinks it is raining.','Do not lean forward. It is a long way down.','Scenic overlook, technically.'],
+  camp:['Base camp facilities: none.','The camp has a tent, a fire, and zero bathrooms.','They walked ten feet from the tent. Good enough.'],
+  snow:['Do not eat the yellow snow.','Signing their names in the snow.','At this altitude it might freeze before it lands.'],
+  summit:['14,505 ft. Highest pee of their lives.','They planted a flag. Then they watered it.','Peeing off the top of the mountain. Legends.']
+};
+function pzUphill(){
+  const a=S.upMax||UP_BASE,w=a>=11000?{line:1,ledge:3,rocks:1,camp:2,snow:6}:a>=9000?{rocks:3,ledge:4,line:1,camp:2}:a>=7000?{line:1,trees:1,rocks:3,ledge:2,camp:2}:{line:2,trees:3,rocks:1,ledge:1,camp:2};
+  if(S.summited){w.summit=7;w.snow=3}
+  let tot=0;for(const k in w)tot+=w[k];let r=Math.random()*tot,v='line';for(const k in w){r-=w[k];if(r<0){v=k;break}}
+  PZ.v=v;PZ.snowy=a>=11000;PZ.yeti=!!S.yeti;PZ.uptired=!S.yeti;
+  if(a>8500&&Math.random()<.55)PZ.critter='goat';else if(PZ.snowy)PZ.critter=null;
+  SFX.peeSurface(v==='ledge'?'far':'ground');
+  const el=document.querySelector('#pauseScr p');if(!el)return;
+  const q=Math.random();
+  el.textContent=PZ.yeti&&q<.4?pick(['The yeti fell asleep. Nobody make a sound.','The yeti snores like a leaf blower.','Is the yeti watching? The yeti is watching.']):
+    !PZ.yeti&&q<.3?pick(['The bear is still catching his breath. Perfect timing.','The bear passed out on the slope. Mountains are hard.']):
+    PZ.critter==='goat'&&q<.55?pick(['A mountain goat is judging them.','The goat has seen worse. Barely.']):pick(PZ_UP_CAP[v]);
+}
+function pzCampProps(x,ly,t,summit){
+  if(summit){
+    px(ctx,'#7d7a73',x-7,ly-6,16,7);px(ctx,'#8e8a82',x-5,ly-11,12,5);px(ctx,'#a19d93',x-3,ly-15,8,4);
+    px(ctx,'#d8d2c4',x,ly-46,1,32);const w=Math.floor(t*5)%2;px(ctx,'#d83a3a',x+1,ly-46,14,8);px(ctx,'#a82a2a',x+1,ly-39,14,1);px(ctx,'#d83a3a',x+15,ly-45+w,2,7-w);px(ctx,'#fff3dc',x+6,ly-44,3,3);
+    px(ctx,'#6b4423',x-28,ly-14,2,15);px(ctx,'#8a5a2e',x-42,ly-23,30,10);px(ctx,'#6b4423',x-42,ly-14,30,1);
+    ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText('14,505 FT',x-27,ly-16);return;
+  }
+  const C=UP_CAMPS[Math.min(3,Math.max(0,(S.upNext||1)-1))];
+  const tw=26,th=18,tx=x;for(let r=0;r<th;r++){const ww=Math.max(2,Math.round(tw*(r+1)/th));px(ctx,r<2?'#fff3dc':C.c,tx+Math.round((tw-ww)/2),ly-th+r,ww,1)}px(ctx,'#2a2018',tx+tw/2-2,ly-10,4,10);
+  const fx=x+38;px(ctx,'#6b4423',fx-5,ly-2,11,2);px(ctx,'#4a2e17',fx-4,ly-3,9,1);const f=Math.floor(t*8)%3;px(ctx,'#ff8a2a',fx-3,ly-7-f%2,6,5);px(ctx,'#ffd166',fx-2,ly-9+f%2,4,3);
+  if(!PXC){ctx.globalAlpha=.35;for(let k=0;k<4;k++){const kk=(t*.6+k*.25)%1;px(ctx,'#cfcfcf',fx-1+Math.round(Math.sin(kk*6+k)*2),Math.round(ly-12-kk*26),2,2)}ctx.globalAlpha=1}
+  px(ctx,'#d8d2c4',x-14,ly-32,1,32);const w=Math.floor(t*5)%2;px(ctx,C.c,x-13,ly-32,11,7);px(ctx,C.c,x-2,ly-31+w,2,6-w);
+}
 function pickPZ(){
   const bi=S.biome||0,w={line:2,trees:2,bushes:2,rocks:1,ledge:1,creek:1};
   if(bi===1){w.trees=4;w.bushes=3}
@@ -1961,12 +1997,13 @@ function pickPZ(){
   const cr=dark?['fireflies','fireflies','owl',null]:(S.ev&&S.ev.type==='rain'?['frog',null]:['rabbit','deer','birds','squirrel',null]);
   PZ={v,side:Math.random()<.5?1:-1,critter:cr[Math.floor(Math.random()*cr.length)],seed:Math.random()*100};PZ.wi=Math.floor(Math.random()*5);
   if(S.mode==='fire'&&S.ff){PZ.v='line';PZ.fv=Math.random()<.5?1:0}
+  if(S.mode==='uphill'&&!S.demo){pzUphill();return}
   SFX.peeSurface(S.mode==='fire'&&S.ff==='lava'?'far':PZ.v==='creek'?'water':PZ.v==='ledge'?'far':'ground');
   const el=document.querySelector('#pauseScr p');const PST={outhouse:['One porta-potty. Five guys. Do the math.','Somebody is taking forever in there.'],curtain:['Privacy curtain up. Ducks included.','Fancy trail, fancy curtain.'],wrong:['Somebody is facing the wrong way.','Uh oh. One of them got turned around.']}[styleOf('pee')];
   if(el)el.textContent=PST&&!(S.mode==='fire'&&S.ff)?pick(PST):S.mode==='bear'?pick(['The bear is napping. The crew took a pee break anyway.','Bear nap. Nobody make a sound.','Even bears need a break. The crew is risking it.']):S.mode==='fire'&&S.ff?(PZ.fv?{blaze:'They found a burning cabin. Doing their best.',lava:'Pee break on a floating rock. It is sinking.',ride:'The bear went fishing instead.'}[S.ff]:pick(PZ_FIRE_CAP[S.ff])):pick(PZ_CAP[PZ.v]);
 }
 function pzTrunk(x,ly,top,i){
-  const aspen=(S.biome||0)===1,r=hash(i*3.7+PZ.seed),h=(aspen?66:56)+Math.round(r*8),winter=SEASON==='winter';
+  const aspen=(S.biome||0)===1,r=hash(i*3.7+PZ.seed),h=(aspen?66:56)+Math.round(r*8),winter=pzWinter();
   if(aspen){
     px(ctx,'#e9e4d6',x-2,ly-h+20,4,h-18);px(ctx,'#e9e4d6',x-3,ly-2,6,3);
     for(let yy=ly-h+28;yy<ly-4;yy+=6)px(ctx,'#2b2620',x-2+((yy/7|0)%2)*2,yy,2,1);
@@ -2000,6 +2037,10 @@ function pzBush(x,ly,w){
 function pzCritter(ly,cx,t){
   const k=PZ.critter;if(!k)return;
   const sx=PZ.side>0?Math.round(W*.12):Math.round(W*.88);
+  if(k==='goat'){const ch=Math.floor(t*4)%2,lk=Math.floor(t*.4)%3===0,d=PZ.side>0?1:-1,w='#efece4',g2='#c9c3b4',hx=sx+d*7;
+    px(ctx,w,sx-7,ly-14,14,7);px(ctx,g2,sx-7,ly-8,14,1);for(const lx of [-6,-2,3,6])px(ctx,'#3a3530',sx+lx,ly-7,2,7);
+    const hy=ly-19+(lk?0:ch);px(ctx,w,hx-3,hy,6,6);px(ctx,'#111',hx+(lk?-2:d),hy+2,1,1);px(ctx,g2,hx-1+d,hy+5,2,3);px(ctx,'#8a8070',hx-2,hy-3,2,3);px(ctx,'#8a8070',hx+1,hy-3,2,3);px(ctx,w,sx-d*8,ly-13,2,2);
+    if(Math.floor(t*.5)%4===1){ctx.font='700 7px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.fillText(Math.floor(t*.5)%8===1?'baa.':'...',hx,ly-28)}return}
   if(k==='rabbit'){const hop=Math.floor(t*.8)%5===0?2:0;px(ctx,'#9c8a73',sx-3,ly-5-hop,7,5);px(ctx,'#9c8a73',sx+2,ly-8-hop,4,4);px(ctx,'#9c8a73',sx+3,ly-12-hop,1,4);px(ctx,'#9c8a73',sx+5,ly-12-hop,1,4);px(ctx,'#1a1210',sx+4,ly-7-hop,1,1);px(ctx,'#f2ece0',sx-4,ly-4-hop,2,2)}
   else if(k==='squirrel'){px(ctx,'#a0582a',sx-2,ly-5,5,5);px(ctx,'#a0582a',sx+2,ly-8,3,3);px(ctx,'#1a1210',sx+3,ly-7,1,1);px(ctx,'#c06a32',sx-5,ly-11,3,9);px(ctx,'#c06a32',sx-4,ly-12,3,1)}
   else if(k==='deer'){const look=Math.floor(t*.5)%3===0;px(ctx,'#9a6a3e',sx-8,ly-14,14,6);px(ctx,'#7a5230',sx-7,ly-8,2,8);px(ctx,'#7a5230',sx+3,ly-8,2,8);px(ctx,'#9a6a3e',sx+4,ly-20,3,7);px(ctx,'#9a6a3e',look?sx+4:sx+5,ly-23,5,4);px(ctx,'#1a1210',look?sx+5:sx+8,ly-22,1,1);px(ctx,'#f2ece0',sx-9,ly-14,2,3)}
@@ -2017,7 +2058,7 @@ function pzFireflies(ly,t){
 const pzH=(k)=>hash(k*1.731+PZ.seed);
 function pzRain(){const e=S.ev;return e&&e.type==='rain'?Math.max(0,Math.min(1,e.t/1.2,(e.dur-e.t)/1.2)):0}
 function pzGround(ly,bot,t,v,x0,sp,n){
-  const winter=SEASON==='winter',fall=SEASON==='fall',spring=SEASON==='spring',wet=pzRain();
+  const winter=pzWinter(),fall=SEASON==='fall',spring=SEASON==='spring',wet=pzRain();
   const topC=mixHex(P.dirt,'#000000',.28),midC=P.dirt,lowC=mixHex(P.dirt,'#8a7a66',.35);
   const pathC=winter?'#dfe7ec':mixHex(P.dirt,'#c8ab7e',.5),pathD=winter?'#b9c7d2':mixHex(pathC,'#000000',.2),pathL=winter?'#ffffff':mixHex(pathC,'#ffffff',.18);
   const grass=winter?'#eef3f6':P.grass,grass2=winter?'#c9d6df':P.grass2,tip=winter?'#ffffff':P.tuft;
@@ -2062,7 +2103,7 @@ function pzGround(ly,bot,t,v,x0,sp,n){
   }
 }
 function pzLedge(ly,bot,t){
-  const winter=SEASON==='winter';
+  const winter=pzWinter();
   ctx.globalAlpha=.55;px(ctx,'#e6eef2',0,ly+14,W+2,bot);ctx.globalAlpha=1;
   for(let x=0;x<W+2;x+=4){const r=hash(x*.37+PZ.seed),dh=10+Math.round(r*6);px(ctx,'#6d6a64',x,ly,4,dh);px(ctx,'#55524c',x,ly+dh-2,4,2);if(r<.3)px(ctx,'#7d7a73',x+1,ly+3,2,dh-6)}
   /* 10. cracks with moss */
@@ -2115,7 +2156,7 @@ function pzLog(ly){
     px(ctx,'#efe4cc',mx+4,ly,1,1);px(ctx,'#b08a5a',mx+3,ly-1,3,1)}
 }
 function pzLife(ly,t){
-  if(SEASON==='winter')return;
+  if(pzWinter())return;
   /* 16. a beetle crawling and an ant line */
   const bxx=Math.round((t*5+PZ.seed*13)%(W+20))-10,leg=Math.floor(t*10)%2;
   px(ctx,'#1d2a3a',bxx,ly+3,3,2);px(ctx,'#3a5a7a',bxx+1,ly+3,1,1);px(ctx,'#111',bxx+3,ly+3,1,1);px(ctx,'#111',bxx+leg,ly+5,1,1);px(ctx,'#111',bxx+2-leg,ly+5,1,1);
@@ -2124,7 +2165,7 @@ function pzLife(ly,t){
 }
 function pzForeground(t){
   /* 17. out-of-focus grass close to the camera */
-  const b=viewH-oy+1,winter=SEASON==='winter';
+  const b=viewH-oy+1,winter=pzWinter();
   for(const [off,al] of [[-1,.25],[1,.25],[0,.8]]){ctx.globalAlpha=al;
     for(let x=0;x<W+2;x+=2){const r=pzH(x*.23+400),h=3+Math.round(r*r*9),sw=Math.round(Math.sin(t*1.2+x*.07)*(h/5));
       px(ctx,winter?'#9aa8b2':'#1c2c1e',x+off+sw,b-h,2,h)}}
@@ -2252,7 +2293,7 @@ function drawPeeFire(){
 function drawPee(){
   if(S.mode==='fire'&&S.ff){drawPeeFire();return}
   ctx.save();ctx.translate(0,oy);
-  const ly=GY+4,v=PZ.v,t=pT,bot=viewH-oy+20,winter=SEASON==='winter';
+  const ly=GY+4,v=PZ.v,t=pT,bot=viewH-oy+20,winter=pzWinter();
   const crew=S.mode==='bear'?(S.prey.length?S.prey:[S.leader]):[S.leader,...S.crew],sp=v==='trees'||v==='rocks'?30:24;
   const cx=W/2-PZ.side*20,x0=cx-(crew.length-1)*sp/2;
   const grass=winter?'#eef3f6':P.grass;
@@ -2267,12 +2308,15 @@ function drawPee(){
   if(v==='trees')crew.forEach((c,i)=>pzTrunk(Math.round(x0+i*sp+(i%2?2:-1)),ly,0,i));
   if(v==='rocks')crew.forEach((c,i)=>{if(i!==1)pzRock(Math.round(x0+i*sp+(i%2?3:-2)),ly+2,26,26+(i%2)*5)});
   if(v==='line'){const sx=Math.round(cx+PZ.side*((crew.length+1)*sp/2+6));px(ctx,'#6b4423',sx,ly-18,2,20);px(ctx,'#8a5a2e',sx-7,ly-20,16,6);px(ctx,'#f2e2b0',sx-5,ly-18,4,1);px(ctx,'#f2e2b0',sx,ly-18,5,1);px(ctx,'#f2e2b0',sx-5,ly-16,8,1)}
+  if(v==='camp'||v==='summit'){const ex=v==='summit'?Math.round(cx-PZ.side*((crew.length+1)*sp/2+16)):Math.round(cx+PZ.side*((crew.length+1)*sp/2+4))-(PZ.side>0?0:46);outlined(ctx,()=>pzCampProps(ex,ly+1,t,v==='summit'))}
+  if(PZ.snowy&&v!=='ledge'){for(let k=0;k<5;k++){const dx=Math.round(hash(k*4.1+PZ.seed)*(W+20))-10,dw=18+Math.round(hash(k*2.3)*20);for(let r=0;r<5;r++){const ww=Math.round(dw*Math.sqrt(1-(r/5)*(r/5)));px(ctx,r?'#f4f8fb':'#ffffff',dx-ww/2|0,ly-r+1,ww,1)}}}
   pzDetails(ly,t,v,x0,sp,crew.length);
-  if(v!=='ledge'&&v!=='creek')pzLog(ly);
-  if(v!=='ledge')pzLife(ly,t);
+  if(v!=='ledge'&&v!=='creek'&&v!=='summit'&&v!=='snow')pzLog(ly);
+  if(v!=='ledge'&&v!=='summit')pzLife(ly,t);
   /* sleeping bear (on the side away from the crew) */
-  const bx=PZ.side>0?W-6:52,peek=(t+PZ.seed)%11>9.3;
-  {const sl=()=>outlined(ctx,()=>drawBearSleep(ctx,bx,ly+2,t,PZ.side<0,peek));if(S.mode==='bear')withSkin(sl);else sl()}
+  const bx=PZ.side>0?W-6:52,peek=PZ.yeti&&S.mode==='uphill'?(t+PZ.seed)%6>4.2:(t+PZ.seed)%11>9.3;
+  {const sl=()=>outlined(ctx,()=>drawBearSleep(ctx,bx,ly+2,t,PZ.side<0,peek));if(S.mode==='bear')withSkin(sl);else if(S.mode==='uphill'&&PZ.yeti){const pb=BPAL,pa=BACC;BPAL=YETI_PAL;BACC=null;try{sl()}finally{BPAL=pb;BACC=pa}}else sl();
+   if(S.mode==='uphill'&&!PXC&&(!PZ.yeti||peek)){const zx=PZ.side>0?bx-26:bx+30;ctx.font='700 7px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle=PZ.yeti?'#cfe3f2':'#fff3dc';const zk=(t*.5)%1;ctx.globalAlpha=PZ.yeti?1:Math.sin(zk*Math.PI);ctx.fillText(PZ.yeti?'...':'*wheeze*',zx,Math.round(ly-36-(PZ.yeti?0:zk*6)));ctx.globalAlpha=1}}
   pzCritter(ly,cx,t);
   /* crew */
   let flow=0;const pst=styleOf('pee');
@@ -2297,7 +2341,7 @@ function drawPee(){
     const x=Math.round(x0+i*sp+shiver),fy=v==='rocks'&&i===1?ly-14:ly+2;
     if(v==='rocks'&&i===1)pzRock(Math.round(x0+i*sp),ly+2,24,16);
     const iy=v==='creek'?fy-6:v==='rocks'&&i!==1?fy-5:fy-1;
-    if(v!=='creek'&&v!=='ledge'&&t>.4){const pw=Math.min(11,Math.round(3+t*.7));ctx.globalAlpha=.6;px(ctx,'#2e2216',x-1-Math.round(pw/2),iy,pw,2);ctx.globalAlpha=.35;px(ctx,'#f0dc8a',x-Math.round(pw/2),iy,Math.max(1,Math.round(pw/3)),1);ctx.globalAlpha=1}
+    if(v!=='creek'&&v!=='ledge'&&t>.4){const pw=Math.min(11,Math.round(3+t*.7));ctx.globalAlpha=PZ.snowy?.85:.6;px(ctx,PZ.snowy?'#e3c73a':'#2e2216',x-1-Math.round(pw/2),iy,pw,2);ctx.globalAlpha=PZ.snowy?.7:.35;px(ctx,PZ.snowy?'#fff3a0':'#f0dc8a',x-Math.round(pw/2),iy,Math.max(1,Math.round(pw/3)),1);ctx.globalAlpha=1}
     ctx.globalAlpha=.3;px(ctx,'#000',x-(ph<5?8:6),fy-1,ph<5?16:12,2);px(ctx,'#000',x-(ph<5?6:4),fy+1,ph<5?12:8,1);ctx.globalAlpha=1;
     outlined(ctx,()=>drawHikerBack(ctx,c,x,fy,ph<5));
     pzStream(x-1,fy-8,iy,ph,t,i,v==='creek');
