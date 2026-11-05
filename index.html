@@ -161,9 +161,11 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .rank .sc{font:700 1.15rem var(--display);font-variant-numeric:tabular-nums}
 .rank.mine{border-color:var(--amber);background:rgba(242,165,65,.14)}
 .empty{flex:1;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:.95rem;line-height:1.45;padding:0 12px;max-width:44ch;margin:0 auto}
-.badges{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:8px}
-.badge{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;min-height:0;min-width:0;background:var(--panel2);border:2px solid var(--line);border-radius:var(--r);padding:6px;overflow:hidden}
-.badge .ic{flex:none;width:clamp(30px,6.5vh,48px);height:clamp(30px,6.5vh,48px);border-radius:50%;display:grid;place-items:center;font:700 clamp(.72rem,2vh,1rem) var(--display);background:var(--line);color:var(--muted)}
+.badges{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));grid-auto-rows:auto;align-content:start;gap:8px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:2px 2px 16px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)}
+.gsec{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;margin:6px 2px 0;font:700 .86rem var(--display);color:var(--amber);letter-spacing:.02em}
+.gsec i{font-style:normal;color:var(--muted);font-size:.78rem}
+.badge{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;text-align:left;min-height:0;min-width:0;background:var(--panel2);border:2px solid var(--line);border-radius:var(--r);padding:8px 10px;overflow:hidden;min-height:62px}
+.badge .ic{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font:700 clamp(.72rem,2vh,1rem) var(--display);background:var(--line);color:var(--muted)}
 .badge .bt{display:flex;flex-direction:column;gap:1px;min-width:0}
 .badge b{font:700 .92rem var(--display)}
 .badge .bt span{font-size:.72rem;color:var(--muted);line-height:1.25}
@@ -236,7 +238,8 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .dialog p{margin:0;grid-column:1;font-size:1rem;line-height:1.35}
 .dialog .btn{grid-column:2;grid-row:1/span 2}
 .gtabs{grid-template-columns:repeat(4,minmax(0,1fr))}
-.gpane{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.gpane{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:12px}
+.gpane>*{flex:none}
 .lvcard{display:flex;flex-direction:column;gap:4px;background:rgba(242,165,65,.1);border:2px solid rgba(242,165,65,.4);border-radius:var(--r);padding:10px 12px}
 .lvcard b{font:700 1.05rem var(--display);color:var(--amber)}
 .lvcard span{font-size:.8rem;color:var(--muted)}
@@ -249,12 +252,15 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .mission .btn{font-size:.9rem;padding:9px 12px;display:inline-flex;align-items:center;gap:6px}
 .mission.done{border-color:var(--amber)}
 .mission.locked{opacity:.6}
-.journal{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:6px}
-.jent{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:4px;min-height:0;min-width:0;overflow:hidden;opacity:.55}
+.journal{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,108px),1fr));grid-auto-rows:auto;align-content:start;gap:6px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:2px 2px 16px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)}
+.jent{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:8px 6px;min-height:0;min-width:0;overflow:hidden;opacity:.55}
 .jent.got{opacity:1;border-color:rgba(242,165,65,.5)}
 .jent .ic{font:700 .8rem var(--display);color:var(--amber)}
 .jent b{font:700 .8rem var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.jent span{font-size:.64rem;color:var(--muted);line-height:1.2}
+.jent{min-height:84px!important}
+.jent b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.15}
+.jent span{font-size:.68rem;color:var(--muted);line-height:1.25}
+.jent .ic{font-size:.95rem!important}
 .shame{margin:0;flex:none;font:700 .85rem var(--display);color:#ffb38a;text-align:center}
 .ttl{font-style:normal;font:700 .62rem var(--display);color:var(--amber-ink);background:var(--amber);border-radius:999px;padding:1px 6px;margin-left:6px;vertical-align:2px}
 .up.withface{grid-template-columns:28px minmax(0,1fr) auto}
@@ -268,7 +274,6 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .mixicon{display:inline-block;width:12px;height:14px;background:#d9c08a;border-radius:2px;box-shadow:inset 0 3px 0 #a8905a}
 @media (min-aspect-ratio:1/1){
   .ups{display:grid;grid-template-columns:1fr 1fr;align-content:start}
-  .journal{grid-template-columns:repeat(6,minmax(0,1fr))}
 }
 @media (max-height:540px){
   .frow .btn,.frow.small .btn{padding:8px 4px;font-size:.9rem}
@@ -911,8 +916,8 @@ function burnIt(o){
   const b=BURN[o.type];o.hit=true;o.burning=0.001;
   if(S.t-S.lastBurn<1.6)S.combo=Math.min(9,S.combo+1);else S.combo=1;S.lastBurn=S.t;S.bestCombo=Math.max(S.bestCombo,S.combo);
   const pts=b.pts*S.combo;S.burnPts+=pts;S.burned++;S.heat=Math.min(100,S.heat+b.heat);
-  S.burnTypes[o.type]=(S.burnTypes[o.type]||0)+1;
-  if(S.combo>=5&&S.infernoT<=0){S.infernoT=4.5;unlockBadge('ff_inferno');say('INFERNO!',LX,GY-70,'#ff5a1a');SFX.roar();S.shake=8}
+  S.burnTypes[o.type]=(S.burnTypes[o.type]||0)+1;if(o.type==='outhouse')markSeen('ff_outhouse');if(S.combo>=9)unlockBadge('ff_combo9');if(BIGBURN[o.type]){S.kabooms=(S.kabooms||0)+1;if(S.kabooms>=3)unlockBadge('ff_kaboom')}
+  if(S.combo>=5&&S.infernoT<=0){S.infernoT=4.5;unlockBadge('ff_inferno');markSeen('ff_inferno');say('INFERNO!',LX,GY-70,'#ff5a1a');SFX.roar();S.shake=8}
   SFX.crackle(1);SFX.crackle(.8);if(BIGBURN[o.type]){SFX.roar();S.shake=7;say('KABOOM! +'+pts,LX,GY-46,'#ffd166');
     for(const q of S.obs)if(q!==o&&q.burnable&&!q.hit&&Math.abs((q.x+q.w/2)-(o.x+o.w/2))<80)q.chainT=.25+Math.random()*.25}
   else say((S.combo>1?'x'+S.combo+' ':'')+'+'+pts,LX+10,GY-40,'#ffb347');
@@ -926,7 +931,7 @@ function blazeUpdate(dt){
   /* 21. fire ring from a hot jump */
   if(S.ring){S.ring.t+=dt;const r=S.ring.t/.35*48,lx=S.dist+LX;for(const o of S.obs)if(o.burnable&&!o.hit&&Math.abs(o.x+o.w/2-lx)<r)burnIt(o);if(S.ring.t>.4)S.ring=null}
   /* 22. marshmallows toasting */
-  for(const m of S.mallows){m.t+=dt;if(!m.done&&m.t>=2){m.done=true;if(S.heat>40){S.burnPts+=100;say('Perfectly toasted! +100',LX,GY-56,'#f2e6c8')}else{S.burnPts+=20;say('Burnt marshmallow +20',LX,GY-56,'#c8935a')}}}
+  for(const m of S.mallows){m.t+=dt;if(!m.done&&m.t>=2){m.done=true;if(S.heat>40){S.burnPts+=100;S.perfect=(S.perfect||0)+1;if(S.perfect>=10)unlockBadge('ff_mallow');say('Perfectly toasted! +100',LX,GY-56,'#f2e6c8')}else{S.burnPts+=20;say('Burnt marshmallow +20',LX,GY-56,'#c8935a')}}}
   S.mallows=S.mallows.filter(m=>!m.done||m.t<2.2);
   /* 19. rain cloud that follows you */
   S.cloudIn-=dt;if(S.cloudIn<=0&&!S.rainCloud&&S.dist>4000){S.rainCloud={t:0};S.cloudIn=30+Math.random()*20;say('A rain cloud is following you!',LX+30,GY-62,'#9fd0e8')}
@@ -935,6 +940,7 @@ function blazeUpdate(dt){
   const lx=S.dist+LX;
   for(const o of S.obs){
     if(o.type==='sprinkler'&&Math.abs(o.x-lx)<34&&(S.t%2)<1.1&&S.y>o.gy-34){S.heat-=22*dt;if(Math.random()<dt*6)say('psssh',LX,GY-40,'#cfe3ef')}
+    if(o.type==='ranger'&&o.x-lx<200&&o.x>lx)markSeen('ff_ranger');
     if(o.type==='ranger'&&o.x>lx&&o.x-lx<150&&(S.t%2.4)<1.3){const hy=o.gy-11;if(Math.abs(o.x-lx)<150&&S.y>hy-2&&S.y-24<hy+2&&!o.sprayHit&&o.x-lx<120){o.sprayHit=true;S.heat-=20;S.splashes++;SFX.splash();say('Ranger hose! PSSHH',LX,GY-44,'#cfe3ef')}}
   }
   for(const o of S.obs)if(o.burning)o.burning+=dt;
@@ -1001,7 +1007,7 @@ function lavaUpdate(dt){
   let lx=S.dist+LX;S.grabCD=Math.max(0,(S.grabCD||0)-dt);S.pantsT=Math.max(0,(S.pantsT||0)-dt);
   const gy=groundY(lx);
   if(S.swing){
-    const s=S.swing,a=s.a;if(S.hold){const nl=Math.max(30,s.L-15*dt);s.w*=Math.pow(s.L/nl,1.2);s.L=nl}
+    const s=S.swing,a=s.a;if(S.hold){const nl=Math.max(30,s.L-15*dt);if(nl<=30)unlockBadge('ff_climb');s.w*=Math.pow(s.L/nl,1.2);s.L=nl}
     s.w+=-(G/s.L)*Math.sin(s.th)*dt;s.w*=1+.22*dt;s.w=Math.max(-6,Math.min(6,s.w));s.th+=s.w*dt;
     const hx=a.x+s.L*Math.sin(s.th),hy=a.by+s.L*Math.cos(s.th);lx=hx;S.y=hy+16;
     S.vx=s.L*s.w*Math.cos(s.th);S.vy=-s.L*s.w*Math.sin(s.th);
@@ -1023,8 +1029,8 @@ function lavaUpdate(dt){
   }else{
     const py=S.y;S.vy+=G*dt;S.y+=S.vy*dt;lx+=S.vx*dt;S.vx=Math.max(70,S.vx*(1-.06*dt));
     if(gy!=null&&S.y>=gy&&S.vy>=0&&py<=gy+8){S.y=gy;S.vy=0;S.grounded=true;endAir()}
-    for(const r of S.rafts){const top=LAVA_Y-4+r.sink;if(S.vy>=0&&lx>r.x&&lx<r.x+r.w&&S.y>=top&&py<=top+6&&r.sink<10){S.y=top;S.vy=0;S.raft=r;S.grounded=true;if(r.sinkT<0)r.sinkT=0;SFX.land();endAir();break}}
-    for(const m of S.shrooms){if(S.vy>0&&Math.abs(lx-m.x)<10&&S.y>=m.y&&py<=m.y+5){S.vy=-650;S.vx=Math.max(S.vx,150);m.sq=.25;SFX.jump();say('BOING',LX,GY-50,'#f2d36a');break}}
+    for(const r of S.rafts){const top=LAVA_Y-4+r.sink;if(S.vy>=0&&lx>r.x&&lx<r.x+r.w&&S.y>=top&&py<=top+6&&r.sink<10){S.y=top;S.vy=0;S.raft=r;S.grounded=true;if(r.sinkT<0)r.sinkT=0;SFX.land();markSeen('ff_raft');S.raftRides=(S.raftRides||0)+1;if(S.raftRides>=5)unlockBadge('ff_raft');endAir();break}}
+    for(const m of S.shrooms){if(S.vy>0&&Math.abs(lx-m.x)<10&&S.y>=m.y&&py<=m.y+5){S.vy=-650;S.vx=Math.max(S.vx,150);m.sq=.25;SFX.jump();markSeen('ff_shroom');say('BOING',LX,GY-50,'#f2d36a');break}}
   }
   for(const m of S.shrooms)m.sq=Math.max(0,m.sq-dt);
   S.hopT=(S.hopT||0)+dt;
@@ -1033,7 +1039,7 @@ function lavaUpdate(dt){
     const hx=lx,hy=S.y-16;let best=null,bd=1e9;
     for(const a of S.anchors){if(a.gone||a.x<hx-18)continue;const d=Math.hypot(a.x-hx,a.y-hy);if(d<118&&d<bd){bd=d;best=a}}
     if(best){if(S.hopTree!==best&&S.crew.length){S.hopPrev=S.crew.map((c,k)=>hopPos(k));S.hopTree=best;S.hopT=0;SFX.jump()}
-      const L=Math.hypot(hx-best.x,hy-best.by),th=Math.atan2(hx-best.x,hy-best.by);S.swing={a:best,L,th,w:(S.vx*Math.cos(th)-S.vy*Math.sin(th))/L};if(best.burnT<0)best.burnT=0;S.swings++;SFX.cone();endAir()}
+      const L=Math.hypot(hx-best.x,hy-best.by),th=Math.atan2(hx-best.x,hy-best.by);S.swing={a:best,L,th,w:(S.vx*Math.cos(th)-S.vy*Math.sin(th))/L};if(best.burnT<0)best.burnT=0;S.swings++;SFX.cone();endAir();if(best.kind==='vine')markSeen('ff_vine')}
   }
   if(S.flip){S.flip.t+=dt;if(S.flip.t>=S.flip.dur){if(S.flip.ok){S.flips++;S.burnPts+=100;say('FLIP! +100',LX,GY-66,'#ffd166')}S.flip=null}}
   for(const a of S.anchors){
@@ -1090,7 +1096,7 @@ function rideSlide(){if(!S||S.dead||mode!=='play')return;if(S.duckT<=0)SFX.land(
 function rideKnock(why){
   S.invuln=1.1;S.shake=6;SFX.hit();S.lastKnock=S.t;
   if(S.hitch){S.hitch=false;say('The raccoon bailed!',LX,GY-60,'#ffb38a');return}
-  if(S.crew.length){const c=S.crew.pop();S.drag.unshift(c);
+  if(S.crew.length){const c=S.crew.pop();S.drag.unshift(c);if(S.drag.length>=3)unlockBadge('ff_chain');
     say(why+' '+nm(c)+(S.drag.length>1?' grabbed on. Human chain!':' grabbed the bear!'),LX,GY-46,'#ffb38a');SFX.voice&&SFX.voice(c.id,2)}
   else die(nm(S.leader)+' got bucked off the bear.','ride');
 }
@@ -1110,7 +1116,7 @@ function rideUpdate(dt,lx){
   if(S.duckT>0&&S.grounded&&(S.biome===2||stepKind(lx)==='rock')&&Math.random()<dt*40)S.parts.push({x:lx-10,y:S.y-1,vx:-80-Math.random()*90,vy:-50-Math.random()*60,life:.3,c:Math.random()<.5?'#ffd166':'#fff3a8',s:1,g:1});
   /* 44. hitchhikers */
   S.sqIn=(S.sqIn==null?14:S.sqIn)-dt;if(S.sqIn<=0){S.sqIn=25+Math.random()*20;S.squirrel=!S.squirrel;if(S.squirrel)say('A squirrel is riding the bear now',LX,GY-62,'#f2d36a')}
-  S.mooseIn=(S.mooseIn==null?20:S.mooseIn)-dt;if(S.mooseIn<=0){S.mooseIn=30+Math.random()*25;S.mooseT=9;say('A moose is running with you!',LX,GY-62,'#f2d36a')}S.mooseT=Math.max(0,S.mooseT-dt);
+  S.mooseIn=(S.mooseIn==null?20:S.mooseIn)-dt;if(S.mooseIn<=0){S.mooseIn=30+Math.random()*25;S.mooseT=9;markSeen('ff_moose');say('A moose is running with you!',LX,GY-62,'#f2d36a')}S.mooseT=Math.max(0,S.mooseT-dt);
   /* 45. the lake at the end */
   if(S.lakeX&&!S.lakeDone&&lx>S.lakeX-8&&S.grounded){S.lakeDone=true;S.vy=-430;S.grounded=false;say('CANNONBALL!',LX,GY-70,'#9fd0f2');SFX.jump()}
   if(S.winT>0){S.winT-=dt;if(S.winT<=0){S.burnPts+=1000;unlockBadge('ff_lake');S.win=true;die('The bear cannonballed into the lake and the fire stopped at the shore. Everyone made it!','lake');return}}
@@ -1179,18 +1185,18 @@ function ffShared(dt){
   S.cool=Math.max(0,(S.cool||0)-dt);
   /* 5. falling burning trees */
   for(const o of S.obs){if(o.type!=='falltree')continue;
-    if(o.state==='up'&&o.x-lx<230){o.state='falling';o.ft=0;SFX.crackle(1);say('TIMBER!',LX+90,GY-60,'#ffb347')}
+    if(o.state==='up'&&o.x-lx<230){o.state='falling';o.ft=0;SFX.crackle(1);markSeen('ff_timber');say('TIMBER!',LX+90,GY-60,'#ffb347')}
     else if(o.state==='falling'){o.ft+=dt;if(o.ft>=.75){o.state='down';o.h=10;S.shake=Math.max(S.shake,5);SFX.land();SFX.roar&&noiseThud();if(blaze)o.burnable=true;
       for(let i=0;i<14;i++)S.parts.push({x:o.x+Math.random()*o.w,y:o.gy-4,vx:(Math.random()-.5)*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#ffb347':'#6e6662',s:2,g:1})}}}
   /* 7. embers that land ahead and start spot fires */
   if(!lava){S.emberIn=(S.emberIn==null?6:S.emberIn)-dt;
     if(S.emberIn<=0){S.emberIn=4+Math.random()*5;const x=lx+190+Math.random()*90,g=groundY(x);
       if(g!=null&&!S.obs.some(o=>Math.abs(o.x-x)<40))S.emberFx.push({x,t:0,g})}}
-  for(const e of S.emberFx){e.t+=dt;if(!e.done&&e.t>=.9){e.done=true;const g=groundY(e.x);if(g!=null)S.obs.push({type:'spot',x:e.x-6,w:12,h:blaze?5:6,hit:false,gy:g,vx:0,burnable:blaze,spot:true})}}
+  for(const e of S.emberFx){e.t+=dt;if(!e.done&&e.t>=.9){e.done=true;const g=groundY(e.x);if(g!=null){markSeen('ff_ember');}if(g!=null)S.obs.push({type:'spot',x:e.x-6,w:12,h:blaze?5:6,hit:false,gy:g,vx:0,burnable:blaze,spot:true})}}
   S.emberFx=S.emberFx.filter(e=>e.t<1.2);
   /* 9. firefighting plane */
   S.planeIn=(S.planeIn==null?18+Math.random()*10:S.planeIn)-dt;
-  if(S.planeIn<=0&&!S.plane){S.planeIn=26+Math.random()*14;S.plane={x:W+50,t:0,dropped:false};SFX.plane&&SFX.plane()}
+  if(S.planeIn<=0&&!S.plane){S.planeIn=26+Math.random()*14;S.plane={x:W+50,t:0,dropped:false};markSeen('ff_bomber');SFX.plane&&SFX.plane()}
   if(S.plane){const p=S.plane;p.t+=dt;p.x-=150*dt;
     if(!p.dropped&&p.x<W*(blaze?.92:.55)){p.dropped=true;p.dropT=0;
       if(blaze){const wx=S.dist+p.x+150,g=groundY(wx);if(g!=null)S.obs.push({type:'puddle',x:wx,w:34,h:2,hit:false,gy:g,vx:0});say('Water bomber! Jump the puddle',LX+40,GY-60,'#9fd0e8')}
@@ -1198,7 +1204,7 @@ function ffShared(dt){
     if(p.dropped)p.dropT+=dt;if(p.x<-60)S.plane=null}
   /* 6. smoke banks */
   S.smokeIn=(S.smokeIn==null?12+Math.random()*8:S.smokeIn)-dt;
-  if(S.smokeIn<=0&&!S.smokeB){S.smokeIn=16+Math.random()*12;S.smokeB={t:0,dur:4.2};say('Smoke!',LX+60,GY-58,'#d8d0c8')}
+  if(S.smokeIn<=0&&!S.smokeB){S.smokeIn=16+Math.random()*12;S.smokeB={t:0,dur:4.2};markSeen('ff_smoke');say('Smoke!',LX+60,GY-58,'#d8d0c8')}
   if(S.smokeB){S.smokeB.t+=dt;if(S.smokeB.t>S.smokeB.dur)S.smokeB=null}
   /* 10. animals fleeing alongside */
   S.fleeIn=(S.fleeIn==null?3:S.fleeIn)-dt;
@@ -2066,7 +2072,7 @@ function update(dt){
   S.shake=Math.max(0,S.shake-dt*20);S.flash=Math.max(0,S.flash-dt*2);
   updateParts(dt);
   if(S.bubble){S.bubble.t+=dt;if(S.bubble.t>2.6)S.bubble=null}
-  if(S.spin&&!S.dead){S.spin.t+=dt;if(S.spin.t>=S.spin.dur+.45){S.spin=null;SFX.win();S.texts.push({s:FF_INFO[S.ff].name+'!',x:LX+80,y:GY-78,t:-1.6,color:'#ffb347'});S.texts.push({s:FF_INFO[S.ff].intro(S.leader),x:LX+80,y:GY-60,t:-1.6,color:'#fff3dc'});SFX.setFFM(S.ff)}return}
+  if(S.spin&&!S.dead){S.spin.t+=dt;if(S.spin.t>=S.spin.dur+.45){S.spin=null;SFX.win();markSeen('ff_'+S.ff);if(S.daily)markSeen('ff_daily');S.texts.push({s:FF_INFO[S.ff].name+'!',x:LX+80,y:GY-78,t:-1.6,color:'#ffb347'});S.texts.push({s:FF_INFO[S.ff].intro(S.leader),x:LX+80,y:GY-60,t:-1.6,color:'#fff3dc'});SFX.setFFM(S.ff)}return}
   if(S.dead){
     S.deadT+=dt;
     if(!S.grounded&&S.y<S.lastGY+200){S.vy+=G*dt;S.y+=S.vy*dt}
@@ -2127,7 +2133,7 @@ function update(dt){
   S.swimming=false;
   for(const r of S.rivers)if(lx>r.x0&&lx<r.x1&&S.y>=r.wy-3){
     if(S.mode==='fire'&&S.ff==='ride'){S.y=r.wy-2;S.vy=Math.min(0,S.vy);S.grounded=true;S.lastGY=S.y;S.swimming=true;
-      if(r.lake&&S.lakeDone&&S.winT<0){S.winT=.9;SFX.splash();for(let i=0;i<24;i++)S.parts.push({x:lx,y:r.wy,vx:(Math.random()-.5)*220,vy:-90-Math.random()*200,life:.9,c:i%2?'#9fd0e8':'#e8f6fb',s:2,g:1})}
+      if(r.lake&&S.lakeDone&&S.winT<0){S.winT=.9;markSeen('ff_lake');SFX.splash();for(let i=0;i<24;i++)S.parts.push({x:lx,y:r.wy,vx:(Math.random()-.5)*220,vy:-90-Math.random()*200,life:.9,c:i%2?'#9fd0e8':'#e8f6fb',s:2,g:1})}
       else if(Math.random()<dt*10)S.parts.push({x:lx-14,y:r.wy,vx:-50,vy:-30,life:.4,c:'#cfe3ef',s:2,g:1});break}
     splash(r);if(S.dead)return;break}
   if(S.y>S.lastGY+150){die(S.mode==='bear'?'The bear tumbled off the ridge.':nm(S.leader)+' walked right off the ridge.',S.mode==='bear'?'bearlose':'fall');return}
@@ -2162,10 +2168,10 @@ function update(dt){
     if(mag&&it.k!=='pet'){const dx=lx-it.x,dy=cy-it.y,d=Math.hypot(dx,dy);if(d<mag&&d>0){it.x+=dx/d*300*dt;it.y+=dy/d*300*dt}}
     if(Math.abs(it.x-lx)<9&&Math.abs(it.y-cy)<15){
       it.got=true;
-      if(it.k==='roar'){SFX.roar();S.shake=7;let n=0;for(const o of S.obs){if(o.type!=='branch'&&!o.hit&&o.x>lx&&o.x-lx<280){o.hit=true;o.passed=true;o.smashed=.01;n++}}say('ROAR! Path cleared',LX,GY-56,'#ffd166');continue}
+      if(it.k==='roar'){S.roars=(S.roars||0)+1;if(S.roars>=3)unlockBadge('ff_roar');SFX.roar();S.shake=7;let n=0;for(const o of S.obs){if(o.type!=='branch'&&!o.hit&&o.x>lx&&o.x-lx<280){o.hit=true;o.passed=true;o.smashed=.01;n++}}say('ROAR! Path cleared',LX,GY-56,'#ffd166');continue}
       if(it.k==='leap'){S.leap=true;SFX.win();say('Next jump is a MEGA LEAP',LX,GY-56,'#bfe39a');continue}
-      if(it.k==='hitch'){S.hitch=true;SFX.cone();say('A raccoon hopped on top!',LX,GY-56,'#f2d36a');continue}
-      if(it.k==='mallow'){S.mallows.push({t:0});S.burnPts+=30;SFX.cone();say('Marshmallow +30',LX,GY-40,'#f2e6c8');continue}
+      if(it.k==='hitch'){markSeen('ff_hitch');S.hitch=true;SFX.cone();say('A raccoon hopped on top!',LX,GY-56,'#f2d36a');continue}
+      if(it.k==='mallow'){markSeen('ff_mallow');S.mallows.push({t:0});S.burnPts+=30;SFX.cone();say('Marshmallow +30',LX,GY-40,'#f2e6c8');continue}
       if(it.k==='cone'){
         let v=S.leader.id==='nathan'?(ups.ab_nathan?3:2):1;if(S.mode==='solo')v*=2;
         if(Math.random()<.12*(ups.pouch||0))v*=2;if(S.set==='lumber'&&Math.random()<.2)v+=1;if(S.mood>85&&Math.random()<.1)v+=1;
@@ -2918,6 +2924,14 @@ const BADGES=[
  {id:'skunk',ic:'P.U.',name:'Skunked',desc:'Run into a skunk'},
  {id:'squad',ic:'5/5',name:'Full Squad',desc:'Reach 800 m with all five in line'},
  {id:'drip',ic:'FIT',name:'Drip Check',desc:'Own 5 pieces of gear'},
+ {id:'ff_daily',ic:'DAY',name:'Daily Grind',desc:'Finish a Daily Fire run'},
+ {id:'ff_combo9',ic:'x9',name:'Pyromaniac',desc:'Hit a x9 burn combo'},
+ {id:'ff_kaboom',ic:'BOOM',name:'Chain Reaction',desc:'Set off 3 big explosions in one run'},
+ {id:'ff_climb',ic:'UP',name:'Rope Climber',desc:'Climb all the way up a rope'},
+ {id:'ff_raft',ic:'5R',name:'Raft Surfer',desc:'Ride 5 lava rafts in one run'},
+ {id:'ff_mallow',ic:'10M',name:"S'more Chef",desc:'Toast 10 perfect marshmallows in a run'},
+ {id:'ff_chain',ic:'3H',name:'Human Chain',desc:'Have 3 guys hanging on behind the bear'},
+ {id:'ff_roar',ic:'RAWR',name:'King of the Forest',desc:'Use 3 roars in one run'},
  {id:'ff_burn',ic:'100',name:'Arsonist',desc:'Burn 100 things in The Crew Is the Fire'},
  {id:'ff_inferno',ic:'HOT',name:'Inferno',desc:'Go full inferno'},
  {id:'ff_swing',ic:'50',name:'Tarzan',desc:'50 swings in one Lava Floor run without a lava hit'},
@@ -3109,7 +3123,25 @@ const JOURNAL=[
  {id:'b0',ic:'PR',name:'Pine Ridge',desc:'Where it all starts.'},
  {id:'b1',ic:'AG',name:'Aspen Grove',desc:'Gold everywhere.'},
  {id:'b2',ic:'GP',name:'Granite Peak',desc:'Thin air, snow.'},
- {id:'b3',ic:'RF',name:'Rushing Falls',desc:'Waterfalls behind you.'}
+ {id:'b3',ic:'RF',name:'Rushing Falls',desc:'Waterfalls behind you.'},
+ {id:'ff_blaze',ic:'HT',name:'Human Torch',desc:'Burn everything. Avoid water.',g:'fire'},
+ {id:'ff_lava',ic:'LF',name:'Lava Floor',desc:'Hold to climb, let go to fling.',g:'fire'},
+ {id:'ff_ride',ic:'BX',name:'Bear Express',desc:'One bear, five riders.',g:'fire'},
+ {id:'ff_daily',ic:'DF',name:'Daily Fire',desc:'Same trail for everyone today.',g:'fire'},
+ {id:'ff_bomber',ic:'WB',name:'Water Bomber',desc:'Soaks the whole trail.',g:'fire'},
+ {id:'ff_timber',ic:'TM',name:'Falling Tree',desc:'Watch for the shadow.',g:'fire'},
+ {id:'ff_smoke',ic:'SM',name:'Smoke Bank',desc:'Cannot see a thing.',g:'fire'},
+ {id:'ff_ember',ic:'EM',name:'Spot Fire',desc:'Embers land ahead.',g:'fire'},
+ {id:'ff_outhouse',ic:'KB',name:'Exploding Outhouse',desc:'Do not ask.',g:'fire'},
+ {id:'ff_inferno',ic:'IN',name:'Inferno',desc:'x5 combo. Even rocks burn.',g:'fire'},
+ {id:'ff_ranger',ic:'PR',name:'Park Ranger',desc:'He has a hose.',g:'fire'},
+ {id:'ff_mallow',ic:'MM',name:'Marshmallow',desc:'Toast it on yourself.',g:'fire'},
+ {id:'ff_raft',ic:'LR',name:'Lava Raft',desc:'Sinks if you stay.',g:'fire'},
+ {id:'ff_shroom',ic:'BM',name:'Bounce Mushroom',desc:'BOING.',g:'fire'},
+ {id:'ff_vine',ic:'VN',name:'Vine Swing',desc:'Longer reach, bigger swing.',g:'fire'},
+ {id:'ff_hitch',ic:'HH',name:'Raccoon Hitchhiker',desc:'First to bail.',g:'fire'},
+ {id:'ff_moose',ic:'ME',name:'Moose Escort',desc:'Runs with you for a bit.',g:'fire'},
+ {id:'ff_lake',ic:'LK',name:'The Lake',desc:'The fire stops at the water.',g:'fire'}
 ];
 let journal=ld('rc_journal',{});
 function markSeen(id,quiet){if(journal[id])return;journal[id]=Date.now();save('rc_journal',JSON.stringify(journal));const j=JOURNAL.find(x=>x.id===id);if(j&&!quiet&&mode==='play')toast('New in journal: '+j.name)}
@@ -3333,7 +3365,7 @@ function showOver(){
   (S.dtype==='bearwin'||S.dtype==='lake')?SFX.win():SFX.lose();
   const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode;
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
-  if(S.daily){const dk='daily_'+S.day;if(sc>(modeBest[dk]||0)){modeBest[dk]=sc;save('rc_modebest',JSON.stringify(modeBest))}submitDaily(sc)}
+  if(S.daily){unlockBadge('ff_daily');const dk='daily_'+S.day;if(sc>(modeBest[dk]||0)){modeBest[dk]=sc;save('rc_modebest',JSON.stringify(modeBest))}submitDaily(sc)}
   if(S.mode==='fire'){ffPlayed[S.ff]=1;save('rc_ffplayed',JSON.stringify(ffPlayed));if(ffPlayed.blaze&&ffPlayed.lava&&ffPlayed.ride)unlockBadge('ff_all')}
   if(S.mode==='classic'&&sc>best){best=sc;save('rc_best',String(best))}
   const gained=S.cones-S.banked;wallet+=gained;S.banked=S.cones;
@@ -3518,10 +3550,15 @@ function renderGoals(){
     });
   }else if(gTab==='badges'){
     const g=$('badgeGrid');g.innerHTML='';
-    for(const b of BADGES){const got=!!badges[b.id];const d=el('div','badge'+(got?' got':''));d.appendChild(el('span','ic',b.ic));const t=el('div','bt');t.append(el('b',null,b.name),el('span',null,b.desc));d.appendChild(t);g.appendChild(d)}
+    for(const [label,list] of [['Trail',BADGES.filter(b=>!b.id.startsWith('ff_'))],['Forest Fire',BADGES.filter(b=>b.id.startsWith('ff_'))]]){
+      const got=list.filter(b=>badges[b.id]).length,h=el('div','gsec');h.append(el('span',null,label),el('i',null,got+' / '+list.length));g.appendChild(h);
+      for(const b of list){const ok=!!badges[b.id];const d=el('div','badge'+(ok?' got':''));d.appendChild(el('span','ic',b.ic));const t=el('div','bt');t.append(el('b',null,b.name),el('span',null,b.desc));d.appendChild(t);g.appendChild(d)}}
   }else if(gTab==='journal'){
     const g=$('journalGrid');g.innerHTML='';
-    for(const j of JOURNAL){const seen=!!journal[j.id];const d=el('div','jent'+(seen?' got':''));d.append(el('span','ic',seen?j.ic:'?'),el('b',null,seen?j.name:'???'),el('span',null,seen?j.desc:'Not found yet'));g.appendChild(d)}
+    const grp={Wildlife:['bear','skunk','moose','coon','owl','fireflies'],Trail:['rockslide','river','bridge','mud','falls','rain','night','season'],Places:['b0','b1','b2','b3']};
+    const secs=[...Object.entries(grp).map(([k,ids])=>[k,JOURNAL.filter(j=>ids.includes(j.id))]),['Forest Fire',JOURNAL.filter(j=>j.g==='fire')]];
+    for(const [label,list] of secs){const got=list.filter(j=>journal[j.id]).length,h=el('div','gsec');h.append(el('span',null,label),el('i',null,got+' / '+list.length));g.appendChild(h);
+      for(const j of list){const seen=!!journal[j.id];const d=el('div','jent'+(seen?' got':''));d.append(el('span','ic',seen?j.ic:'?'),el('b',null,seen?j.name:'???'),el('span',null,seen?j.desc:'Not found yet'));g.appendChild(d)}}
   }else{
     const box=$('storyList');box.innerHTML='';const n=Object.keys(badges).length;
     STORIES.forEach((st,i)=>{
