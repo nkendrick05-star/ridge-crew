@@ -16,7 +16,17 @@
 /* RCD: a clearer pixel "5" (Pixelify Sans' 5 looks like an S; only the 5 is replaced) */
 @font-face{font-family:'RCD';src:url(data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMkkGRlMAAAEoAAAAYGNtYXAADACIAAABkAAAADRnbHlmnOADlAAAAcwAAABUaGVhZC+J8ggAAACsAAAANmhoZWEF6AF4AAAA5AAAACRobXR4AowAAAAAAYgAAAAGbG9jYQAqAAAAAAHEAAAABm1heHAACQAaAAABCAAAACBuYW1lu+sjMgAAAiAAAABUcG9zdAAcAAAAAAJ0AAAAJgABAAAAAQAA8UPZ0V8PPPUAAwPoAAAAAOcSV10AAAAA5xJXXQA8//UCEgJ5AAAAAwACAAAAAAAAAAEAAAOY/ugAAAJQADwAPgISAAEAAAAAAAAAAAAAAAAAAAABAAEAAAACABgABgAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAwJQAfQABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAPz8/PwBAADUANQOY/ugAAAOaASEAAAAAAAAAAAHIArwAAAAgAAACUAAAADwAAAAAAAIAAAADAAAAFAADAAEAAAAUAAQAIAAAAAQABAABAAAANf//AAAANf///8wAAQAAAAAAAAAAACoAAAAGADz/9QISAnkAAwAHAAsADwATABcAABM1IRUFNTMVBzUhFRU1MxUFNSEVJTUzFTwB1v4qaGgBbmj+kgEG/pJoAhdiYomJiWJiYtXV1WJiYmJiYgAAAAQANgABAAAAAAABAAMAAAABAAAAAAACAAcAAwADAAEECQABAAYACgADAAEECQACAA4AEFJDRFJlZ3VsYXIAUgBDAEQAUgBlAGcAdQBsAGEAcgACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAYAAA=) format('truetype');font-weight:100 599;unicode-range:U+0035;font-display:block}
 @font-face{font-family:'RCD';src:url(data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMknORmkAAAEoAAAAYGNtYXAADACIAAABkAAAADRnbHlmHL2YMwAAAcwAAABUaGVhZC+W8g0AAACsAAAANmhoZWEF9QGCAAAA5AAAACRobXR4ApgAAAAAAYgAAAAGbG9jYQAqAAAAAAHEAAAABm1heHAACQAaAAABCAAAACBuYW1lmZky4gAAAiAAAABLcG9zdAAcAAAAAAJsAAAAJgABAAAAAQAANFCQ+l8PPPUAAwPoAAAAAOcSV10AAAAA5xJXXQA9//UCHgJ+AAAAAwACAAAAAAAAAAEAAAOY/ugAAAJbAD0APQIeAAEAAAAAAAAAAAAAAAAAAAABAAEAAAACABgABgAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAwJbArwABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAPz8/PwBAADUANQOY/ugAAAOaASEAAAAAAAAAAAHTArwAAAAgAAACWwAAAD0AAAAAAAIAAAADAAAAFAADAAEAAAAUAAQAIAAAAAQABAABAAAANf//AAAANf///8wAAQAAAAAAAAAAACoAAAAGAD3/9QIeAn4AAwAHAAsADwATABcAABM1IRUFNTMVBzUhFRU1MxUFNTMVJTUzFT0B4f4ffn4BY37+neX+nX4CBnh4ampqeHh4t7e3eHh4eHh4AAAAAAQANgABAAAAAAABAAMAAAABAAAAAAACAAQAAwADAAEECQABAAYABwADAAEECQACAAgADVJDREJvbGQAUgBDAEQAQgBvAGwAZAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAGAAA) format('truetype');font-weight:600 900;unicode-range:U+0035;font-display:block}
-html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*,*::before,*::after{box-sizing:inherit}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*,*::before,*::after{box-sizing:inherit}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}
+/* home: keep the campfire roomy now that Daily Ridge is up top */
+.home .homeacts{gap:8px}
+.home .leadcard{padding:5px 12px 5px 8px}.home .leadcard canvas{height:48px}.home .lcname{font-size:1.18rem}
+.home .btn.big{padding:10px 18px;font-size:clamp(1.45rem,6vw,1.9rem)}
+.home .modepick{padding-block:10px}
+.home .dockbtn{padding:7px 6px;gap:2px;font-size:.86rem}
+@media (min-height:541px){.home .logo{margin-top:clamp(0px,2.5vh,28px)}}
+.drcard{padding:4px 10px}.drcard canvas{height:32px}
+.home.hasdr .chal{display:none}
+</style>
 <title>Ridge Crew</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Rubik:wght@400;500;600&display=swap">
@@ -4579,10 +4589,10 @@ const DR_TWIST_START='2026-11-13';
 const DR_TWISTS=[{id:'night',n:'Night all day',e:'\u{1F319}'},{id:'gassy',n:'Double fart day',e:'\u{1F4A8}'},{id:'nosnack',n:'No snacks',e:'\u{1F6AB}'},{id:'coons',n:'Raccoon invasion',e:'\u{1F99D}'},{id:'storm',n:'Storm day',e:'⛈️'},{id:'fast',n:'Speed day',e:'⚡'},{id:'hungry',n:'Hungry bear',e:'\u{1F43B}'}];
 function drTwist(day){if(day<DR_TWIST_START)return null;return DR_TWISTS[Math.floor(mulberry(drHash('twist'+day))()*DR_TWISTS.length)]}
 const drTw=k=>!!(S&&S.daily&&S.daily.twist===k);
-/* par: the crew's average official run over the last week, rounded to 50 m */
+/* ridge line: the crew's average official run over the last week, rounded to 50 m */
 function drPar(day){const ms=[];for(let k=1;k<=7;k++){const d=new Date(Date.parse(day+'T12:00:00Z')-k*864e5).toISOString().slice(0,10);for(const r of drRows(d))ms.push(r.e.m)}
   if(ms.length<3)return 600;return Math.max(300,Math.round(ms.reduce((a,b)=>a+b,0)/ms.length/50)*50)}
-function drGolf(m,par){if(!par)return null;const r=m/par;return r>=1.5?{n:'Eagle',e:'\u{1F985}'}:r>=1.2?{n:'Birdie',e:'\u{1F426}'}:r>=1?{n:'Par',e:'⛳'}:r>=.75?{n:'Bogey',e:'\u{1F615}'}:{n:'Double bogey',e:'\u{1F62C}'}}
+function drGolf(m,par){if(!par)return null;const r=m/par;return r>=1.5?{n:'Summit',e:'\u{1F3D4}\uFE0F'}:r>=1.2?{n:'Trailblazer',e:'\u{1F525}'}:r>=1?{n:'Made Camp',e:'\u26FA'}:r>=.75?{n:'Off Trail',e:'\u{1F9ED}'}:{n:'Bear Bait',e:'\u{1F43E}'}}
 /* lifetime daily stats */
 function drStats(){const log=drMyLog(),days=Object.keys(log).sort();let wins=0,best=0,sum=0,maxS=0,run=0,prev=null;
   for(const d of days){const e=log[d],rows=drRows(d);if(rows.length>=2&&e.m>=rows[0].e.m)wins++;best=Math.max(best,e.m);sum+=e.m;
@@ -4633,18 +4643,19 @@ function drOver(){
   const d=S.daily,m=Math.floor(S.dist/12),sc=score();drTick();
   const g=(d.grid.join('')||'g')+drEnd(),e={s:sc,m,l:S.leader.id,g,p:d.par};
   if(d.official)drSubmit(e);
-  {const gf=drGolf(m,d.par);$('bestLine').textContent=(gf?gf.e+' '+gf.n+' \u00B7 par '+d.par.toLocaleString()+' m \u00B7 ':'')+'Daily Ridge #'+d.num+(d.official?'':' \u00B7 practice')}
+  {const gf=drGolf(m,d.par);$('bestLine').textContent=(gf?gf.e+' '+gf.n+' \u00B7 ridge line '+d.par.toLocaleString()+' m \u00B7 ':'')+'Daily Ridge #'+d.num+(d.official?'':' \u00B7 practice')}
   const ch=$('chips');ch.innerHTML='';const gd=el('div','drgrid');gd.textContent=drWrap(g);ch.appendChild(gd);
   if(d.official){const st=drStreaks();const p=el('div','drst');p.textContent=(st.play>1?'\u{1F525} '+st.play+'-day streak':'\u{1F525} Streak started')+(st.win>1?'  ·  \u{1F451} '+st.win+' wins in a row':'');ch.appendChild(p)}
   $('again').textContent='Practice this ridge';$('secondBtn').hidden=true;$('shareBtn').textContent=d.official?'Copy to share':'Share';
 }
 /* home card */
 function drHome(){
+  $('home').classList.add('hasdr');
   let c=$('drCard');if(!c){c=el('button','drcard');c.id='drCard';c.type='button';const ha=document.querySelector('.homeacts');ha.insertBefore(c,ha.firstChild);c.addEventListener('click',()=>{drPlayed(drDay())?drSheet():startDaily(true)})}
   const day=drDay(),num=drNum(day),lead=byId(drLeader(day)),played=drPlayed(day),e=drEntry(day),st=drStreaks(),champ=drChamp();
   c.innerHTML='';const meta=el('div','drm');meta.appendChild(el('span','drl','Daily Ridge #'+num));
   if(played&&e){const rows=drRows(day),rk=rows.findIndex(r=>r.id===LB.uid)+1;meta.appendChild(el('b',null,'✓ '+e.m.toLocaleString()+' m'+(rk?' · #'+rk+' of '+rows.length:'')))}
-  else meta.appendChild(el('b',null,nm(lead)+' leads \u00B7 par '+drPar(day).toLocaleString()+' m'));
+  else meta.appendChild(el('b',null,nm(lead)+' leads \u00B7 ridge line '+drPar(day).toLocaleString()+' m'));
   {const tw=drTwist(day);if(tw)meta.appendChild(el('span','drtw',tw.e+' '+tw.n))}
   const sub=[];if(st.play>0)sub.push('\u{1F525} '+st.play);if(champ){const cc=champ.who&&byId(champ.who);sub.push('\u{1F451} '+(cc?nm(cc):(champ.name||'Someone'))+' won yesterday')}
   if(sub.length)meta.appendChild(el('span','drs',sub.join('  ·  ')));
@@ -4656,7 +4667,7 @@ setInterval(()=>{if(mode==='menu'&&!$('home').hidden)drHome()},30000);
 function drSheet(){
   const day=drDay(),e=drEntry(day);const st=drStreaks();
   let ov=$('drSheet');if(ov)ov.remove();ov=el('div','pcover');ov.id='drSheet';const card=el('div','pcard drsheet');ov.appendChild(card);ov.addEventListener('click',ev=>{if(ev.target===ov)ov.remove()});
-  const top=el('div','pctop');const lead=byId((e&&e.l)||drLeader(day));top.appendChild(portrait(lead,2));const n=el('div','pcn');const gf=e&&drGolf(e.m,e.p);n.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,e?e.m.toLocaleString()+' m'+(gf?' \u00B7 '+gf.e+' '+gf.n+' (par '+e.p.toLocaleString()+')':''):'Not played yet today'));top.appendChild(n);
+  const top=el('div','pctop');const lead=byId((e&&e.l)||drLeader(day));top.appendChild(portrait(lead,2));const n=el('div','pcn');const gf=e&&drGolf(e.m,e.p);n.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,e?e.m.toLocaleString()+' m'+(gf?' \u00B7 '+gf.e+' '+gf.n+' (ridge line '+e.p.toLocaleString()+')':''):'Not played yet today'));top.appendChild(n);
   const x=el('button','back');x.type='button';x.setAttribute('aria-label','Close');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';x.addEventListener('click',()=>ov.remove());top.appendChild(x);card.appendChild(top);
   if(e){const gd=el('div','drgrid big');gd.textContent=drWrap(e.g);card.appendChild(gd)}
   const s=el('div','pcstats');const add=(t,v)=>{const d=el('div');d.append(el('b',null,v),el('small',null,t));s.appendChild(d)};
@@ -4928,7 +4939,7 @@ async function drBoard(list,seq){
   const sum=el('div','mybest');
   if(off===0&&!drPlayed(day)){
     const h=el('div','mbh');h.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,rows.length+' played'));sum.appendChild(h);
-    {const tw=drTwist(day);sum.appendChild(el('p','pass','Results stay hidden until you play today\u2019s ridge. '+nm(byId(drLeader(day)))+' leads, par '+drPar(day).toLocaleString()+' m'+(tw?', '+tw.e+' '+tw.n:'')+'. One shot.'))}
+    {const tw=drTwist(day);sum.appendChild(el('p','pass','Results stay hidden until you play today\u2019s ridge. '+nm(byId(drLeader(day)))+' leads, ridge line '+drPar(day).toLocaleString()+' m'+(tw?', '+tw.e+' '+tw.n:'')+'. One shot.'))}
     const b=el('button','btn big','Play today’s ridge');b.type='button';b.addEventListener('click',()=>startDaily(true));list.append(sum,b);return}
   const mine=rows.find(r=>r.id===LB.uid),rk=mine?rows.indexOf(mine)+1:0;
   const h=el('div','mbh');h.append(el('b',null,(off?'Yesterday · ':'')+'Daily Ridge #'+drNum(day)),el('span',null,rk?'#'+rk+' of '+rows.length:rows.length+' played'));sum.appendChild(h);
