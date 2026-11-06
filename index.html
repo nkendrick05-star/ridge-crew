@@ -650,7 +650,7 @@ const CHARS=[
  {id:'curly',def:'Josiah',ability:'D1',desc:'Jumps higher. Tap again mid-air to dash',curly:true,hair:'#2e2019',shirt:'#eeede8',pants:'#7c6f5a',pack:'#3a6cc0',skin:'#e6b28c'},
  {id:'camo',def:'Henry',ability:'Jacked',desc:'Smashes through a hit every 240 m',hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#22304d',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'},
  {id:'stache',def:'Blake',ability:'Cone magnet',desc:'Pulls in nearby pinecones',hat:'tan',hatC:'#9b8c69',brim:'#7a6d50',hair:'#2b1f18',stache:true,shirt:'#d8d6d0',pants:'#5b5a55',pack:'#2f4f84',skin:'#c8946f'},
- {id:'nathan',def:'Nathan',ability:'Hype man',desc:'Pinecones count double for the shop',guest:true,hair:'#8a5a30',stache:true,shirt:'#a19b94',shred:true,pants:'#9a8c70',pack:'#5d7a3c',skin:'#f0c29c'}
+ {id:'nathan',def:'Nathan',ability:'Hype man',desc:'Pinecones count double for the shop, and farts are easier to catch',guest:true,hair:'#8a5a30',stache:true,shirt:'#a19b94',shred:true,pants:'#9a8c70',pack:'#5d7a3c',skin:'#f0c29c'}
 ];
 const byId=id=>CHARS.find(c=>c.id===id);
 
@@ -1045,7 +1045,7 @@ function resize(){
   cw=cv.clientWidth||300;ch=cv.clientHeight||200;
   cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);
   sc=Math.min(ch/H,cw/250);
-  W=cw/sc;viewH=ch/sc;oy=(viewH-H)*0.62;
+  W=cw/sc;viewH=ch/sc;oy=(viewH-H)*0.62-10;
 }
 window.addEventListener('resize',resize);resize();
 
@@ -1264,7 +1264,8 @@ function genCore(){
     if(late&&S.mode!=='uphill'&&r<.06){
       const w=95+Math.random()*30,x0=S.genX,bank=S.gy;
       S.rivers.push({x0,x1:x0+w,wy:bank+16});if(S.mode==='bear'&&!S.demo)S.items.push({k:'salmon',x:x0+w/2,y:bank-26,got:false});
-      for(const f of [.32,.66])S.segs.push({x0:x0+w*f-8,x1:x0+w*f+8,y0:bank+3,slope:0,kind:'stone'});
+      if(S.mode==='fire'&&S.ff==='ride')S.segs.push({x0,x1:x0+w,y0:bank+9,slope:0,kind:'swim'});
+      else for(const f of [.32,.66])S.segs.push({x0:x0+w*f-8,x1:x0+w*f+8,y0:bank+3,slope:0,kind:'stone'});
       S.genX+=w;special=true;
     }else if(late&&r<.11){
       const w=120+Math.random()*70;S.segs.push({x0:S.genX,x1:S.genX+w,y0:S.gy,slope:0,kind:'bridge'});S.genX+=w;special=true;
@@ -1290,7 +1291,7 @@ function genCore(){
           const q=Math.random();let type=q<.6?'rock':'log';
           if(late&&q<.07)type='moose';else if(late&&q<.14)type='coon';
           if(S.mode==='uphill'&&late&&(type==='moose'||type==='coon'))type=upAlt(seg.y0)>8500?'goat':'coon';
-          const blz=S.mode==='fire'&&S.ff==='blaze';if(blz&&q>.3&&!(late&&q<.14))type=pickBurn();if(RIDE){type=q<.75?'rock':'log';if(ox>7200&&Math.random()<.22)type='branch'}if(S.mode==='fire'&&S.ff==='blaze'&&late&&Math.random()<.07)type='falltree';
+          const blz=S.mode==='fire'&&S.ff==='blaze';if(blz&&q>.3&&!(late&&q<.14))type=pickBurn();if(RIDE){type=q<.75?'rock':'log';if(Math.random()<Math.max(0,Math.min(.33,(ox-3000)/15000*.33)))type='branch'}if(S.mode==='fire'&&S.ff==='blaze'&&late&&Math.random()<.07)type='falltree';
           const dim=type==='falltree'?[34,0]:type==='branch'?[26,0]:BURN[type]&&blz?[BURN[type].w,BURN[type].h]:{rock:[14,11],log:[24,9],moose:[22,20],coon:[12,8],goat:[15,15]}[type];
           if(ox+dim[0]<x1-30)S.obs.push({type,x:ox,w:dim[0],h:dim[1],hit:false,gy:segY(seg,ox+dim[0]/2),vx:type==='coon'?-55:0,burnable:blz&&!!BURN[type],state:type==='falltree'?'up':undefined});
           ox+=dim[0]+gapMin*(blz&&BURN[type]?.45:RIDE?1.5:1)+Math.random()*90;
@@ -1320,8 +1321,8 @@ function genCore(){
 const groundAt=x=>S.segs.some(s=>x+3>=s.x0&&x-3<=s.x1);
 function say(s,lx,ly,color){if(S.texts.some(q=>q.s===s&&q.t<.6))return;for(let n=0;n<6&&S.texts.some(q=>q.t<.9&&Math.abs(q.x-lx)<80&&Math.abs(q.y-ly)<11);n++)ly-=12;S.texts.push({s,x:lx,y:ly,t:0,color:color||'#fff3dc'})}
 function jump(mult){
+  if(S&&S.swim&&S.grounded)return;
   let base=S.mode==='bear'?440:S.leader.id==='curly'?(ups.ab_curly?560:500):420;
-  if(S.mood<30&&S.mode!=='bear')base*=.94;
   if(S.mode==='fire'&&S.ff==='ride'){base=470;S.duckT=0;if(S.leap){S.leap=false;base=700;say('MEGA LEAP!',LX,GY-66,'#bfe39a')}}
   if(S.mode==='fire'&&S.ff==='blaze'&&S.heat>60&&!S.demo){S.ring={t:0};S.heat-=3}
   S.vy=-base*(mult||1);S.buf=0;S.coy=0;S.grounded=false;
@@ -1337,7 +1338,7 @@ function hit(){
   S.ouch=(S.ouch||0)+1;
   SFX.hit();buzz(30);S.mood=Math.max(0,S.mood-20);
   if(S.shield>0){S.shield=0;S.shieldAt=S.dist;S.invuln=.8;S.shake=4;
-    if(S.leader.id==='camo'&&S.hitObs){const o=S.hitObs;o.smashed=.01;o.passed=true;S.boost=Math.max(S.boost,.7);S.mood=Math.min(100,S.mood+30);say('HENRY SMASH!',LX,GY-40,'#f2a541');SFX.thud();S.hitStop=.09;S.shake=Math.max(S.shake,6);for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:40+Math.random()*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#a19d93':'#f2a541',s:2,g:1});return}
+    if(S.leader.id==='camo'&&S.hitObs){const o=S.hitObs;o.smashed=.01;o.passed=true;S.boost=Math.max(S.boost,1.2);S.mood=Math.min(100,S.mood+30);say('HENRY SMASH!',LX,GY-40,'#f2a541');SFX.thud();S.hitStop=.09;S.shake=Math.max(S.shake,6);for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:40+Math.random()*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#a19d93':'#f2a541',s:2,g:1});return}
     say('Shrugged it off',LX,GY-34,'#f2a541');return}
   if(S.distract>0&&S.mode!=='fire'&&S.mode!=='bear'){S.invuln=.8;S.shake=4;S.snackSaves=(S.snackSaves||0)+1;say(pick(['Stumbled! The bear is busy eating','Close one. The bear is still munching','Tripped, but the bear did not notice']),LX,GY-40,'#f2d9a8');return}
   if(S.mode==='solo'){caughtEat(nm(S.leader)+' went down with nobody to help. The bear did not wait.');return}
@@ -1901,6 +1902,7 @@ function drawBranch(o,x){
   const sz=.7+hash(o.x*.37)*.9,chh=Math.round(56+70*sz),cw=Math.round(chh*(.34+hash(o.x*.91)*.14)),tw=Math.round(6+5*sz),cTop=bot+12-chh;
   ffTrunk(tx,bot+12-Math.round(Math.round(chh/16)*16*.5),g,false,o.x*.01,tw);
   ffCrown(tx,bot+12,cw,chh,1.2,t,o.x+7);
+  ctx.globalAlpha=.35;px(ctx,'#000',x-2,g-1,tx-x+tw,3);px(ctx,'#000',tx-tw,g-2,tw*2,4);ctx.globalAlpha=1;
   ffBranch(x,bot+1,tx-Math.floor(tw/2)+4,1.2,t,o.x);
   for(let k=0;k<4;k++){const hx=x+3+k*6;px(ctx,'#2f5a3a',hx,bot+1,3,3+(k%2)*2);px(ctx,'#24482e',hx,bot+3+(k%2)*2,3,1)}
 }
@@ -2708,7 +2710,7 @@ function startFartCore(chain){
   let pool=[{c:S.leader,i:-1},...S.crew.map((c,i)=>({c,i}))];
   if(chain&&pool.length>1)pool=pool.filter(p=>p.c.id!==S.lastFarter);
   const f=pick(pool),p=hikerPos(f.i);
-  S.fart={c:f.c,i:f.i,t:0,win:Math.max(.6,.95-S.dist/40000)+(S.set==='cowboy'?.2:0)};
+  S.fart={c:f.c,i:f.i,t:0,win:(Math.max(.6,.95-S.dist/40000)+(S.set==='cowboy'?.2:0))*(S.leader.id==='nathan'&&S.mode!=='bear'?1.2:1)};
   S.lastFarter=f.c.id;S.fartWasChain=!!chain;S.stats.fartsBy[f.c.id]=(S.stats.fartsBy[f.c.id]||0)+1;
   S.cloud={x:p.x-11,y:p.y-8,t:0,sc:f.c.id==='camo'?1.7:1,dur:f.c.id==='curly'?4.6:2.6};
   say((chain?'Chain reaction! ':'')+nm(f.c)+': '+fartLine(f.c.id),LX,GY-46,'#c6e36a');SFX.fart(f.c.id);
@@ -2775,7 +2777,7 @@ function nearMiss(){
 }
 function chatter(){
   const pool=[{c:S.leader,i:-1},...S.crew.map((c,i)=>({c,i}))],f=pick(pool);
-  const text=S.mood<30?pick(GRUMPY):(Math.random()<.55&&CHAT[f.c.id])?pick(CHAT[f.c.id]):pick(CHAT_GEN);
+  const text=(Math.random()<.55&&CHAT[f.c.id])?pick(CHAT[f.c.id]):pick(CHAT_GEN);
   S.bubble={i:f.i,text,t:0};SFX.voice(f.c.id,2+(Math.random()*3|0));
 }
 function roar(){S.shake=7;S.mood=Math.max(0,S.mood-3);SFX.roar();say('ROAR',LX-S.bearBack+10,GY-52,'#ff6b5a')}
@@ -2920,6 +2922,7 @@ function update(dt){
   if(!S.demo&&S.grounded){
     if(S.muds.some(m=>lx0>m.x0&&lx0<m.x1)){spd*=.7;S.muddy=true;markSeen('mud');if(Math.random()<.35)S.parts.push({x:lx0,y:S.y-2,vx:-40-Math.random()*60,vy:-60-Math.random()*60,life:.5,c:'#5a3a1c',s:2,g:1})}
     for(const s of S.segs)if(s.kind==='bridge'&&lx0>=s.x0&&lx0<=s.x1){spd*=.8;markSeen('bridge');break}
+    S.swim=S.segs.some(s=>s.kind==='swim'&&lx0>=s.x0&&lx0<=s.x1);if(S.swim){spd*=.7;if(Math.random()<.3)S.parts.push({x:lx0+8,y:S.y-1,vx:-30-Math.random()*50,vy:-40-Math.random()*50,life:.45,c:'#9fd0e8',s:2,g:1})}
   }
   S.dist+=spd*dt;gen();
   if(!S.demo&&mode==='play')starTick(dt);
@@ -2941,7 +2944,8 @@ function update(dt){
   const wasAir=!S.grounded,prevY=S.y,gy=S.star?null:groundY(lx);
   if(S.star)starFly(dt,lx);else if(S.grounded&&gy!=null&&S.vy>=0)S.y=gy;else{S.vy+=G*dt*(S.dashT>0?.12:1);S.y+=S.vy*dt}
   if(gy!=null&&S.y>=gy&&S.vy>=0&&prevY<=gy+8){const lv=S.vy;S.y=gy;S.vy=0;S.grounded=true;S.lastGY=gy;if(wasAir&&!S.demo){puff(lx,gy,6);SFX.land();S.lsq=.14;S.jsq=0;if(lv>620){puff(lx,gy,10,null,18);for(let i=0;i<5;i++)S.parts.push({x:lx-6-i*3,y:gy-1,vx:-90-Math.random()*70,vy:-30-Math.random()*40,life:.35,c:'#c9b48a',s:2,g:1});buzz(12)}}}else if(gy==null||S.y<gy-.5)S.grounded=false;
-  S.camY+=((S.grounded?S.y:S.lastGY)-GY-S.camY)*Math.min(1,dt*3);
+  {let base=(S.grounded?S.y:S.lastGY),look=0;for(const dx of [60,110,160]){const g=groundY(S.dist+LX+dx);if(g!=null)look=Math.max(look,g-base)}
+   S.camY+=(base+Math.min(46,look*.55)-GY-S.camY)*Math.min(1,dt*3)}
   S.bgBase+=(S.camY-S.bgBase)*Math.min(1,dt*.12);
   if(!S.demo){
     S.bk=Math.min(1,S.bk+dt/3.4);
@@ -3006,7 +3010,7 @@ function update(dt){
       if(it.k==='mallow'){markSeen('ff_mallow');S.mallows.push({t:0});S.burnPts+=30;SFX.cone();say('Marshmallow +30',LX,GY-40,'#f2e6c8');continue}
       if(it.k==='cone'){
         let v=S.leader.id==='nathan'?(ups.ab_nathan?3:2):1;if(S.mode==='solo')v*=2;
-        if(Math.random()<.12*(ups.pouch||0))v*=2;if(S.set==='lumber'&&Math.random()<.2)v+=1;if(S.mood>85&&Math.random()<.1)v+=1;
+        if(Math.random()<.12*(ups.pouch||0))v*=2;if(S.set==='lumber'&&Math.random()<.2)v+=1;
         S.cones+=v;{const nf=nb();if(nf>1)S.natX=(S.natX||0)+v-v/nf}S.mood=Math.min(100,S.mood+.5);S.coneK=S.t-(S.coneT??-9)<.7?(S.coneK||0)+1:0;S.coneT=S.t;SFX.cone(S.coneK);
         S.texts.push({s:'+'+v,x:Math.round(it.x-S.dist),y:Math.round(it.y)-8,w:1,t:.7,color:S.coneK>3?'#ffd166':'#fff3dc'});
       }else if(it.k==='mix'){
@@ -3293,6 +3297,7 @@ function drawGround(d,bottom){
   }
   for(const s of S.segs){
     const a=Math.max(Math.round(s.x0-d),-2),b=Math.min(Math.round(s.x1-d),Math.ceil(W)+2);if(b<=a)continue;
+    if(s.kind==='swim')continue;
     if(s.kind==='bridge'){
       const L=s.x1-s.x0;
       for(let x=a;x<b;x+=2){const wx=x+d,sag=Math.sin((wx-s.x0)/L*Math.PI)*2,gy=Math.round(segY(s,wx)+sag+Math.sin(S.t*3+wx*.08)*.6);
@@ -3493,16 +3498,10 @@ function drawHud(){
   shadow(up?(Math.floor(S.upMax/10)*10).toLocaleString()+' ft':Math.floor(S.dist/12).toLocaleString()+' m',pad,row,'#fff3dc');
   /* row 2: pinecones */
   step();{const cs=Math.max(2,Math.round(f/12));ctx.save();ctx.translate(Math.round(pad+cs*2.5),row);ctx.scale(cs,cs);drawCone(ctx,0,0);ctx.restore();shadow('x '+S.cones.toLocaleString(),pad+cs*7+4,row,'#fff3dc')}
-  /* row 3: mood face + mood tag */
+  /* row 3: status tag */
   if(S.mode!=='bear'){
-    step();const fs=Math.max(16,Math.round(f*.95/8)*8),fy=Math.round(row-fs/2),mc=S.mood>70?'#9fd67a':S.mood>=30?'#f2d36a':'#ff6b5a';
-    ctx.fillStyle='rgba(20,30,24,.8)';ctx.fillRect(pad+2,fy+2,fs,fs);ctx.fillStyle=mc;ctx.fillRect(pad,fy,fs,fs);
-    const u=fs/8;ctx.fillStyle='#1d1a17';ctx.fillRect(pad+2*u,fy+2*u,u,u*1.2);ctx.fillRect(pad+5*u,fy+2*u,u,u*1.2);
-    if(S.mood>70){ctx.fillRect(pad+2*u,fy+5*u,4*u,u);ctx.fillRect(pad+1.5*u,fy+4.5*u,u,u);ctx.fillRect(pad+5.5*u,fy+4.5*u,u,u)}
-    else if(S.mood>=30)ctx.fillRect(pad+2*u,fy+5*u,4*u,u);
-    else{ctx.fillRect(pad+2*u,fy+5*u,4*u,u);ctx.fillRect(pad+1.5*u,fy+5.6*u,u,u);ctx.fillRect(pad+5.5*u,fy+5.6*u,u,u)}
-    const tag=S.star?'STAR RIDE '+Math.max(0,Math.ceil((S.star.end-S.dist)/12))+' m':S.distract>0&&S.mode!=='fire'?'SNACK SAFE '+Math.ceil(S.distract)+'s':S.boost>0?'BOOST':S.coffee>0?'SLOW-MO':S.mood<30?'GRUMPY':S.mood>85?'HYPED':'';
-    if(tag){ctx.font=FONT(Math.round(f*.72));shadow(tag,pad+fs+10,row,mc);ctx.font=FONT(f)}
+    const tag=S.star?'STAR RIDE '+Math.max(0,Math.ceil((S.star.end-S.dist)/12))+' m':S.distract>0&&S.mode!=='fire'?'SNACK SAFE '+Math.ceil(S.distract)+'s':S.boost>0?'BOOST':S.coffee>0?'SLOW-MO':'';
+    if(tag){step();ctx.font=FONT(Math.round(f*.8));shadow(tag,pad,row,'#ffd166');ctx.font=FONT(f)}
   }
   /* row 4: leader skill */
   if(!S.demo&&!S.dead&&!S.spin){const sk=skillInfo();if(sk){let t=sk.t,c='#ffd166',al=1;const cid=S.leader.id;
