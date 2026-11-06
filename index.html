@@ -196,6 +196,20 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .rank.mine{border-color:var(--amber);background:rgba(242,165,65,.14)}
 .rank{cursor:pointer}.rank .no{display:flex;flex-direction:column;align-items:center;line-height:1}
 .rank .mv{font:700 .58rem var(--body);font-style:normal;margin-top:2px;letter-spacing:.02em}.mv.mvu{color:#7ed07a}.mv.mvd{color:#ff8a7a}.mv.mvn{color:var(--amber)}
+.drcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;width:min(100%,380px);background:linear-gradient(135deg,rgba(242,165,65,.2),var(--panel));border:2px solid var(--amber);border-radius:var(--r);padding:6px 10px;color:var(--cream);cursor:pointer;text-align:left}
+.drcard canvas{height:38px;width:auto;image-rendering:pixelated}
+.drcard .drm{display:flex;flex-direction:column;min-width:0;gap:1px}
+.drcard .drl{font:600 .62rem var(--body);text-transform:uppercase;letter-spacing:.12em;color:var(--amber)}
+.drcard b{font:700 1rem var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drcard .drs{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drcard .drgo{font:700 .9rem var(--display);background:var(--amber);color:var(--amber-ink);border-radius:10px;padding:7px 12px;white-space:nowrap}
+.drcard .drgo.done{background:none;color:var(--muted);font:600 .72rem var(--body);padding:0;text-align:right}
+.drgrid{white-space:pre;font-size:1rem;line-height:1.25;letter-spacing:1px;text-align:center;width:100%}
+.drgrid.big{font-size:1.3rem}
+.chips2 .drgrid{font-size:1.35rem;line-height:1.3}
+.drst{width:100%;text-align:center;font:700 .82rem var(--display);color:var(--amber)}
+.drnext{margin:0;text-align:center;font-size:.8rem;color:var(--muted)}
+.drsheet .frow{display:flex;gap:8px}.drsheet .frow .btn{flex:1}
 .rank .flair{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
 .rank .fl{display:inline-grid;place-items:center;min-width:15px;height:15px;padding:0 3px;border-radius:8px;font:700 .62rem var(--body);font-style:normal;color:#16120c}
 .fl.t4{background:#f2c14e}.fl.t3{background:#b07ae8}
@@ -819,7 +833,7 @@ const SKILLS=[
 ];
 let wallet=0,owned={},equip={},ups={},xp=0;
 try{wallet=+localStorage.getItem('rc_wallet')||0;owned=JSON.parse(localStorage.getItem('rc_owned')||'{}')||{};equip=JSON.parse(localStorage.getItem('rc_equip')||'{}')||{};ups=JSON.parse(localStorage.getItem('rc_ups')||'{}')||{};xp=+localStorage.getItem('rc_xp')||0}catch(e){}
-function persist(){setTimeout(()=>{try{syncPush()}catch(e){}},0);save('rc_wallet',String(wallet));save('rc_owned',JSON.stringify(owned));save('rc_equip',JSON.stringify(equip));save('rc_ups',JSON.stringify(ups));save('rc_xp',String(xp))}
+function persist(){setTimeout(()=>{try{syncPush()}catch(e){}},0);save('rc_wallet',String(wallet));save('rc_owned',JSON.stringify(owned));save('rc_equip',JSON.stringify(equip));save('rc_ups',JSON.stringify(DR_UPS||ups));save('rc_xp',String(xp))}
 const item=(slot,id)=>CATALOG[slot].find(i=>i.id===id);
 function look(c){
   if(c._look)return c;
@@ -1108,14 +1122,15 @@ function newRun(leaderId,demo,rm){
   if(rm==='uphill'&&!demo)Object.assign(s,{upNext:0,upCamps:[],upBonus:0,upMax:UP_BASE,yeti:false,banner:null,summited:false,rollIn:5});
   if(rm==='bear'){s.prey=CHARS.slice().sort(()=>Math.random()-.5);s.gapX=80;Object.assign(s,{stam:100+25*(ups.bl_lungs||0),chargeT:0,roarCd:2,freezeT:0,bearPts:0,lastChomp:-9,pounce:null,bits:[],snacksEaten:0,hits:0,hypeT:0,hypeIn:9,shoved:false,shortcut:false,throwIn:4,talkIn:2,eatT:0,doubles:0,roars:0})}
   if(rm==='fire'){s.fartIn=1e12;LAVA_Y=GY+18;s.ff=(typeof window!=='undefined'&&window.__FF)||pick(['blaze','lava','ride']);s.fireBack=s.ff==='blaze'?400:96}
-  S=s;gen();
+  S=s;if(DR_NEXT){drApply(s,DR_NEXT);DR_NEXT=null}gen();
   if(rm==='fire'&&!demo){S.spin={t:0,dur:2.2,final:S.ff,last:-1}}
   return s;
 }
 /* ---------- falling star: super rare, carries the crew 1000 m ---------- */
 const STAR_M=1000,STAR_SPD=1000,STAR_RATE=1500;
-function starOK(){return !S.demo&&!S.tut&&!S.dead&&!S.starDone&&!S.star&&!S.fstar&&S.dist>3000&&(S.mode==='classic'||S.mode==='night'||S.mode==='solo'||(S.mode==='uphill'&&(S.upMax||0)<10500)||(S.mode==='fire'&&S.ff==='blaze'))}
+function starOK(){return !S.demo&&!S.daily&&!S.tut&&!S.dead&&!S.starDone&&!S.star&&!S.fstar&&S.dist>3000&&(S.mode==='classic'||S.mode==='night'||S.mode==='solo'||(S.mode==='uphill'&&(S.upMax||0)<10500)||(S.mode==='fire'&&S.ff==='blaze'))}
 function starTick(dt){
+  if(S.daily)drTick();
   S.perkT=Math.max(0,(S.perkT||0)-dt);
   if(S.hi5){const q=S.hi5;q.t+=dt;if(!q.sl&&q.t>.5){q.sl=1;SFX.thud&&SFX.thud();const xf=q.j<0?LX:LX-CB(q.j),xb=LX-CB(q.j+1);S.texts.push({s:'*slap*',x:Math.round((xf+xb)/2),y:histY(CB(q.j+1))-36,w:1,t:0,color:'#fff3dc'})}if(q.t>1.2||q.j+1>=S.crew.length)S.hi5=null}
   if(window.__STAR&&starOK()){window.__STAR=0;S.starRoll=1}
@@ -2466,7 +2481,7 @@ function pzCrewPee(list,x0,sp,fyFn,iyFn,opts){
   return flow;
 }
 /* map generation helper (Daily Fire seeding was removed) */
-function seeded(fn){fn()}
+function seeded(fn){drSwap(S&&S.daily&&S.daily.wr,fn)}
 /* ---------- extra fire pee scenes ---------- */
 function peeBlazeCabin(t,ly){
   const cx=Math.round(W*.46),cw=110,chh=46,x0c=cx-cw/2,top=ly-chh;
@@ -2654,9 +2669,10 @@ const noBearBtn=document.getElementById('noBear'),snackBtn=document.getElementBy
 const bearBtns=document.getElementById('bearBtns'),roarBtn=document.getElementById('roarBtn'),chargeBtn=document.getElementById('chargeBtn');
 roarBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();bearRoar()});
 chargeBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();bearCharge()});
-const nextFart=()=>9+Math.random()*14;
+const nextFart=()=>9+(S&&S.daily?S.daily.fr():Math.random())*14;
 function hikerPos(i){return i<0?{x:LX,y:S.y}:{x:LX-CB(i),y:histY(CB(i))}}
-function startFart(chain){
+function startFart(chain){return drSwap(S&&S.daily&&S.daily.fr,()=>startFartCore(chain))}
+function startFartCore(chain){
   if(S.mode==='bear'){
     const n=S.prey.length;S.fartIn=nextFart();if(!n)return;
     const k=Math.random()*n|0,c=S.prey[k],sx=LX+S.gapX+k*SPACE,g=groundY(S.dist+sx);
@@ -4089,7 +4105,8 @@ function tutStep(dt){
 }
 
 /* ---------- random events ---------- */
-function startEvent(){
+function startEvent(){return drSwap(S&&S.daily&&S.daily.er,startEventCore)}
+function startEventCore(){
   const types=['rain','night','skunk'],type=types[Math.random()*3|0];
   if(type==='skunk'){
     const sg=S.segs.find(s=>s.x0>S.dist+W+10&&s.x1-s.x0>90);
@@ -4100,7 +4117,8 @@ function startEvent(){
   if(type==='rain'){S.flash=.6;SFX.thunder();toast('Rain rolled in');markSeen('rain',true);const hi=S.leader.id==='camo'?-1:S.crew.findIndex(c=>c.id==='camo');if(hi>-2&&(hi>=0||S.leader.id==='camo')&&S.mode!=='bear'&&!S.demo){S.bubble={i:hi,text:'Should we start building a boat?',t:0};SFX.voice('camo',3)}}
   else{toast('Night fell. Stay close.');markSeen('night',true)}
 }
-function endEvent(){
+function endEvent(){return drSwap(S&&S.daily&&S.daily.er,endEventCore)}
+function endEventCore(){
   if(S.ev.type==='night'){unlockBadge('night');toast('Sun is back. Somehow.')}else toast('Rain cleared up');
   S.ev=null;S.evIn=30+Math.random()*25;
 }
@@ -4139,8 +4157,8 @@ const ACC={id:null,code:null};try{ACC.id=localStorage.getItem('rc_pid');ACC.code
 const LB={rows:[],state:'loading',uid:ACC.id,noWrite:false,user:null};
 async function refreshBoard(){
   try{
-    const rows=await sb('/rest/v1/scores?select=player_id,name,who,best,best_m,runs,eaten,farts,farts_by,lvl,mode_best,week_key,week_best,badge_ids,stats&order=best.desc&limit=80');
-    const all=(rows||[]).map(r=>({id:r.player_id,name:r.name,who:r.who,best:r.best,bestM:r.best_m,runs:r.runs,eaten:r.eaten,farts:r.farts,fartsBy:r.farts_by||{},lvl:r.lvl,modes:r.mode_best||{},weekKey:r.week_key||'',week:r.week_best||{},badges:Array.isArray(r.badge_ids)?r.badge_ids:[],stats:r.stats||{}}));LB.all=all;LB.rows=all.filter(r=>(r.best||0)>0).slice(0,50);LB.state='ok';
+    const rows=await sb('/rest/v1/scores?select=player_id,name,who,best,best_m,runs,eaten,farts,farts_by,lvl,mode_best,week_key,week_best,badge_ids,stats,daily_log&order=best.desc&limit=80');
+    const all=(rows||[]).map(r=>({id:r.player_id,name:r.name,who:r.who,best:r.best,bestM:r.best_m,runs:r.runs,eaten:r.eaten,farts:r.farts,fartsBy:r.farts_by||{},lvl:r.lvl,modes:r.mode_best||{},weekKey:r.week_key||'',week:r.week_best||{},badges:Array.isArray(r.badge_ids)?r.badge_ids:[],stats:r.stats||{},dly:r.daily_log||{}}));LB.all=all;LB.rows=all.filter(r=>(r.best||0)>0).slice(0,50);LB.state='ok';
   }catch(e){if(LB.state!=='ok')LB.state='off'}
   renderRanks();
 }
@@ -4501,7 +4519,7 @@ function challenge(){
   return mine?{top:true}:null;
 }
 function showHome(){
-  mode='menu';hideNoBear();STORY=null;newRun(sel,true);screen('home');markSeen('fireflies',true);
+  drRestore();mode='menu';hideNoBear();STORY=null;newRun(sel,true);screen('home');drHome();markSeen('fireflies',true);
   $('hWallet').textContent=wallet;$('hBest').textContent=best;updateDots();
   const li=lvlInfo(xp);$('hLvl').textContent='Lv '+li.L;$('hLvlBar').style.width=Math.round(li.into/li.need*100)+'%';
   const c=byId(sel),lc=$('homeLead');lc.innerHTML='';
@@ -4535,7 +4553,98 @@ function showModes(){
     b.addEventListener('click',()=>{runMode=m.id;save('rc_mode',m.id);showHome()});box.appendChild(b);
   }
 }
+/* ---------- Daily Ridge: one trail a day, same for everyone ---------- */
+const DR_START='2026-11-06';let DR_NEXT=null,DR_UPS=null;
+function drDay(off){const d=new Date(Date.now()+(off||0)*864e5),p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);return p}
+function drNum(day){return Math.round((Date.parse(day+'T12:00:00Z')-Date.parse(DR_START+'T12:00:00Z'))/864e5)+1}
+function drHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const DR_ORDER=['patch','curly','camo','stache','nathan'];
+function drLeader(day){return DR_ORDER[Math.floor(mulberry(drHash('lead'+day))()*5)]}
+function drSwap(rng,fn){if(!rng)return fn();const mr=Math.random;Math.random=rng;try{return fn()}finally{Math.random=mr}}
+function drApply(s,o){const h=drHash('ridge'+o.day);
+  s.daily={day:o.day,num:drNum(o.day),official:o.official,wr:mulberry(h),fr:mulberry(h^0x51ed27),er:mulberry(h^0x9e3779b9),grid:[],ouch:0,saved:0,near:0};
+  s.biomeAt=6500+s.daily.wr()*2500;s.fartIn=8+s.daily.fr()*8;s.evIn=28+s.daily.er()*20;s.set=null;s.snacks=0;s.chal=null;s.tut=null}
+function drRestore(){if(DR_UPS){ups=DR_UPS;DR_UPS=null}}
+function drLog(){return ld('rc_daily',{})}
+function drMine(){const r=(LB.all||LB.rows||[]).find(q=>q.id===LB.uid);return r&&r.dly||{}}
+function drPlayed(day){return !!(drLog()[day]||drMine()[day])}
+function drEntry(day){return drLog()[day]||drMine()[day]||null}
+function startDaily(official){
+  if(!myWho){showWho(()=>startDaily(official));return}
+  if(document.activeElement)document.activeElement.blur();
+  const day=drDay();if(official&&drPlayed(day))official=false;
+  if(!DR_UPS){DR_UPS=ups;ups={}}
+  DR_NEXT={day,official};hideNoBear();setTip(null);$('drSheet')&&$('drSheet').remove();
+  const lead=drLeader(day);newRun(lead,false,'classic');SFX.setFFM(null);S.champ=false;pbStart();resetReplay();markSeen('bear',true);markSeen('b0',true);SFX.setBiome(0);
+  mode='play';screen(null);toast((official?'':'Practice · ')+'Daily Ridge #'+S.daily.num+' · '+nm(byId(lead))+' leads');
+}
+/* the emoji grid: one square per 250 m */
+function drTick(){const d=S.daily;if(!d)return;const i=Math.floor(S.dist/12/250);
+  const cur=d.grid[i]||'g',rank={g:0,c:1,f:2,h:3};let nv=cur;
+  if((S.ouch||0)>d.ouch)nv='h';else if(S.saved>d.saved&&rank[nv]<2)nv='f';else if((S.stats.near||0)>d.near&&rank[nv]<1)nv='c';
+  d.ouch=S.ouch||0;d.saved=S.saved;d.near=S.stats.near||0;for(let k=0;k<i;k++)if(!d.grid[k])d.grid[k]='g';d.grid[i]=nv}
+const DR_EMO={g:'\u{1F7E9}',c:'\u{1F7E8}',f:'\u{1F4A8}',h:'\u{1F7E5}',b:'\u{1F43B}',p:'\u{1F573}️',s:'\u{1F9A8}',x:'❌'};
+function drEnd(){const t=S.dtype;return t==='fall'?'p':t==='skunk'||S.eatType==='skunk'?'s':(t==='eaten'||t==='crew'||t==='solo'||S.caught)?'b':'x'}
+function drGridStr(g){return (g||'').split('').map(ch=>DR_EMO[ch]||'').join('')}
+function drWrap(g){const a=[...(g||'')];const out=[];for(let i=0;i<a.length;i+=10)out.push(drGridStr(a.slice(i,i+10).join('')));return out.join('\n')}
+/* who played today, streaks, champs */
+function drRows(day){const rows=(LB.all||LB.rows||[]).filter(r=>r.dly&&r.dly[day]).map(r=>Object.assign({},r,{e:r.dly[day]}));const mine=drLog()[day];if(mine&&!rows.some(r=>r.id===LB.uid)){const me=(LB.all||[]).find(r=>r.id===LB.uid)||{};rows.push(Object.assign({who:myWho||'',name:(typeof myName!=='undefined'&&myName)||''},me,{id:LB.uid||'me',e:mine}))}return rows.sort((a,b)=>(b.e.m-a.e.m)||(b.e.s-a.e.s))}
+function drMyLog(){return Object.assign({},drMine(),drLog())}
+function drStreaks(){const log=drMyLog();let play=0,win=0,k=drPlayed(drDay())?0:1;
+  for(;k<400;k++){const d=drDay(-k);if(!log[d])break;play++}
+  k=drPlayed(drDay())?0:1;for(;k<400;k++){const d=drDay(-k),rows=drRows(d);if(!log[d]||rows.length<2)break;const top=rows[0];if(!(log[d].m>=top.e.m))break;win++}
+  return {play,win}}
+function drChamp(){const rows=drRows(drDay(-1));if(rows.length<2)return null;return rows[0]}
+function drUntil(){const now=new Date(),c=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'})),h=23-c.getHours(),m=59-c.getMinutes();return (h?h+'h ':'')+m+'m'}
+function drShare(day){const e=drEntry(day);if(!e)return '';const st=drStreaks(),c=byId(e.l);
+  return ['Daily Ridge #'+drNum(day)+' \u{1F3D4}️',e.m.toLocaleString()+' m'+(c?' · '+nm(c)+' led':''),drWrap(e.g),st.play>1?'\u{1F525} Streak: '+st.play:''].filter(Boolean).join('\n')}
+function drCopy(day){const t=drShare(day);try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Send it to Hew Stu.')).catch(()=>toast('Copy blocked here'))}catch(e){toast('Copy blocked here')}}
+async function drSubmit(e){
+  const day=S.daily.day,log=drLog();if(log[day])return;log[day]=e;
+  const keep={};for(const k of Object.keys(log))if(k>=drDay(-45))keep[k]=log[k];save('rc_daily',JSON.stringify(keep));
+  try{await drServer(day,e)}catch(err){}
+}
+function drOver(){
+  const d=S.daily,m=Math.floor(S.dist/12),sc=score();drTick();
+  const g=(d.grid.join('')||'g')+drEnd(),e={s:sc,m,l:S.leader.id,g};
+  if(d.official)drSubmit(e);
+  $('bestLine').textContent='Daily Ridge #'+d.num+(d.official?' · official run':' · practice (doesn’t count)');
+  const ch=$('chips');ch.innerHTML='';const gd=el('div','drgrid');gd.textContent=drWrap(g);ch.appendChild(gd);
+  if(d.official){const st=drStreaks();const p=el('div','drst');p.textContent=(st.play>1?'\u{1F525} '+st.play+'-day streak':'\u{1F525} Streak started')+(st.win>1?'  ·  \u{1F451} '+st.win+' wins in a row':'');ch.appendChild(p)}
+  $('again').textContent='Practice this ridge';$('secondBtn').hidden=true;$('shareBtn').textContent=d.official?'Copy for Hew Stu':'Share';
+}
+/* home card */
+function drHome(){
+  let c=$('drCard');if(!c){c=el('button','drcard');c.id='drCard';c.type='button';const ha=document.querySelector('.homeacts');ha.insertBefore(c,ha.firstChild);c.addEventListener('click',()=>{drPlayed(drDay())?drSheet():startDaily(true)})}
+  const day=drDay(),num=drNum(day),lead=byId(drLeader(day)),played=drPlayed(day),e=drEntry(day),st=drStreaks(),champ=drChamp();
+  c.innerHTML='';const meta=el('div','drm');meta.appendChild(el('span','drl','Daily Ridge #'+num));
+  if(played&&e){const rows=drRows(day),rk=rows.findIndex(r=>r.id===LB.uid)+1;meta.appendChild(el('b',null,'✓ '+e.m.toLocaleString()+' m'+(rk?' · #'+rk+' of '+rows.length:'')))}
+  else meta.appendChild(el('b',null,nm(lead)+' leads today'));
+  const sub=[];if(st.play>0)sub.push('\u{1F525} '+st.play);if(champ){const cc=champ.who&&byId(champ.who);sub.push('\u{1F451} '+(cc?nm(cc):(champ.name||'Someone'))+' won yesterday')}
+  if(sub.length)meta.appendChild(el('span','drs',sub.join('  ·  ')));
+  c.appendChild(portrait(lead,1));c.appendChild(meta);
+  const r=el('span','drgo'+(played?' done':''),played?'Next in '+drUntil():'Play');c.appendChild(r);
+}
+setInterval(()=>{if(mode==='menu'&&!$('home').hidden)drHome()},30000);
+/* results sheet (after you've played today) */
+function drSheet(){
+  const day=drDay(),e=drEntry(day);if(!e)return;const st=drStreaks();
+  let ov=$('drSheet');if(ov)ov.remove();ov=el('div','pcover');ov.id='drSheet';const card=el('div','pcard drsheet');ov.appendChild(card);ov.addEventListener('click',ev=>{if(ev.target===ov)ov.remove()});
+  const top=el('div','pctop');const lead=byId(e.l||drLeader(day));top.appendChild(portrait(lead,2));const n=el('div','pcn');n.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,e.m.toLocaleString()+' m · score '+e.s.toLocaleString()));top.appendChild(n);
+  const x=el('button','back');x.type='button';x.setAttribute('aria-label','Close');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';x.addEventListener('click',()=>ov.remove());top.appendChild(x);card.appendChild(top);
+  const gd=el('div','drgrid big');gd.textContent=drWrap(e.g);card.appendChild(gd);
+  const s=el('div','pcstats');const add=(t,v)=>{const d=el('div');d.append(el('b',null,v),el('small',null,t));s.appendChild(d)};
+  const rows=drRows(day),rk=rows.findIndex(r=>r.id===LB.uid)+1;add('Today',rk?'#'+rk+' of '+rows.length:'-');add('Play streak',String(st.play));add('Win streak',String(st.win));card.appendChild(s);
+  card.appendChild(el('p','drnext','Next ridge in '+drUntil()));
+  const b1=el('button','btn big','Copy for Hew Stu');b1.type='button';b1.addEventListener('click',()=>drCopy(day));
+  const row=el('div','frow');const b2=el('button','btn ghost','Today’s board');b2.type='button';b2.addEventListener('click',()=>{ov.remove();rankTab='daily';showRanks()});
+  const b3=el('button','btn ghost','Practice run');b3.type='button';b3.addEventListener('click',()=>startDaily(false));row.append(b2,b3);
+  card.append(b1,row);$('home').appendChild(ov);
+}
+async function drServer(day,e){await ensurePlayer();const r=await rpc('rc_daily_submit',{p_code:ACC.code,p_day:day,p_score:e.s,p_meters:e.m,p_leader:e.l,p_grid:e.g});refreshBoard();return r}
 function start(){
+  drRestore();
   if(document.activeElement)document.activeElement.blur();
   if(!myWho){showWho(start);return}
   hideNoBear();setTip(null);newRun(sel,false,runMode);SFX.setFFM(runMode==='bear'?'bear':null);S.champ=isChamp(S.mode==='fire'?'fire_'+S.ff:S.mode);pbStart();resetReplay();markSeen('bear',true);markSeen('b0',true);markSeen('season',true);SFX.setBiome(0);
@@ -4550,15 +4659,16 @@ function resume(){mode='play';screen(null);if(S&&S.mode==='fire'&&pT>2){if(S.ff=
 function showOver(){
   mode='over';hideNoBear();setTip(null);snackBtn.hidden=true;
   (S.dtype==='bearwin'||S.dtype==='lake')?SFX.win():SFX.lose();
-  const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode;S.newBest=isBest;
-  {const md=Math.floor(S.dist/12),bk=pbKey();if(S.mode!=='bear'&&md>(bestDist[bk]||0)){bestDist[bk]=md;save('rc_bestdist',JSON.stringify(bestDist))}}
+  $('again').textContent='Play again';$('shareBtn').textContent='Share';
+  const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode&&!S.daily;S.newBest=isBest;
+  {const md=Math.floor(S.dist/12),bk=pbKey();if(S.mode!=='bear'&&!S.daily&&md>(bestDist[bk]||0)){bestDist[bk]=md;save('rc_bestdist',JSON.stringify(bestDist))}}
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
-  if(!S.demo){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode;if(BOARDS.some(b=>b[0]===bk)){submitModes({[bk]:sc});if(sc>0&&ACC.code)rpc('rc_submit_week',{p_code:ACC.code,p_mode:bk,p_score:sc}).then(refreshBoard).catch(()=>{})}}
+  if(!S.demo&&!S.daily){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode;if(BOARDS.some(b=>b[0]===bk)){submitModes({[bk]:sc});if(sc>0&&ACC.code)rpc('rc_submit_week',{p_code:ACC.code,p_mode:bk,p_score:sc}).then(refreshBoard).catch(()=>{})}}
   if(S.mode==='fire'){ffPlayed[S.ff]=1;save('rc_ffplayed',JSON.stringify(ffPlayed));if(ffPlayed.blaze&&ffPlayed.lava&&ffPlayed.ride)unlockBadge('ff_all')}
-  if(S.mode==='classic'&&sc>best){best=sc;save('rc_best',String(best))}
+  if(S.mode==='classic'&&!S.daily&&sc>best){best=sc;save('rc_best',String(best))}
   const gained=S.cones-S.banked;wallet+=gained;S.banked=S.cones;
   const res=applyRun();
-  if(S.mode==='classic')submitScore(sc,Math.floor(S.dist/12),S.dtype==='eaten'||S.dtype==='skunk');
+  if(S.mode==='classic'&&!S.daily)submitScore(sc,Math.floor(S.dist/12),S.dtype==='eaten'||S.dtype==='skunk');
   $('overTitle').textContent=S.caught?'Caught!':(OVER_TITLE[S.dtype]||'Trip over');
   $('reason').textContent=S.reason+' '+pick(OVER_CAP[S.caught?'caught':S.dtype]||OVER_CAP.crew);
   {const up=S.mode==='uphill'&&S.upMax;countUp($('sDist'),up?Math.floor(S.upMax/10)*10:Math.floor(S.dist/12),700);const lb=$('sDist').nextElementSibling;if(lb)lb.textContent=up?'ft peak':'meters'}countUp($('sCones'),S.cones,700);countUp($('sScore'),sc,1000);
@@ -4577,6 +4687,8 @@ function showOver(){
   const cost=100,can=S.mode!=='bear'&&S.mode!=='fire'&&S.revives===0&&S.dtype!=='bearwin';
   $('secondBtn').hidden=!can;$('secondBtn').textContent='Second chance (100)';$('secondBtn').disabled=wallet<cost;
   overView='art';artT=0;repT=0;$('replayBtn').hidden=REP.n<10;$('replayBtn').textContent='Watch replay';
+  if(S.daily)try{drOver()}catch(e){console.error(e)}
+  drRestore();
   screen('over');
 }
 function secondChance(){
@@ -4729,11 +4841,13 @@ async function renderRanks(){
   /* controls: all time / this week, and a mode picker grid */
   let ctl=$('rankCtl');if(!ctl){ctl=el('div','rkctl');ctl.id='rankCtl';list.parentNode.insertBefore(ctl,list)}
   ctl.innerHTML='';
-  const seg=el('div','seg');for(const [id,lab] of [['all','All time'],['week','This week']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankPeriod===id));b.addEventListener('click',()=>{rankPeriod=id;renderRanks()});seg.appendChild(b)}
-  const curLbl=rankTab==='overall'?'Overall':BOARDS.find(b=>b[0]===rankTab)[1];
+  const seg=el('div','seg');if(rankTab==='daily'){for(const [id,lab] of [[0,'Today'],[1,'Yesterday']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankDayOff===id));b.addEventListener('click',()=>{rankDayOff=id;renderRanks()});seg.appendChild(b)}}
+  else for(const [id,lab] of [['all','All time'],['week','This week']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankPeriod===id));b.addEventListener('click',()=>{rankPeriod=id;renderRanks()});seg.appendChild(b)}
+  const curLbl=rankTab==='overall'?'Overall':rankTab==='daily'?'Daily Ridge':BOARDS.find(b=>b[0]===rankTab)[1];
   const mb=el('button','rkmode');mb.type='button';mb.append(el('small',null,'Board'),el('b',null,curLbl+' ▾'));mb.setAttribute('aria-expanded',String(rankGrid));mb.addEventListener('click',()=>{rankGrid=!rankGrid;renderRanks()});
   ctl.append(seg,mb);
-  if(rankGrid){const gr=el('div','modegrid');for(const [id,lab] of [['overall','Overall'],...BOARDS]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;rankGrid=false;renderRanks()});gr.appendChild(b)}ctl.appendChild(gr)}
+  if(rankGrid){const gr=el('div','modegrid');for(const [id,lab] of [['daily','Daily Ridge'],['overall','Overall'],...BOARDS]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;rankGrid=false;renderRanks()});gr.appendChild(b)}ctl.appendChild(gr)}
+  if(rankTab==='daily'){await drBoard(list,seq);return}
   /* scores for the chosen board + period */
   const wk=weekKey(),rows=(LB.all||LB.rows);
   const val=(r,k)=>{if(rankPeriod==='week')return r.weekKey===wk?((r.week||{})[k]||0):0;return k==='classic'?(r.best||0):((r.modes||{})[k]||0)};
@@ -4775,6 +4889,25 @@ async function renderRanks(){
   const aw=crewAwards(rows);if(aw.length){list.appendChild(el('div','gsec awh',null)).append(el('span',null,'Crew awards'));const g=el('div','awards');for(const a of aw){const c=el('div','award');c.append(el('small',null,a.t),el('b',null,a.who),el('span',null,a.v));g.appendChild(c)}list.appendChild(g)}
   {const m=list.querySelector('.mine');if(m&&m.offsetTop-list.offsetTop>list.clientHeight*.6)list.scrollTop=Math.max(0,m.offsetTop-list.offsetTop-list.clientHeight/2)}
 }
+async function drBoard(list,seq){
+  const off=rankDayOff,day=drDay(-off),rows=drRows(day);
+  {const ps=await boardPs(rows.map(r=>r.id));Object.assign(RPS,ps)}
+  if(seq!==rankSeq||$('ranksScr').hidden)return;
+  list.innerHTML='';const sum=el('div','mybest');
+  if(off===0&&!drPlayed(day)){
+    const h=el('div','mbh');h.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,rows.length+' played'));sum.appendChild(h);
+    sum.appendChild(el('p','pass','Results stay hidden until you play today’s ridge. '+nm(byId(drLeader(day)))+' leads. One shot.'));
+    const b=el('button','btn big','Play today’s ridge');b.type='button';b.addEventListener('click',()=>startDaily(true));list.append(sum,b);return}
+  const mine=rows.find(r=>r.id===LB.uid),rk=mine?rows.indexOf(mine)+1:0;
+  const h=el('div','mbh');h.append(el('b',null,(off?'Yesterday · ':'')+'Daily Ridge #'+drNum(day)),el('span',null,rk?'#'+rk+' of '+rows.length:rows.length+' played'));sum.appendChild(h);
+  if(mine){let t='Your run: '+mine.e.m.toLocaleString()+' m';if(rk>1)t+=' · '+(rows[rk-2].e.m-mine.e.m+1).toLocaleString()+' m to pass '+rowName(rows[rk-2]);else if(rows[1])t+=' · '+(mine.e.m-rows[1].e.m).toLocaleString()+' m ahead of '+rowName(rows[1]);sum.appendChild(el('p','pass',t))}
+  else sum.appendChild(el('p','pass',off?'You missed this one.':'You haven’t played yet.'));
+  if(!off)sum.appendChild(el('p','pass','Next ridge in '+drUntil()));
+  list.appendChild(sum);
+  rows.forEach((r,i)=>rankRow(list,Object.assign({},r,{rank:i+1}),RPS,r.e.m,drGridStr(r.e.g.slice(0,12))+'  '+r.e.s.toLocaleString()+' pts',[],null));
+  if(!rows.length)list.appendChild(el('div','empty','Nobody played this ridge.'));
+}
+let rankDayOff=0;
 let rankPeriod='all',rankGrid=false,rankPrev=null;
 function weekKey(){const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),g=k=>+p.find(x=>x.type===k).value;
   const d=new Date(Date.UTC(g('year'),g('month')-1,g('day'))),dn=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-dn+3);const y=d.getUTCFullYear(),f=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-f)/864e5-3+((f.getUTCDay()+6)%7))/7);return y+'-W'+String(w).padStart(2,'0')}
@@ -4871,7 +5004,7 @@ function toggleMute(){SFX.toggle();if(!SFX.muted)SFX.tap();renderMute()}
 $('playBtn').addEventListener('click',start);
 $('modeBtn').addEventListener('click',showModes);
 $('leadGo').addEventListener('click',start);
-$('again').addEventListener('click',start);
+$('again').addEventListener('click',()=>{if(S&&S.daily)startDaily(false);else start()});
 $('homeLead').addEventListener('click',showLeader);
 $('dCrew').addEventListener('click',()=>showShop('outfit'));
 $('dShop').addEventListener('click',()=>showShop('game'));
@@ -4900,7 +5033,7 @@ $('resetBtn').addEventListener('click',async()=>{
 
 $('pauseMute').addEventListener('click',toggleMute);
 $('secondBtn').addEventListener('click',secondChance);
-$('shareBtn').addEventListener('click',openCard);
+$('shareBtn').addEventListener('click',()=>{if(S&&S.daily&&S.daily.official)drCopy(S.daily.day);else openCard()});
 $('cardSave').addEventListener('click',saveCard);
 $('cardCopy').addEventListener('click',copyCardText);
 $('cardClose').addEventListener('click',()=>screen('over'));
