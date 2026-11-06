@@ -22,6 +22,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 .home .leadcard{padding:5px 12px 5px 8px}.home .leadcard canvas{height:48px}.home .lcname{font-size:1.18rem}
 .home .btn.big{padding:10px 18px;font-size:clamp(1.45rem,6vw,1.9rem)}
 .home .modepick{padding-block:10px}
+.home .playrow{margin-bottom:5px}
 .home .dockbtn{padding:7px 6px;gap:2px;font-size:.86rem}
 @media (min-height:541px){.home .logo{margin-top:clamp(0px,2.5vh,28px)}}
 .drcard{padding:4px 10px}.drcard canvas{height:32px}
@@ -360,6 +361,8 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .mission .mt span{font-size:.78rem;color:var(--muted)}
 .mission .btn{font-size:.9rem;padding:9px 12px;display:inline-flex;align-items:center;gap:6px}
 .mission.done{border-color:var(--amber)}
+.msec{flex:none;font:700 .72rem var(--body);text-transform:uppercase;letter-spacing:.12em;margin:6px 2px -2px}.msec.ml0{color:#7ed07a}.msec.ml1{color:var(--amber)}.msec.ml2{color:#ff8a7a}
+.mission.ml0{border-left:5px solid #7ed07a}.mission.ml1{border-left:5px solid var(--amber)}.mission.ml2{border-left:5px solid #ff8a7a}
 .mission.locked{opacity:.6}
 .journal{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,108px),1fr));grid-auto-rows:auto;align-content:start;gap:6px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:2px 2px 16px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)}
 .jent{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:8px 6px;min-height:0;min-width:0;overflow:hidden;opacity:.55}
@@ -3578,6 +3581,7 @@ function drawCampTent(k){
   else if(k==='teepee'){for(let r=0;r<24;r++){const w=Math.round(2+r*1.15);px(ctx,r%6<3?'#e8dcc0':'#c8b898',bx-(w>>1),by-24+r,w,1)}for(let r=4;r<24;r+=6)px(ctx,'#b8322e',bx-Math.round((2+r*1.15)/2),by-24+r,Math.round(2+r*1.15),1);px(ctx,'#6b4423',bx-3,by-29,1,6);px(ctx,'#6b4423',bx+2,by-29,1,6);px(ctx,'#2a1e14',bx-3,by-8,6,8)}
 }
 /* ---------- home: the Hew Stu living room ---------- */
+function seatIds(){const ids=['patch','curly','nathan','camo','stache'],i=ids.indexOf(sel);if(i>=0&&i!==2){ids[2]=sel;ids[i]='nathan'}return ids}
 function drawApt(t,dt,r,k,cx,gy){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
   /* wall + ceiling, warm lamp light */
@@ -3640,21 +3644,21 @@ function drawApt(t,dt,r,k,cx,gy){
   /* brown pillows */
   px(ctx,'#5a3e2e',-51,-21,9,8);px(ctx,'#6b4c3a',-50,-20,7,2);px(ctx,'#5a3e2e',45,-20,10,7);px(ctx,'#6b4c3a',46,-19,8,2);
   /* the crew on the couch */
-  const ids=['patch','curly','nathan','camo','stache'],C=ids.map(byId),xs=[-40,-20,0,20,40];
+  const ids=seatIds(),C=ids.map(byId),xs=[-40,-20,0,20,40],seat=id=>ids.indexOf(id);
   laughT-=dt;if(laughT<-2.5-Math.random()*3){laughId=Math.random()*5|0;laughT=1.4}
   const bob=i=>(laughId===i&&laughT>0)?(Math.floor(t*10)%2?-1:0):(Math.sin(t*2.2+i*1.7)>.85?-1:0);
-  const jam=look(C[3]).packDeco==='banjo'&&(t%14)<8;
-  C.forEach((c,i)=>{const L=look(c),x=xs[i];drawHikerFront(ctx,i===3&&jam?Object.assign({},L,{packDeco:null}):c,x,-5+bob(i),laughId===i&&laughT>0);
+  const jam=look(byId('camo')).packDeco==='banjo'&&(t%14)<8;
+  C.forEach((c,i)=>{const L=look(c),x=xs[i];drawHikerFront(ctx,c.id==='camo'&&jam?Object.assign({},L,{packDeco:null}):c,x,-5+bob(i),laughId===i&&laughT>0);
     /* sitting: hide the standing legs, then knees forward on the cushion edge and shins down to the floor */
     px(ctx,cS,x-5,-9,11,3);px(ctx,'#625c57',x-5,-6,11,6);px(ctx,cD,x-5,-6,11,1);
-    const kd=mixHex(L.pants,'#000000',.28),sw=(i===0&&Math.sin(t*1.7)>.6)?1:0;
+    const kd=mixHex(L.pants,'#000000',.28),sw=(c.id==='patch'&&Math.sin(t*1.7)>.6)?1:0;
     px(ctx,L.pants,x-5,-9,4,4);px(ctx,L.pants,x+2,-9,4,4);px(ctx,mixHex(L.pants,'#ffffff',.18),x-5,-9,4,1);px(ctx,mixHex(L.pants,'#ffffff',.18),x+2,-9,4,1);
     px(ctx,kd,x-5+sw,-5,3,5);px(ctx,kd,x+3,-5,3,5);
     px(ctx,DARK,x-6+sw,0,4,1);px(ctx,DARK,x+3,0,4,1)});
   /* Henry's banjo, Josiah's controller, Blake's headphones are on already */
-  {const x=xs[3],st=Math.floor(t*6)%2;if(jam){px(ctx,'#8a6a3a',x+1,-19,6,6);px(ctx,'#efe4c8',x+2,-18,4,4);for(let q=0;q<9;q++)px(ctx,'#6b4423',x+1-q,-17-Math.round(q*.6),1,1);px(ctx,look(c3()).skin,x+3,-17+st,2,2);
+  {const x=xs[seat('camo')],st=Math.floor(t*6)%2;if(jam){px(ctx,'#8a6a3a',x+1,-19,6,6);px(ctx,'#efe4c8',x+2,-18,4,4);for(let q=0;q<9;q++)px(ctx,'#6b4423',x+1-q,-17-Math.round(q*.6),1,1);px(ctx,look(c3()).skin,x+3,-17+st,2,2);
     for(let n=0;n<2;n++){const kk=(t*.5+n/2)%1;ctx.globalAlpha=1-kk;px(ctx,'#fff3dc',Math.round(x+8+kk*6),Math.round(-34-kk*12),2,2);px(ctx,'#fff3dc',Math.round(x+9+kk*6),Math.round(-38-kk*12),1,4);ctx.globalAlpha=1}}}
-  {const x=xs[1];px(ctx,'#2a2a30',x-4,-16,8,3);px(ctx,'#d04a4a',x+2,-15,1,1);px(ctx,'#4a8ad0',x-3,-15,1,1)}
+  {const x=xs[seat('curly')];px(ctx,'#2a2a30',x-4,-16,8,3);px(ctx,'#d04a4a',x+2,-15,1,1);px(ctx,'#4a8ad0',x-3,-15,1,1)}
   /* arms of the sectional */
   for(const sd of [-1,1]){const x=sd<0?-68:58;px(ctx,'#655f5a',x,-22,10,22);px(ctx,cap,x-1,-24,12,3);px(ctx,'#4a423e',x-1,-22,12,1);px(ctx,'#a6a6a6',x+3,0,3,1)}
   /* green throw blanket draped on the left */
@@ -3665,7 +3669,7 @@ function drawApt(t,dt,r,k,cx,gy){
   px(ctx,'#5a3a22',-18,15,2,10);px(ctx,'#5a3a22',16,15,2,10);px(ctx,'#4a2e1a',-1,15,2,8);px(ctx,'#4a2e1a',-16,20,32,1);
   /* the yawn bit, same as the campfire */
   yawnNext-=dt;if(yawnNext<=0&&yawnT<=0){yawnI=pick([0,1,3,4]);yawnT=1.6;yawnNext=9+Math.random()*9}
-  if(yawnT>0){yawnT-=dt;const yx=xs[yawnI],up=Math.min(1,(1.6-yawnT)*3,yawnT*3);ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.globalAlpha=up;ctx.fillStyle='#fff3dc';ctx.fillText(yawnI===0?'*yawn* ...bro':'*yawn*',yx,-42);ctx.globalAlpha=1}
+  if(yawnT>0){yawnT-=dt;const yx=xs[yawnI],up=Math.min(1,(1.6-yawnT)*3,yawnT*3);ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.globalAlpha=up;ctx.fillStyle='#fff3dc';ctx.fillText(ids[yawnI]==='patch'?'*yawn* ...bro':'*yawn*',yx,-42);ctx.globalAlpha=1}
   /* warm room tint so it feels like night with the lamps on */
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='rgba(40,28,18,.08)';ctx.fillRect(0,0,cw,ch);
   const v=ctx.createRadialGradient(cx,gy-40*k,40*k,cx,gy-40*k,Math.max(cw,ch)*.8);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(10,8,6,.42)');ctx.fillStyle=v;ctx.fillRect(0,0,cw,ch);
@@ -3723,7 +3727,7 @@ function drawCamp(t){
   if(bearEyes>0&&Math.floor(t*3)%5!==0){const ex=Math.round(cx+bearEyesSide*Math.min(cw/2-20,110*k)),ey=Math.round(gy-22*k);ctx.fillStyle='#f4d35e';ctx.fillRect(ex,ey,Math.max(2,k*1.5),Math.max(2,k*1.5));ctx.fillRect(ex+5*k,ey,Math.max(2,k*1.5),Math.max(2,k*1.5))}
   // scene units: origin = fire base
   ctx.setTransform(dpr*k,0,0,dpr*k,dpr*cx,dpr*gy);
-  const ids=['patch','curly','nathan','camo','stache'],C=ids.map(byId);
+  const ids=STORY?['patch','curly','nathan','camo','stache']:seatIds(),C=ids.map(byId);
   if(STORY){laughId=ids.indexOf(STORY.who);laughT=1}else{laughT-=dt;if(laughT<-2.5-Math.random()*3){laughId=Math.random()*5|0;laughT=1.4}}
   const bob=i=>(laughId===i&&laughT>0)?(Math.floor(t*10)%2?-1:0):(Math.sin(t*2.2+i*1.7)>.85?-1:0);
   drawCampTent(styleOf('tent'));
@@ -4056,10 +4060,19 @@ const BADGES=[
  {id:'bear_apex',ic:'40s',name:'Apex Predator',desc:'As the bear, catch all 5 in under 40 seconds without getting hit'},
  {id:'ff_burn300',ic:'300',name:'Scorched Earth',desc:'Burn 300 things in one Crew Is the Fire run'},
  {id:'rotation',ic:'5L',name:'Everybody Leads',desc:'Reach 1,000 m with each of the five as leader'},
- {id:'legend',ic:'40',name:'Trail Legend',desc:'Earn 40 other badges'}
+ {id:'legend',ic:'40',name:'Trail Legend',desc:'Earn 40 other badges'},
+ {id:'dr_first',ic:'#1',name:'First Ridge',desc:'Play your first official Daily Ridge'},
+ {id:'dr_camp',ic:'\u26FA',name:'Made Camp',desc:'Reach the ridge line on a Daily Ridge'},
+ {id:'dr_streak3',ic:'3D',name:'On a Roll',desc:'Play the Daily Ridge 3 days in a row'},
+ {id:'dr_win',ic:'1ST',name:'King of the Ridge',desc:'Win a Daily Ridge against the crew'},
+ {id:'dr_summit',ic:'TOP',name:'Summit Day',desc:'Get a Summit rating on a Daily Ridge'},
+ {id:'dr_clean',ic:'ALL',name:'Spotless Ridge',desc:'Reach 1,000 m on a Daily Ridge with every square green'},
+ {id:'dr_streak7',ic:'7D',name:'Week Warrior',desc:'Play the Daily Ridge 7 days in a row'},
+ {id:'dr_wins3',ic:'3W',name:'Ridge Royalty',desc:'Win the Daily Ridge 3 days in a row'},
+ {id:'dr_streak30',ic:'30D',name:'Daily Devotion',desc:'Play the Daily Ridge 30 days in a row'}
 ];
 const TIERS=[null,{n:'Common',c:'#c08a5a'},{n:'Rare',c:'#4fa3e0'},{n:'Epic',c:'#b07ae8'},{n:'Legendary',c:'#f2c14e'}];
-const TIER_OF={"meters500": 1, "meters1500": 2, "cones100": 2, "gut5": 2, "eaten": 1, "night": 1, "skunk": 1, "squad": 2, "hewstu": 3, "drip": 1, "meters3000": 4, "night1500": 3, "solo2000": 3, "cones300": 4, "gut15": 4, "clean1k": 3, "coldturkey": 3, "star": 4, "rotation": 3, "legend": 4, "up_camp": 1, "up_high": 2, "up_summit": 3, "up_rope": 3, "up_beyond": 4, "bear_style": 1, "bear_double": 2, "bear_fear": 2, "bear_snack": 2, "bear_fast": 3, "bear_clean": 3, "bear_apex": 4, "ff_all": 1, "ff_climb": 1, "ff_inferno": 1, "ff_combo9": 2, "ff_kaboom": 2, "ff_raft": 2, "ff_mallow": 2, "ff_chain": 2, "ff_burn": 2, "ff_swing": 3, "ff_flip": 3, "ff_pyramid": 3, "ff_lake": 3, "ff_burn300": 4};
+const TIER_OF={"meters500": 1, "meters1500": 2, "cones100": 2, "gut5": 2, "eaten": 1, "night": 1, "skunk": 1, "squad": 2, "hewstu": 3, "drip": 1, "meters3000": 4, "night1500": 3, "solo2000": 3, "cones300": 4, "gut15": 4, "clean1k": 3, "coldturkey": 3, "star": 4, "rotation": 3, "legend": 4, "up_camp": 1, "up_high": 2, "up_summit": 3, "up_rope": 3, "up_beyond": 4, "bear_style": 1, "bear_double": 2, "bear_fear": 2, "bear_snack": 2, "bear_fast": 3, "bear_clean": 3, "bear_apex": 4, "ff_all": 1, "ff_climb": 1, "ff_inferno": 1, "ff_combo9": 2, "ff_kaboom": 2, "ff_raft": 2, "ff_mallow": 2, "ff_chain": 2, "ff_burn": 2, "ff_swing": 3, "ff_flip": 3, "ff_pyramid": 3, "ff_lake": 3, "ff_burn300": 4, "dr_first": 1, "dr_camp": 1, "dr_streak3": 2, "dr_win": 2, "dr_summit": 3, "dr_clean": 3, "dr_streak7": 3, "dr_wins3": 4, "dr_streak30": 4};
 BADGES.forEach(b=>b.tier=TIER_OF[b.id]||1);
 let ffPlayed={};try{ffPlayed=JSON.parse(localStorage.getItem('rc_ffplayed')||'{}')||{}}catch(e){}
 let badges={};try{badges=JSON.parse(localStorage.getItem('rc_badges')||'{}')||{}}catch(e){}
@@ -4266,24 +4279,32 @@ function updateDots(){
 function markDots(k,v){try{const seen=ld('rc_seen',{});seen[k]=v;save('rc_seen',JSON.stringify(seen))}catch(e){}}
 
 const MTPL=[
- {id:'jumps',t:'Jump {n} times',ns:[40,80,150],r:[50,90,160]},
- {id:'clears',t:'Clear {n} obstacles',ns:[15,40,80],r:[50,100,170]},
- {id:'saved',t:'Stop {n} farts',ns:[3,6,12],r:[60,110,200]},
- {id:'meters',t:'Run {n} m in one run',ns:[300,600,1000],r:[60,120,220],single:true},
- {id:'cones',t:'Grab {n} pinecones',ns:[60,150,300],r:[50,100,180]},
- {id:'snacks',t:'Throw {n} snacks at the bear',ns:[1,3,6],r:[60,100,170]},
- {id:'near',t:'Pull off {n} close calls',ns:[3,8,15],r:[60,110,190]},
- {id:'animals',t:'Jump over {n} animals',ns:[2,5,10],r:[60,110,180]},
- {id:'eaten',t:'Get eaten by the bear {n} times',ns:[1,2,3],r:[40,70,100]}
+ {id:'jumps',t:'Jump {n} times',ns:[40,150,400],r:[50,150,400]},
+ {id:'clears',t:'Clear {n} obstacles',ns:[15,80,200],r:[50,160,420]},
+ {id:'saved',t:'Stop {n} farts',ns:[3,12,30],r:[60,180,450]},
+ {id:'meters',t:'Run {n} m in one run',ns:[300,1000,2500],r:[60,200,550],single:true},
+ {id:'cones',t:'Grab {n} pinecones',ns:[60,300,800],r:[50,160,420]},
+ {id:'snacks',t:'Throw {n} snacks at the bear',ns:[1,6,15],r:[60,170,400]},
+ {id:'near',t:'Pull off {n} close calls',ns:[3,15,40],r:[60,180,420]},
+ {id:'animals',t:'Jump over {n} animals',ns:[2,10,25],r:[60,170,420]},
+ {id:'eaten',t:'Get eaten by the bear {n} times',ns:[1,3,6],r:[40,90,180]},
+ {id:'daily',t:'Play {n} official Daily Ridges',ns:[1,3,7],r:[60,200,500]},
+ {id:'madecamp',t:'Reach the ridge line {n} times',ns:[1,3,6],r:[70,220,520]}
 ];
-function newMission(ex){
-  const pool=MTPL.filter(m=>!ex.includes(m.id)),tp=pick(pool),tier=Math.min(2,Math.floor(Math.random()*(1+Math.min(2,Math.floor(level()/4)))));
-  return {tid:tp.id,n:tp.ns[tier],r:tp.r[tier],prog:0,done:false};
+const MLV=['Easy','Hard','Very hard'],MSLOTS=[0,0,1,1,2,2];
+function newMission(ex,lv){
+  const pool=MTPL.filter(m=>!ex.includes(m.id)&&!(lv===2&&m.id==='eaten')),tp=pick(pool);
+  return {tid:tp.id,n:tp.ns[lv],r:tp.r[lv],prog:0,done:false,lv};
 }
 let missions=ld('rc_missions',null);
-if(!Array.isArray(missions)||missions.length!==3){missions=[];for(let i=0;i<3;i++)missions.push(newMission(missions.map(m=>m.tid)))}
+if(!Array.isArray(missions)||missions.length!==6||missions.some(m=>m.lv==null||!MTPL.some(t=>t.id===m.tid))){
+  const old=Array.isArray(missions)?missions:[];let cash=0;for(const m of old)if(m&&m.done&&m.r)cash+=m.r;
+  missions=[];for(const lv of MSLOTS)missions.push(newMission(missions.map(m=>m.tid),lv));
+  if(cash){wallet+=cash;try{save('rc_wallet',String(wallet))}catch(e){}setTimeout(()=>toast('Finished missions cashed in: +'+cash+' pinecones'),1500)}
+  try{save('rc_missions',JSON.stringify(missions))}catch(e){}
+}
 const saveMissions=()=>save('rc_missions',JSON.stringify(missions));
-const mText=m=>{let t=MTPL.find(x=>x.id===m.tid).t.replace('{n}',m.n.toLocaleString());if(m.n===1)t=t.replace('snacks','snack').replace('farts','fart').replace('animals','animal').replace('times','time').replace('calls','call');return t};
+const mText=m=>{let t=MTPL.find(x=>x.id===m.tid).t.replace('{n}',m.n.toLocaleString());if(m.n===1)t=t.replace('snacks','snack').replace('farts','fart').replace('animals','animal').replace('times','time').replace('calls','call').replace('Ridges','Ridge');return t};
 function progressMissions(d,meters){
   for(const m of missions){
     if(m.done)continue;const tp=MTPL.find(t=>t.id===m.tid);
@@ -4292,7 +4313,7 @@ function progressMissions(d,meters){
   }
   saveMissions();
 }
-function claimMission(i){const m=missions[i];if(!m||!m.done)return;wallet+=m.r;missions[i]=newMission(missions.map(x=>x.tid));persist();saveMissions();SFX.win()}
+function claimMission(i){const m=missions[i];if(!m||!m.done)return;wallet+=m.r;missions[i]=newMission(missions.map(x=>x.tid),m.lv||0);persist();saveMissions();SFX.win()}
 const JOURNAL=[
  {id:'bear',ic:'BR',name:'The Bear',desc:'Always one step behind.'},
  {id:'skunk',ic:'SK',name:'Skunk',desc:'Do not touch.'},
@@ -4598,6 +4619,10 @@ function drStats(){const log=drMyLog(),days=Object.keys(log).sort();let wins=0,b
   for(const d of days){const e=log[d],rows=drRows(d);if(rows.length>=2&&e.m>=rows[0].e.m)wins++;best=Math.max(best,e.m);sum+=e.m;
     const pd=prev?new Date(Date.parse(prev+'T12:00:00Z')+864e5).toISOString().slice(0,10):null;run=pd===d?run+1:1;maxS=Math.max(maxS,run);prev=d}
   return {played:days.length,wins,avg:days.length?Math.round(sum/days.length):0,best,maxS,days}}
+function drBadges(e){
+  unlockBadge('dr_first');if(e&&e.p&&e.m>=e.p)unlockBadge('dr_camp');if(e&&e.p&&e.m>=e.p*1.5)unlockBadge('dr_summit');
+  if(e&&e.m>=1000&&/^g+[a-z]$/.test(e.g))unlockBadge('dr_clean');drWinBadges()}
+function drWinBadges(){try{const st=drStreaks();if(st.play>=3)unlockBadge('dr_streak3');if(st.play>=7)unlockBadge('dr_streak7');if(st.play>=30)unlockBadge('dr_streak30');if(st.win>=1)unlockBadge('dr_win');if(st.win>=3)unlockBadge('dr_wins3')}catch(e){}}
 function drRestore(){if(DR_UPS){ups=DR_UPS;DR_UPS=null}}
 function drLog(){return ld('rc_daily',{})}
 function drMine(){const r=(LB.all||LB.rows||[]).find(q=>q.id===LB.uid);return r&&r.dly||{}}
@@ -4642,7 +4667,7 @@ async function drSubmit(e){
 function drOver(){
   const d=S.daily,m=Math.floor(S.dist/12),sc=score();drTick();
   const g=(d.grid.join('')||'g')+drEnd(),e={s:sc,m,l:S.leader.id,g,p:d.par};
-  if(d.official)drSubmit(e);
+  if(d.official){drSubmit(e);progressMissions({daily:1,madecamp:d.par&&m>=d.par?1:0},0);drBadges(e)}
   {const gf=drGolf(m,d.par);$('bestLine').textContent=(gf?gf.e+' '+gf.n+' \u00B7 ridge line '+d.par.toLocaleString()+' m \u00B7 ':'')+'Daily Ridge #'+d.num+(d.official?'':' \u00B7 practice')}
   const ch=$('chips');ch.innerHTML='';const gd=el('div','drgrid');gd.textContent=drWrap(g);ch.appendChild(gd);
   if(d.official){const st=drStreaks();const p=el('div','drst');p.textContent=(st.play>1?'\u{1F525} '+st.play+'-day streak':'\u{1F525} Streak started')+(st.win>1?'  ·  \u{1F451} '+st.win+' wins in a row':'');ch.appendChild(p)}
@@ -4650,7 +4675,7 @@ function drOver(){
 }
 /* home card */
 function drHome(){
-  $('home').classList.add('hasdr');
+  $('home').classList.add('hasdr');if(Object.keys(drMyLog()).length)drWinBadges();
   let c=$('drCard');if(!c){c=el('button','drcard');c.id='drCard';c.type='button';const ha=document.querySelector('.homeacts');ha.insertBefore(c,ha.firstChild);c.addEventListener('click',()=>{drPlayed(drDay())?drSheet():startDaily(true)})}
   const day=drDay(),num=drNum(day),lead=byId(drLeader(day)),played=drPlayed(day),e=drEntry(day),st=drStreaks(),champ=drChamp();
   c.innerHTML='';const meta=el('div','drm');meta.appendChild(el('span','drl','Daily Ridge #'+num));
@@ -5011,7 +5036,8 @@ function renderGoals(){
     const box=$('gMissions');box.innerHTML='';
     const lv=el('div','lvcard');lv.append(el('b',null,'Level '+li.L+'  '+titleOf(li.L)),el('span',null,li.into+' / '+li.need+' XP to Lv '+(li.L+1)));const bar=el('div','bar');const fill=el('i');fill.style.width=Math.round(li.into/li.need*100)+'%';bar.appendChild(fill);lv.appendChild(bar);box.appendChild(lv);
     missions.forEach((m,i)=>{
-      const row=el('div','mission'+(m.done?' done':''));const t=el('div','mt');t.append(el('b',null,mText(m)),el('span',null,Math.min(m.prog,m.n).toLocaleString()+' / '+m.n.toLocaleString()));
+      if(i===0||MSLOTS[i]!==MSLOTS[i-1])box.appendChild(el('div','msec ml'+(m.lv||0),MLV[m.lv||0]));
+      const row=el('div','mission ml'+(m.lv||0)+(m.done?' done':''));const t=el('div','mt');t.append(el('b',null,mText(m)),el('span',null,Math.min(m.prog,m.n).toLocaleString()+' / '+m.n.toLocaleString()));
       const bar=el('div','bar');const f=el('i');f.style.width=Math.round(Math.min(1,m.prog/m.n)*100)+'%';bar.appendChild(f);t.appendChild(bar);
       const b=el('button','btn');b.type='button';b.appendChild(coneIcon());b.appendChild(document.createTextNode(m.done?'Claim '+m.r:String(m.r)));b.disabled=!m.done;
       b.addEventListener('click',()=>{claimMission(i);renderGoals()});row.append(t,b);box.appendChild(row);
@@ -5020,7 +5046,7 @@ function renderGoals(){
     const g=$('badgeGrid');g.innerHTML='';
     {const lg=el('div','tierkey');for(let k=1;k<=4;k++){const all=BADGES.filter(b=>b.tier===k),c=el('span','tk t'+k);c.append(el('i'),document.createTextNode(TIERS[k].n+' '+all.filter(b=>badges[b.id]).length+'/'+all.length));lg.appendChild(c)}g.appendChild(lg)}
     const byT=l=>l.slice().sort((a,b)=>a.tier-b.tier);
-    for(const [label,list] of [['Trail',byT(BADGES.filter(b=>!/^(ff_|bear_|up_)/.test(b.id)))],['Summit Climb',byT(BADGES.filter(b=>b.id.startsWith('up_')))],['Bear Mode',byT(BADGES.filter(b=>b.id.startsWith('bear_')))],['Forest Fire',byT(BADGES.filter(b=>b.id.startsWith('ff_')))]]){
+    for(const [label,list] of [['Trail',byT(BADGES.filter(b=>!/^(ff_|bear_|up_|dr_)/.test(b.id)))],['Daily Ridge',byT(BADGES.filter(b=>b.id.startsWith('dr_')))],['Summit Climb',byT(BADGES.filter(b=>b.id.startsWith('up_')))],['Bear Mode',byT(BADGES.filter(b=>b.id.startsWith('bear_')))],['Forest Fire',byT(BADGES.filter(b=>b.id.startsWith('ff_')))]]){
       const got=list.filter(b=>badges[b.id]).length,h=el('div','gsec');h.append(el('span',null,label),el('i',null,got+' / '+list.length));g.appendChild(h);
       for(const b of list){const ok=!!badges[b.id];const d=el('div','badge t'+b.tier+(ok?' got':''));d.appendChild(el('span','ic',b.ic));const t=el('div','bt');t.append(el('em','tl',TIERS[b.tier].n),el('b',null,b.name),el('span',null,b.desc));d.appendChild(t);g.appendChild(d)}}
   }else if(gTab==='journal'){
