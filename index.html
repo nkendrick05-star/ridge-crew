@@ -694,8 +694,9 @@ const STYLE_GROUPS=[
  {k:'pose',title:'Game-over pose',note:'What your leader does when a run ends.',items:[{id:'none',name:'Default',price:0},{id:'dazed',name:'Sit dazed',price:80},{id:'wave',name:'Wave goodbye',price:120},{id:'faint',name:'Dramatic faint',price:140},{id:'flex',name:'Flex anyway',price:180}]},
  {k:'dance',title:'Victory dance',note:'Plays when you set a new best.',items:[{id:'none',name:'Default',price:0},{id:'salute',name:'Salute',price:100},{id:'dab',name:'Dab',price:160},{id:'worm',name:'The worm',price:220},{id:'flip',name:'Backflip',price:300}]},
  {k:'pee',title:'Pee-break style',note:'Changes the pause screen.',items:[{id:'none',name:'Classic line-up',price:0},{id:'curtain',name:'Privacy curtain',price:240},{id:'outhouse',name:'Portable outhouse',price:300},{id:'wrong',name:'Wrong-way guy',price:160}]},
- {k:'tent',title:'Camp tent',note:'Shows up in campfire stories.',items:[{id:'none',name:'No tent',price:0},{id:'dome',name:'Orange dome',price:200},{id:'aframe',name:'Canvas A-frame',price:240},{id:'teepee',name:'Teepee',price:320}]},
- {k:'fire',title:'Campfire',note:'The fire in campfire stories.',items:[{id:'none',name:'Classic flames',price:0},{id:'blue',name:'Blue flames',price:240},{id:'green',name:'Ghost green',price:300},{id:'purple',name:'Purple haze',price:360}]}
+ {k:'home',title:'Home screen',note:'Where the crew hangs out on the main menu.',items:[{id:'none',name:'Campfire',price:0},{id:'apt',name:'The Hew Stu living room',price:800,need:'hewstu',desc:'Your actual apartment. Whole crew on the couch.'}]},
+ {k:'tent',title:'Camp tent',note:'Shows up at the campfire.',items:[{id:'none',name:'No tent',price:0},{id:'dome',name:'Orange dome',price:200},{id:'aframe',name:'Canvas A-frame',price:240},{id:'teepee',name:'Teepee',price:320}]},
+ {k:'fire',title:'Campfire',note:'The fire at camp and in stories.',items:[{id:'none',name:'Classic flames',price:0},{id:'blue',name:'Blue flames',price:240},{id:'green',name:'Ghost green',price:300},{id:'purple',name:'Purple haze',price:360}]}
 ];
 const styleOf=k=>((equip.style||{})[k])||'none';
 const PETS=[
@@ -3542,24 +3543,30 @@ function drawApt(t,dt,r,k,cx,gy){
   px(ctx,'#a39d96',-74,-4,148,30);for(let y=-2;y<26;y+=3)px(ctx,'#9a948d',-74,y,148,1);px(ctx,'#b1aba3',-74,-4,148,1);
   /* the sectional: back cushions */
   const cB='#6d6661',cS='#7d7570',cD='#57514c',cap='#3a3330';
-  px(ctx,cD,-60,-34,120,2);for(let i=0;i<4;i++){const x=-58+i*29;px(ctx,cB,x,-32,28,22);px(ctx,'#776f6a',x+1,-31,26,2);px(ctx,cD,x+28,-32,1,22)}
+  px(ctx,cD,-60,-28,120,2);for(let i=0;i<4;i++){const x=-58+i*29;px(ctx,cB,x,-26,28,16);px(ctx,'#776f6a',x+1,-25,26,2);px(ctx,cD,x+28,-26,1,16)}
+  for(let i=0;i<4;i++){const x=-58+i*29;px(ctx,cS,x,-12,28,6);px(ctx,'#8a827c',x+1,-12,26,1);px(ctx,cD,x+28,-12,1,6)}
+  px(ctx,'#625c57',-58,-6,116,6);px(ctx,cD,-58,-6,116,1);px(ctx,'#a6a6a6',-56,0,3,1);px(ctx,'#a6a6a6',53,0,3,1);
   /* brown pillows */
-  px(ctx,'#5a3e2e',-50,-24,9,8);px(ctx,'#6b4c3a',-49,-23,7,2);px(ctx,'#5a3e2e',34,-22,10,7);px(ctx,'#6b4c3a',35,-21,8,2);
+  px(ctx,'#5a3e2e',-51,-21,9,8);px(ctx,'#6b4c3a',-50,-20,7,2);px(ctx,'#5a3e2e',45,-20,10,7);px(ctx,'#6b4c3a',46,-19,8,2);
   /* the crew on the couch */
   const ids=['patch','curly','nathan','camo','stache'],C=ids.map(byId),xs=[-40,-20,0,20,40];
   laughT-=dt;if(laughT<-2.5-Math.random()*3){laughId=Math.random()*5|0;laughT=1.4}
   const bob=i=>(laughId===i&&laughT>0)?(Math.floor(t*10)%2?-1:0):(Math.sin(t*2.2+i*1.7)>.85?-1:0);
-  C.forEach((c,i)=>drawHikerFront(ctx,c,xs[i],-6+bob(i),laughId===i&&laughT>0));
+  C.forEach((c,i)=>{const L=look(c),x=xs[i];drawHikerFront(ctx,c,x,-5+bob(i),laughId===i&&laughT>0);
+    /* sitting: hide the standing legs, then knees forward on the cushion edge and shins down to the floor */
+    px(ctx,cS,x-5,-9,11,3);px(ctx,'#625c57',x-5,-6,11,6);px(ctx,cD,x-5,-6,11,1);
+    const kd=mixHex(L.pants,'#000000',.28),sw=(i===0&&Math.sin(t*1.7)>.6)?1:0;
+    px(ctx,L.pants,x-5,-9,4,4);px(ctx,L.pants,x+2,-9,4,4);px(ctx,mixHex(L.pants,'#ffffff',.18),x-5,-9,4,1);px(ctx,mixHex(L.pants,'#ffffff',.18),x+2,-9,4,1);
+    px(ctx,kd,x-5+sw,-5,3,5);px(ctx,kd,x+3,-5,3,5);
+    px(ctx,DARK,x-6+sw,0,4,1);px(ctx,DARK,x+3,0,4,1)});
   /* Henry's banjo, Josiah's controller, Blake's headphones are on already */
   {const x=xs[3],st=Math.floor(t*6)%2;if((t%14)<8){px(ctx,'#8a6a3a',x+1,-19,6,6);px(ctx,'#efe4c8',x+2,-18,4,4);for(let q=0;q<9;q++)px(ctx,'#6b4423',x+1-q,-17-Math.round(q*.6),1,1);px(ctx,look(c3()).skin,x+3,-17+st,2,2);
     for(let n=0;n<2;n++){const kk=(t*.5+n/2)%1;ctx.globalAlpha=1-kk;px(ctx,'#fff3dc',Math.round(x+8+kk*6),Math.round(-34-kk*12),2,2);px(ctx,'#fff3dc',Math.round(x+9+kk*6),Math.round(-38-kk*12),1,4);ctx.globalAlpha=1}}}
   {const x=xs[1];px(ctx,'#2a2a30',x-4,-16,8,3);px(ctx,'#d04a4a',x+2,-15,1,1);px(ctx,'#4a8ad0',x-3,-15,1,1)}
-  /* seat cushions + arms in front of their legs */
-  for(let i=0;i<4;i++){const x=-58+i*29;px(ctx,cS,x,-12,28,6);px(ctx,'#8a827c',x+1,-12,26,1);px(ctx,cD,x+28,-12,1,6)}
-  px(ctx,'#625c57',-58,-6,116,6);px(ctx,cD,-58,-6,116,1);px(ctx,'#a6a6a6',-56,0,3,1);px(ctx,'#a6a6a6',53,0,3,1);
+  /* arms of the sectional */
   for(const sd of [-1,1]){const x=sd<0?-68:58;px(ctx,'#655f5a',x,-22,10,22);px(ctx,cap,x-1,-24,12,3);px(ctx,'#4a423e',x-1,-22,12,1);px(ctx,'#a6a6a6',x+3,0,3,1)}
   /* green throw blanket draped on the left */
-  px(ctx,'#a9c2a2',-58,-13,16,4);px(ctx,'#9ab493',-56,-9,10,6);px(ctx,'#b8d0b0',-57,-13,12,1);for(let i=0;i<5;i++)px(ctx,'#9ab493',-55+i*2,-3,1,2);
+  px(ctx,'#a9c2a2',-58,-13,10,4);px(ctx,'#9ab493',-58,-9,8,7);px(ctx,'#b8d0b0',-57,-13,8,1);for(let i=0;i<4;i++)px(ctx,'#9ab493',-57+i*2,-2,1,2);
   /* round coffee table + Roku remote */
   for(let yy=-4;yy<=4;yy++){const w=Math.round(26*Math.sqrt(1-(yy*yy)/20.25));px(ctx,yy>2?'#6b4423':'#9a6a3e',-w,10+yy,w*2,1)}
   px(ctx,'#b07a46',-18,7,30,1);px(ctx,'#1a1a1a',-6,9,6,2);px(ctx,'#6a2ab0',-5,9,1,1);
@@ -3577,7 +3584,7 @@ function drawCamp(t){
   const r=campRect();
   const k=Math.max(1,Math.floor(Math.min(r.w/140,r.h/78)*2)/2);
   const cx=Math.round(r.x+r.w/2),gy=Math.round(r.y+r.h/2+26*k);
-  if(!STORY){drawApt(t,dt,r,k,cx,gy);return}
+  if(!STORY&&styleOf('home')==='apt'){drawApt(t,dt,r,k,cx,gy);return}
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
   const hz=gy-24*k,flk=1+Math.sin(t*9)*.05+Math.sin(t*23)*.04;
   const sky=ctx.createLinearGradient(0,0,0,hz);sky.addColorStop(0,'#090f22');sky.addColorStop(1,'#182033');
@@ -3920,6 +3927,7 @@ const BADGES=[
  {id:'night',ic:'ZZ',name:'Night Hiker',desc:'Make it through nightfall'},
  {id:'skunk',ic:'P.U.',name:'Skunked',desc:'Run into a skunk'},
  {id:'squad',ic:'5/5',name:'Full Squad',desc:'Reach 800 m with all five in line'},
+ {id:'hewstu',ic:'HS',name:'Back to Hew Stu',desc:'Reach 2,000 m in Classic with all five in line'},
  {id:'drip',ic:'FIT',name:'Drip Check',desc:'Own 5 pieces of gear'},
  {id:'bear_fast',ic:'60s',name:'Speed Eater',desc:'As the bear, catch all 5 in under 60 seconds'},
  {id:'bear_clean',ic:'0X',name:'Untouchable',desc:'As the bear, catch all 5 without getting hit'},
@@ -3957,6 +3965,7 @@ function checkBadges(){
   if(m>=500)unlockBadge('meters500');if(m>=1500)unlockBadge('meters1500');
   if(S.cones>=100)unlockBadge('cones100');if(S.saved>=5)unlockBadge('gut5');
   if(m>=800&&S.crew.length===4)unlockBadge('squad');
+  if(m>=2000&&S.crew.length===4&&S.mode==='classic')unlockBadge('hewstu');
   if(S.mode==='fire'){if(S.burned>=100)unlockBadge('ff_burn');if(S.ff==='lava'&&S.swings>=50&&S.crew.length===4)unlockBadge('ff_swing');if(S.flips>=10)unlockBadge('ff_flip');if(S.ff==='ride'&&m>=500&&S.crew.length===4)unlockBadge('ff_pyramid')}
 }
 
@@ -4130,7 +4139,7 @@ function updateDots(){
     const seen=ld('rc_seen',{}),L=level();
     const gearMin=Math.min(...SLOTS.flatMap(sl=>CATALOG[sl].filter(it=>it.price>0&&!owned[it.id]&&!(it.lvl&&L<it.lvl)).map(it=>it.price)),1e9);
     const st=[...PETS.filter(p=>p.price>0&&!owned['pet_'+p.id]&&!(p.lvl&&L<p.lvl)).map(p=>p.price),...BEAR_SKINS.filter(s=>s.price>0&&!owned['bskin_'+s.id]&&!(s.lvl&&L<s.lvl)).map(s=>s.price),
-      ...BEAR_ACC.filter(a=>a.price>0&&!owned['bacc_'+a.id]&&!(a.lvl&&L<a.lvl)).map(a=>a.price),...STYLE_GROUPS.flatMap(g=>g.items.filter(i=>i.price>0&&!owned['st_'+g.k+'_'+i.id]).map(i=>i.price)),
+      ...BEAR_ACC.filter(a=>a.price>0&&!owned['bacc_'+a.id]&&!(a.lvl&&L<a.lvl)).map(a=>a.price),...STYLE_GROUPS.flatMap(g=>g.items.filter(i=>i.price>0&&!owned['st_'+g.k+'_'+i.id]&&!(i.need&&!badges[i.need])).map(i=>i.price)),
       ...UPGRADES.filter(u=>(ups[u.id]||0)<u.max).map(u=>u.prices[ups[u.id]||0]),...BEAR_UPS.filter(u=>(ups[u.id]||0)<u.max).map(u=>u.prices[ups[u.id]||0]),...SKILLS.filter(s=>!ups[s.id]).map(s=>s.price)];
     const storeMin=Math.min(...st,1e9);
     $('dCrew').classList.toggle('hasnew',wallet>=gearMin&&wallet>(seen.closet||0));
@@ -4530,12 +4539,12 @@ function renderBearShop(up){
 }
 /* one buy-or-use row for accessories, pets and styles */
 function pickRow(it,on,use,pre,face){
-  const ern=earned(it),has=it.id==='none'||(ern?reqMet(it):(it.price===0||owned[pre+it.id])),locked=!has&&(ern||(it.lvl&&level()<it.lvl));
+  const ern=earned(it),has=it.id==='none'||(ern?reqMet(it):(it.price===0||owned[pre+it.id])),need=!!(it.need&&!badges[it.need]),locked=!has&&(ern||need||(it.lvl&&level()<it.lvl));
   const row=el('div','up'+(face?' withface':''));if(face)row.style.gridTemplateColumns='46px minmax(0,1fr) auto';if(face)row.appendChild(face);row.appendChild(el('h3',null,it.name));const b=el('button','btn');b.type='button';
-  if(on)b.textContent='Using';else if(has)b.textContent='Use';else if(locked)b.textContent=ern?'Locked':'Lv '+it.lvl;else{b.appendChild(coneIcon());b.appendChild(document.createTextNode(String(it.price)))}
+  if(on)b.textContent='Using';else if(has)b.textContent='Use';else if(locked)b.textContent=ern||need?'Locked':'Lv '+it.lvl;else{b.appendChild(coneIcon());b.appendChild(document.createTextNode(String(it.price)))}
   b.disabled=on||(!has&&(locked||wallet<it.price));
   b.addEventListener('click',()=>{if(on)return;if(!has){if(locked||wallet<it.price)return;wallet-=it.price;owned[pre+it.id]=true;SFX.win()}use();persist();renderShop()});
-  row.append(b,el('p',null,locked&&ern?reqText(it):(it.desc||'')));return row;
+  row.append(b,el('p',null,locked&&ern?reqText(it):need?(()=>{const bd=BADGES.find(x=>x.id===it.need);return 'Unlock with the '+(bd?bd.name:'')+' badge ('+(bd?bd.desc:'')+'), then buy it.'})():(it.desc||'')));return row;
 }
 function renderPetShop(up){
   up.appendChild(el('div','shopsec','Pets run alongside your leader (and your bear).'));
