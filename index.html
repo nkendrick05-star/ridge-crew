@@ -208,16 +208,24 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .drgrid.big{font-size:1.3rem}
 .chips2 .drgrid{font-size:1.35rem;line-height:1.3}
 .drst{width:100%;text-align:center;font:700 .82rem var(--display);color:var(--amber)}
+.drtw{font:600 .7rem var(--body);color:var(--cream)}
+.drhist{display:flex;flex-direction:column;gap:4px}.drhist small{font:600 .6rem var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.drchart{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:3px;height:64px;align-items:end}
+.drb{position:relative;height:100%;display:flex;align-items:flex-end;background:var(--panel2);border-radius:4px;overflow:hidden}
+.drb i{display:block;width:100%;border-radius:3px 3px 0 0}.drb i.up{background:#7ed07a}.drb i.dn{background:var(--amber)}
+.drb em{position:absolute;left:0;right:0;height:1px;background:var(--cream);opacity:.7}.drb.miss{opacity:.4}
 .drnext{margin:0;text-align:center;font-size:.8rem;color:var(--muted)}
 .drsheet .frow{display:flex;gap:8px}.drsheet .frow .btn{flex:1}
 .rank .flair{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
 .rank .fl{display:inline-grid;place-items:center;min-width:15px;height:15px;padding:0 3px;border-radius:8px;font:700 .62rem var(--body);font-style:normal;color:#16120c}
 .fl.t4{background:#f2c14e}.fl.t3{background:#b07ae8}
-.rkctl{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:2px 0 6px}
+.rkctl{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:2px 0 6px}.rkctl.solo{grid-template-columns:1fr}
 .rkctl .seg{display:flex;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:3px;gap:3px}
-.rkctl .seg button{flex:1;border:0;border-radius:9px;background:none;color:var(--muted);font:700 .85rem var(--display);padding:7px 6px;cursor:pointer}
+.rkctl .seg button,.dayseg button{flex:1;border:0;border-radius:9px;background:none;color:var(--muted);font:700 .8rem var(--display);padding:7px 4px;cursor:pointer;white-space:nowrap}
+.dayseg{display:flex;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex:1}.dayseg button[aria-pressed="true"]{background:var(--cream);color:#16120c}
+.dayrow{display:flex;align-items:center;gap:10px;flex:none}.dayrow .linkbtn{flex:none}
 .rkctl .seg button[aria-pressed="true"]{background:var(--amber);color:var(--amber-ink)}
-.rkmode{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;border:2px solid var(--line);background:var(--panel2);border-radius:12px;padding:3px 12px;color:var(--cream);cursor:pointer;min-width:132px}
+.rkmode{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;border:2px solid var(--line);background:var(--panel2);border-radius:12px;padding:3px 9px;color:var(--cream);cursor:pointer;max-width:118px;min-width:0}.rkmode b{overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .rkmode small{font:600 .6rem var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}.rkmode b{font:700 .9rem var(--display);white-space:nowrap}
 .modegrid{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
 .modegrid button{border:2px solid var(--line);background:var(--panel2);border-radius:10px;color:var(--cream);font:700 .8rem var(--display);padding:9px 4px;cursor:pointer}
@@ -575,7 +583,7 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
     <div class="mcard cardm">
       <img id="cardImg" alt="Your run as a shareable score card">
       <p class="mline">Press and hold the image to save or share it.</p>
-      <div class="frow"><button class="btn" id="cardSave" type="button" hidden>Save image</button><button class="btn ghost" id="cardCopy" type="button">Copy for Hew Stu</button><button class="btn ghost" id="cardClose" type="button">Back</button></div>
+      <div class="frow"><button class="btn" id="cardSave" type="button" hidden>Save image</button><button class="btn ghost" id="cardCopy" type="button">Copy to share</button><button class="btn ghost" id="cardClose" type="button">Back</button></div>
     </div>
   </div>
 
@@ -1158,7 +1166,7 @@ function starFly(dt,lx){
       S.star=null;S.vy=-60;S.invuln=2.2;S.obs=S.obs.filter(o=>o.x>lx+380||o.x+o.w<lx-20);
       say('Back on the trail!',LX,GY-56,'#fff6c8');SFX.land()}}
 }
-function speed(){return Math.min(280,150+S.dist*(S.mode==='uphill'?0.006:0.011))}
+function speed(){return (drTw('fast')?1.12:1)*Math.min(280,150+S.dist*(S.mode==='uphill'?0.006:0.011))}
 const nb=()=>S.leader.id==='nathan'?(ups.ab_nathan?3:2):1;
 const reachR=()=>S.leader.id==='curly'?(ups.ab_curly?160:150):118;
 const isLava=()=>S.mode==='fire'&&S.ff==='lava';
@@ -2481,7 +2489,7 @@ function pzCrewPee(list,x0,sp,fyFn,iyFn,opts){
   return flow;
 }
 /* map generation helper (Daily Fire seeding was removed) */
-function seeded(fn){drSwap(S&&S.daily&&S.daily.wr,fn)}
+function seeded(fn){drSwap(S&&S.daily&&S.daily.wr,()=>{fn();if(drTw('coons'))for(const o of S.obs){if(o.tw)continue;o.tw=1;if((o.type==='log'||o.type==='rock')&&Math.random()<.4){o.type='coon';o.vx=-55;o.x+=o.w-12;o.w=12;o.h=8}}})}
 /* ---------- extra fire pee scenes ---------- */
 function peeBlazeCabin(t,ly){
   const cx=Math.round(W*.46),cw=110,chh=46,x0c=cx-cw/2,top=ly-chh;
@@ -2669,7 +2677,7 @@ const noBearBtn=document.getElementById('noBear'),snackBtn=document.getElementBy
 const bearBtns=document.getElementById('bearBtns'),roarBtn=document.getElementById('roarBtn'),chargeBtn=document.getElementById('chargeBtn');
 roarBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();bearRoar()});
 chargeBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();bearCharge()});
-const nextFart=()=>9+(S&&S.daily?S.daily.fr():Math.random())*14;
+const nextFart=()=>(9+(S&&S.daily?S.daily.fr():Math.random())*14)*(drTw('gassy')?.55:1);
 function hikerPos(i){return i<0?{x:LX,y:S.y}:{x:LX-CB(i),y:histY(CB(i))}}
 function startFart(chain){return drSwap(S&&S.daily&&S.daily.fr,()=>startFartCore(chain))}
 function startFartCore(chain){
@@ -4469,7 +4477,7 @@ function saveCard(){
 function copyCardText(){
   const md=(MODES.find(m=>m.id===S.mode)||{}).name,why=(S.reason||'').trim();
   const txt=['Hew Stu update \u{1F3D4}\uFE0F',nm(S.leader)+' led the crew '+Math.floor(S.dist/12).toLocaleString()+' m'+(md&&S.mode!=='classic'?' in '+md:'')+'.',why?why+' \u{1F480}':'','Score '+score().toLocaleString()+', '+S.cones+' pinecones. Beat that.'].filter(Boolean).join('\n');
-  try{navigator.clipboard.writeText(txt).then(()=>toast('Copied. Send it to Hew Stu.')).catch(()=>toast('Copy blocked here'))}catch(e){toast('Copy blocked here')}
+  try{navigator.clipboard.writeText(txt).then(()=>toast('Copied. Paste it anywhere to share.')).catch(()=>toast('Copy blocked here'))}catch(e){toast('Copy blocked here')}
 }
 /* ---------- campfire stories ---------- */
 const STORIES=[
@@ -4564,7 +4572,22 @@ function drLeader(day){return DR_ORDER[Math.floor(mulberry(drHash('lead'+day))()
 function drSwap(rng,fn){if(!rng)return fn();const mr=Math.random;Math.random=rng;try{return fn()}finally{Math.random=mr}}
 function drApply(s,o){const h=drHash('ridge'+o.day);
   s.daily={day:o.day,num:drNum(o.day),official:o.official,wr:mulberry(h),fr:mulberry(h^0x51ed27),er:mulberry(h^0x9e3779b9),grid:[],ouch:0,saved:0,near:0};
-  s.biomeAt=6500+s.daily.wr()*2500;s.fartIn=8+s.daily.fr()*8;s.evIn=28+s.daily.er()*20;s.set=null;s.snacks=0;s.chal=null;s.tut=null}
+  s.biomeAt=6500+s.daily.wr()*2500;s.fartIn=8+s.daily.fr()*8;s.evIn=28+s.daily.er()*20;s.set=null;s.snacks=0;s.chal=null;s.tut=null;
+  const tw=drTwist(o.day);s.daily.twist=tw?tw.id:null;s.daily.par=drPar(o.day);
+  if(s.daily.twist==='night')s.ev={type:'night',t:5,dur:1e12};if(s.daily.twist==='storm')s.ev={type:'rain',t:3,dur:1e12};if(s.daily.twist==='hungry')s.bearBack=60;if(s.daily.twist==='gassy')s.fartIn*=.55}
+const DR_TWIST_START='2026-11-13';
+const DR_TWISTS=[{id:'night',n:'Night all day',e:'\u{1F319}'},{id:'gassy',n:'Double fart day',e:'\u{1F4A8}'},{id:'nosnack',n:'No snacks',e:'\u{1F6AB}'},{id:'coons',n:'Raccoon invasion',e:'\u{1F99D}'},{id:'storm',n:'Storm day',e:'⛈️'},{id:'fast',n:'Speed day',e:'⚡'},{id:'hungry',n:'Hungry bear',e:'\u{1F43B}'}];
+function drTwist(day){if(day<DR_TWIST_START)return null;return DR_TWISTS[Math.floor(mulberry(drHash('twist'+day))()*DR_TWISTS.length)]}
+const drTw=k=>!!(S&&S.daily&&S.daily.twist===k);
+/* par: the crew's average official run over the last week, rounded to 50 m */
+function drPar(day){const ms=[];for(let k=1;k<=7;k++){const d=new Date(Date.parse(day+'T12:00:00Z')-k*864e5).toISOString().slice(0,10);for(const r of drRows(d))ms.push(r.e.m)}
+  if(ms.length<3)return 600;return Math.max(300,Math.round(ms.reduce((a,b)=>a+b,0)/ms.length/50)*50)}
+function drGolf(m,par){if(!par)return null;const r=m/par;return r>=1.5?{n:'Eagle',e:'\u{1F985}'}:r>=1.2?{n:'Birdie',e:'\u{1F426}'}:r>=1?{n:'Par',e:'⛳'}:r>=.75?{n:'Bogey',e:'\u{1F615}'}:{n:'Double bogey',e:'\u{1F62C}'}}
+/* lifetime daily stats */
+function drStats(){const log=drMyLog(),days=Object.keys(log).sort();let wins=0,best=0,sum=0,maxS=0,run=0,prev=null;
+  for(const d of days){const e=log[d],rows=drRows(d);if(rows.length>=2&&e.m>=rows[0].e.m)wins++;best=Math.max(best,e.m);sum+=e.m;
+    const pd=prev?new Date(Date.parse(prev+'T12:00:00Z')+864e5).toISOString().slice(0,10):null;run=pd===d?run+1:1;maxS=Math.max(maxS,run);prev=d}
+  return {played:days.length,wins,avg:days.length?Math.round(sum/days.length):0,best,maxS,days}}
 function drRestore(){if(DR_UPS){ups=DR_UPS;DR_UPS=null}}
 function drLog(){return ld('rc_daily',{})}
 function drMine(){const r=(LB.all||LB.rows||[]).find(q=>q.id===LB.uid);return r&&r.dly||{}}
@@ -4577,10 +4600,10 @@ function startDaily(official){
   if(!DR_UPS){DR_UPS=ups;ups={}}
   DR_NEXT={day,official};hideNoBear();setTip(null);$('drSheet')&&$('drSheet').remove();
   const lead=drLeader(day);newRun(lead,false,'classic');SFX.setFFM(null);S.champ=false;pbStart();resetReplay();markSeen('bear',true);markSeen('b0',true);SFX.setBiome(0);
-  mode='play';screen(null);toast((official?'':'Practice · ')+'Daily Ridge #'+S.daily.num+' · '+nm(byId(lead))+' leads');
+  mode='play';screen(null);{const tw=drTwist(day);toast((official?'':'Practice · ')+'Daily Ridge #'+S.daily.num+' · '+nm(byId(lead))+' leads'+(tw?' · '+tw.e+' '+tw.n:''))}
 }
 /* the emoji grid: one square per 250 m */
-function drTick(){const d=S.daily;if(!d)return;const i=Math.floor(S.dist/12/250);
+function drTick(){const d=S.daily;if(!d)return;if(d.twist==='nosnack'&&S.items.length)S.items=S.items.filter(it=>it.k==='cone');const i=Math.floor(S.dist/12/250);
   const cur=d.grid[i]||'g',rank={g:0,c:1,f:2,h:3};let nv=cur;
   if((S.ouch||0)>d.ouch)nv='h';else if(S.saved>d.saved&&rank[nv]<2)nv='f';else if((S.stats.near||0)>d.near&&rank[nv]<1)nv='c';
   d.ouch=S.ouch||0;d.saved=S.saved;d.near=S.stats.near||0;for(let k=0;k<i;k++)if(!d.grid[k])d.grid[k]='g';d.grid[i]=nv}
@@ -4598,8 +4621,9 @@ function drStreaks(){const log=drMyLog();let play=0,win=0,k=drPlayed(drDay())?0:
 function drChamp(){const rows=drRows(drDay(-1));if(rows.length<2)return null;return rows[0]}
 function drUntil(){const now=new Date(),c=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'})),h=23-c.getHours(),m=59-c.getMinutes();return (h?h+'h ':'')+m+'m'}
 function drShare(day){const e=drEntry(day);if(!e)return '';const st=drStreaks(),c=byId(e.l);
-  return ['Daily Ridge #'+drNum(day)+' \u{1F3D4}️',e.m.toLocaleString()+' m'+(c?' · '+nm(c)+' led':''),drWrap(e.g),st.play>1?'\u{1F525} Streak: '+st.play:''].filter(Boolean).join('\n')}
-function drCopy(day){const t=drShare(day);try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Send it to Hew Stu.')).catch(()=>toast('Copy blocked here'))}catch(e){toast('Copy blocked here')}}
+  const gf=drGolf(e.m,e.p),tw=drTwist(day);
+  return ['Daily Ridge #'+drNum(day)+' \u{1F3D4}\uFE0F'+(tw?' '+tw.e+' '+tw.n:''),e.m.toLocaleString()+' m'+(c?' \u00B7 '+nm(c)+' led':'')+(gf?' \u00B7 '+gf.e+' '+gf.n:''),drWrap(e.g),st.play>1?'\u{1F525} Streak: '+st.play:''].filter(Boolean).join('\n')}
+function drCopy(day){const t=drShare(day);try{navigator.clipboard.writeText(t).then(()=>toast('Copied. Paste it anywhere to share.')).catch(()=>toast('Copy blocked here'))}catch(e){toast('Copy blocked here')}}
 async function drSubmit(e){
   const day=S.daily.day,log=drLog();if(log[day])return;log[day]=e;
   const keep={};for(const k of Object.keys(log))if(k>=drDay(-45))keep[k]=log[k];save('rc_daily',JSON.stringify(keep));
@@ -4607,12 +4631,12 @@ async function drSubmit(e){
 }
 function drOver(){
   const d=S.daily,m=Math.floor(S.dist/12),sc=score();drTick();
-  const g=(d.grid.join('')||'g')+drEnd(),e={s:sc,m,l:S.leader.id,g};
+  const g=(d.grid.join('')||'g')+drEnd(),e={s:sc,m,l:S.leader.id,g,p:d.par};
   if(d.official)drSubmit(e);
-  $('bestLine').textContent='Daily Ridge #'+d.num+(d.official?' · official run':' · practice (doesn’t count)');
+  {const gf=drGolf(m,d.par);$('bestLine').textContent=(gf?gf.e+' '+gf.n+' \u00B7 par '+d.par.toLocaleString()+' m \u00B7 ':'')+'Daily Ridge #'+d.num+(d.official?'':' \u00B7 practice')}
   const ch=$('chips');ch.innerHTML='';const gd=el('div','drgrid');gd.textContent=drWrap(g);ch.appendChild(gd);
   if(d.official){const st=drStreaks();const p=el('div','drst');p.textContent=(st.play>1?'\u{1F525} '+st.play+'-day streak':'\u{1F525} Streak started')+(st.win>1?'  ·  \u{1F451} '+st.win+' wins in a row':'');ch.appendChild(p)}
-  $('again').textContent='Practice this ridge';$('secondBtn').hidden=true;$('shareBtn').textContent=d.official?'Copy for Hew Stu':'Share';
+  $('again').textContent='Practice this ridge';$('secondBtn').hidden=true;$('shareBtn').textContent=d.official?'Copy to share':'Share';
 }
 /* home card */
 function drHome(){
@@ -4620,7 +4644,8 @@ function drHome(){
   const day=drDay(),num=drNum(day),lead=byId(drLeader(day)),played=drPlayed(day),e=drEntry(day),st=drStreaks(),champ=drChamp();
   c.innerHTML='';const meta=el('div','drm');meta.appendChild(el('span','drl','Daily Ridge #'+num));
   if(played&&e){const rows=drRows(day),rk=rows.findIndex(r=>r.id===LB.uid)+1;meta.appendChild(el('b',null,'✓ '+e.m.toLocaleString()+' m'+(rk?' · #'+rk+' of '+rows.length:'')))}
-  else meta.appendChild(el('b',null,nm(lead)+' leads today'));
+  else meta.appendChild(el('b',null,nm(lead)+' leads \u00B7 par '+drPar(day).toLocaleString()+' m'));
+  {const tw=drTwist(day);if(tw)meta.appendChild(el('span','drtw',tw.e+' '+tw.n))}
   const sub=[];if(st.play>0)sub.push('\u{1F525} '+st.play);if(champ){const cc=champ.who&&byId(champ.who);sub.push('\u{1F451} '+(cc?nm(cc):(champ.name||'Someone'))+' won yesterday')}
   if(sub.length)meta.appendChild(el('span','drs',sub.join('  ·  ')));
   c.appendChild(portrait(lead,1));c.appendChild(meta);
@@ -4629,18 +4654,22 @@ function drHome(){
 setInterval(()=>{if(mode==='menu'&&!$('home').hidden)drHome()},30000);
 /* results sheet (after you've played today) */
 function drSheet(){
-  const day=drDay(),e=drEntry(day);if(!e)return;const st=drStreaks();
+  const day=drDay(),e=drEntry(day);const st=drStreaks();
   let ov=$('drSheet');if(ov)ov.remove();ov=el('div','pcover');ov.id='drSheet';const card=el('div','pcard drsheet');ov.appendChild(card);ov.addEventListener('click',ev=>{if(ev.target===ov)ov.remove()});
-  const top=el('div','pctop');const lead=byId(e.l||drLeader(day));top.appendChild(portrait(lead,2));const n=el('div','pcn');n.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,e.m.toLocaleString()+' m · score '+e.s.toLocaleString()));top.appendChild(n);
+  const top=el('div','pctop');const lead=byId((e&&e.l)||drLeader(day));top.appendChild(portrait(lead,2));const n=el('div','pcn');const gf=e&&drGolf(e.m,e.p);n.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,e?e.m.toLocaleString()+' m'+(gf?' \u00B7 '+gf.e+' '+gf.n+' (par '+e.p.toLocaleString()+')':''):'Not played yet today'));top.appendChild(n);
   const x=el('button','back');x.type='button';x.setAttribute('aria-label','Close');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';x.addEventListener('click',()=>ov.remove());top.appendChild(x);card.appendChild(top);
-  const gd=el('div','drgrid big');gd.textContent=drWrap(e.g);card.appendChild(gd);
+  if(e){const gd=el('div','drgrid big');gd.textContent=drWrap(e.g);card.appendChild(gd)}
   const s=el('div','pcstats');const add=(t,v)=>{const d=el('div');d.append(el('b',null,v),el('small',null,t));s.appendChild(d)};
-  const rows=drRows(day),rk=rows.findIndex(r=>r.id===LB.uid)+1;add('Today',rk?'#'+rk+' of '+rows.length:'-');add('Play streak',String(st.play));add('Win streak',String(st.win));card.appendChild(s);
+  const rows=drRows(day),rk=rows.findIndex(r=>r.id===LB.uid)+1,hs=drStats();add('Today',rk?'#'+rk+' of '+rows.length:'-');add('Play streak',String(st.play));add('Win streak',String(st.win));
+  add('Played',String(hs.played));add('Wins',hs.played?hs.wins+' ('+Math.round(hs.wins/hs.played*100)+'%)':'0');add('Best',hs.best?hs.best.toLocaleString()+' m':'-');add('Average',hs.avg?hs.avg.toLocaleString()+' m':'-');add('Longest streak',String(hs.maxS));card.appendChild(s);
+  {const log=drMyLog(),ch=el('div','drchart'),cap=el('small',null,'Last 14 days');const vals=[];for(let k=13;k>=0;k--){const d=drDay(-k);vals.push([d,log[d]])}const mx=Math.max(1,...vals.map(v=>v[1]?Math.max(v[1].m,v[1].p||0):0));
+   for(const [d,v] of vals){const col=el('div','drb');const bar=el('i');bar.style.height=(v?Math.max(4,Math.round(v.m/mx*100)):0)+'%';if(v){const gf=drGolf(v.m,v.p);bar.className=gf&&v.m>=(v.p||0)?'up':'dn';if(v.p){const pl=el('em');pl.style.bottom=Math.round(v.p/mx*100)+'%';col.appendChild(pl)}}else col.classList.add('miss');col.appendChild(bar);col.title=d+(v?': '+v.m+' m':': missed');ch.appendChild(col)}
+   const wrap=el('div','drhist');wrap.append(cap,ch);card.appendChild(wrap)}
   card.appendChild(el('p','drnext','Next ridge in '+drUntil()));
-  const b1=el('button','btn big','Copy for Hew Stu');b1.type='button';b1.addEventListener('click',()=>drCopy(day));
-  const row=el('div','frow');const b2=el('button','btn ghost','Today’s board');b2.type='button';b2.addEventListener('click',()=>{ov.remove();rankTab='daily';showRanks()});
-  const b3=el('button','btn ghost','Practice run');b3.type='button';b3.addEventListener('click',()=>startDaily(false));row.append(b2,b3);
-  card.append(b1,row);$('home').appendChild(ov);
+  const b1=e?el('button','btn big','Copy to share'):el('button','btn big','Play today\u2019s ridge');b1.type='button';b1.addEventListener('click',()=>{if(e)drCopy(day);else{ov.remove();startDaily(true)}});
+  const row=el('div','frow');const b2=el('button','btn ghost','Today\u2019s board');b2.type='button';b2.addEventListener('click',()=>{ov.remove();rankPeriod='daily';rankDayOff=0;showRanks()});
+  const b3=el('button','btn ghost','Practice run');b3.type='button';b3.addEventListener('click',()=>startDaily(false));if(e)row.append(b2,b3);else row.append(b2);
+  card.append(b1,row);(mode==='menu'&&!$('ranksScr').hidden?$('ranksScr'):$('home')).appendChild(ov);
 }
 async function drServer(day,e){await ensurePlayer();const r=await rpc('rc_daily_submit',{p_code:ACC.code,p_day:day,p_score:e.s,p_meters:e.m,p_leader:e.l,p_grid:e.g});refreshBoard();return r}
 function start(){
@@ -4841,13 +4870,13 @@ async function renderRanks(){
   /* controls: all time / this week, and a mode picker grid */
   let ctl=$('rankCtl');if(!ctl){ctl=el('div','rkctl');ctl.id='rankCtl';list.parentNode.insertBefore(ctl,list)}
   ctl.innerHTML='';
-  const seg=el('div','seg');if(rankTab==='daily'){for(const [id,lab] of [[0,'Today'],[1,'Yesterday']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankDayOff===id));b.addEventListener('click',()=>{rankDayOff=id;renderRanks()});seg.appendChild(b)}}
-  else for(const [id,lab] of [['all','All time'],['week','This week']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankPeriod===id));b.addEventListener('click',()=>{rankPeriod=id;renderRanks()});seg.appendChild(b)}
-  const curLbl=rankTab==='overall'?'Overall':rankTab==='daily'?'Daily Ridge':BOARDS.find(b=>b[0]===rankTab)[1];
+  const seg=el('div','seg');for(const [id,lab] of [['all','All time'],['week','This week'],['daily','Daily Ridge']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankPeriod===id));b.addEventListener('click',()=>{rankPeriod=id;renderRanks()});seg.appendChild(b)}
+  if(rankTab==='daily')rankTab='overall';
+  const curLbl=rankTab==='overall'?'Overall':BOARDS.find(b=>b[0]===rankTab)[1];
   const mb=el('button','rkmode');mb.type='button';mb.append(el('small',null,'Board'),el('b',null,curLbl+' ▾'));mb.setAttribute('aria-expanded',String(rankGrid));mb.addEventListener('click',()=>{rankGrid=!rankGrid;renderRanks()});
-  ctl.append(seg,mb);
-  if(rankGrid){const gr=el('div','modegrid');for(const [id,lab] of [['daily','Daily Ridge'],['overall','Overall'],...BOARDS]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;rankGrid=false;renderRanks()});gr.appendChild(b)}ctl.appendChild(gr)}
-  if(rankTab==='daily'){await drBoard(list,seq);return}
+  if(rankPeriod==='daily'){ctl.classList.add('solo');ctl.append(seg)}else{ctl.classList.remove('solo');ctl.append(seg,mb)}
+  if(rankGrid&&rankPeriod!=='daily'){const gr=el('div','modegrid');for(const [id,lab] of [['overall','Overall'],...BOARDS]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;rankGrid=false;renderRanks()});gr.appendChild(b)}ctl.appendChild(gr)}
+  if(rankPeriod==='daily'){await drBoard(list,seq);return}
   /* scores for the chosen board + period */
   const wk=weekKey(),rows=(LB.all||LB.rows);
   const val=(r,k)=>{if(rankPeriod==='week')return r.weekKey===wk?((r.week||{})[k]||0):0;return k==='classic'?(r.best||0):((r.modes||{})[k]||0)};
@@ -4893,10 +4922,13 @@ async function drBoard(list,seq){
   const off=rankDayOff,day=drDay(-off),rows=drRows(day);
   {const ps=await boardPs(rows.map(r=>r.id));Object.assign(RPS,ps)}
   if(seq!==rankSeq||$('ranksScr').hidden)return;
-  list.innerHTML='';const sum=el('div','mybest');
+  list.innerHTML='';
+  {const dt=el('div','seg dayseg');for(const [id,lab] of [[0,'Today'],[1,'Yesterday']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(off===id));b.addEventListener('click',()=>{rankDayOff=id;renderRanks()});dt.appendChild(b)}
+   const sb=el('button','linkbtn','Your stats');sb.type='button';sb.addEventListener('click',drSheet);const w=el('div','dayrow');w.append(dt,sb);list.appendChild(w)}
+  const sum=el('div','mybest');
   if(off===0&&!drPlayed(day)){
     const h=el('div','mbh');h.append(el('b',null,'Daily Ridge #'+drNum(day)),el('span',null,rows.length+' played'));sum.appendChild(h);
-    sum.appendChild(el('p','pass','Results stay hidden until you play today’s ridge. '+nm(byId(drLeader(day)))+' leads. One shot.'));
+    {const tw=drTwist(day);sum.appendChild(el('p','pass','Results stay hidden until you play today\u2019s ridge. '+nm(byId(drLeader(day)))+' leads, par '+drPar(day).toLocaleString()+' m'+(tw?', '+tw.e+' '+tw.n:'')+'. One shot.'))}
     const b=el('button','btn big','Play today’s ridge');b.type='button';b.addEventListener('click',()=>startDaily(true));list.append(sum,b);return}
   const mine=rows.find(r=>r.id===LB.uid),rk=mine?rows.indexOf(mine)+1:0;
   const h=el('div','mbh');h.append(el('b',null,(off?'Yesterday · ':'')+'Daily Ridge #'+drNum(day)),el('span',null,rk?'#'+rk+' of '+rows.length:rows.length+' played'));sum.appendChild(h);
@@ -4904,7 +4936,7 @@ async function drBoard(list,seq){
   else sum.appendChild(el('p','pass',off?'You missed this one.':'You haven’t played yet.'));
   if(!off)sum.appendChild(el('p','pass','Next ridge in '+drUntil()));
   list.appendChild(sum);
-  rows.forEach((r,i)=>rankRow(list,Object.assign({},r,{rank:i+1}),RPS,r.e.m,drGridStr(r.e.g.slice(0,12))+'  '+r.e.s.toLocaleString()+' pts',[],null));
+  rows.forEach((r,i)=>{const gf=drGolf(r.e.m,r.e.p);rankRow(list,Object.assign({},r,{rank:i+1}),RPS,r.e.m,(gf?gf.e+' ':'')+drGridStr(r.e.g.slice(0,12)),[],null)});
   if(!rows.length)list.appendChild(el('div','empty','Nobody played this ridge.'));
 }
 let rankDayOff=0;
