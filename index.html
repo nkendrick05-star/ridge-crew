@@ -194,6 +194,34 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .rank .nm span{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rank .sc{font:700 1.15rem var(--display);font-variant-numeric:tabular-nums}
 .rank.mine{border-color:var(--amber);background:rgba(242,165,65,.14)}
+.rank{cursor:pointer}.rank .no{display:flex;flex-direction:column;align-items:center;line-height:1}
+.rank .mv{font:700 .58rem var(--body);font-style:normal;margin-top:2px;letter-spacing:.02em}.mv.mvu{color:#7ed07a}.mv.mvd{color:#ff8a7a}.mv.mvn{color:var(--amber)}
+.rank .flair{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.rank .fl{display:inline-grid;place-items:center;min-width:15px;height:15px;padding:0 3px;border-radius:8px;font:700 .62rem var(--body);font-style:normal;color:#16120c}
+.fl.t4{background:#f2c14e}.fl.t3{background:#b07ae8}
+.rkctl{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:2px 0 6px}
+.rkctl .seg{display:flex;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.rkctl .seg button{flex:1;border:0;border-radius:9px;background:none;color:var(--muted);font:700 .85rem var(--display);padding:7px 6px;cursor:pointer}
+.rkctl .seg button[aria-pressed="true"]{background:var(--amber);color:var(--amber-ink)}
+.rkmode{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;border:2px solid var(--line);background:var(--panel2);border-radius:12px;padding:3px 12px;color:var(--cream);cursor:pointer;min-width:132px}
+.rkmode small{font:600 .6rem var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}.rkmode b{font:700 .9rem var(--display);white-space:nowrap}
+.modegrid{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.modegrid button{border:2px solid var(--line);background:var(--panel2);border-radius:10px;color:var(--cream);font:700 .8rem var(--display);padding:9px 4px;cursor:pointer}
+.modegrid button[aria-pressed="true"]{border-color:var(--amber);background:rgba(242,165,65,.18);color:var(--amber)}
+.mybest{flex-direction:column;align-items:stretch;gap:3px}.mybest .mbh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mybest .pass{margin:0;font-size:.78rem;color:var(--cream);opacity:.85}
+.awh{margin-top:8px}
+.awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:6px;flex:none}
+.award{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.award small{font:600 .6rem var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--amber)}.award b{font:700 .95rem var(--display)}.award span{font-size:.72rem;color:var(--muted)}
+.pcover{position:absolute;inset:0;z-index:30;background:rgba(8,12,10,.66);display:grid;place-items:center;padding:16px}
+.pcard{width:min(100%,400px);max-height:100%;overflow-y:auto;background:var(--panel);border:2px solid var(--amber);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 0 rgba(0,0,0,.3)}
+.pctop{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}.pctop canvas{height:58px;width:auto;image-rendering:pixelated}
+.pcn{display:flex;flex-direction:column;min-width:0}.pcn b{font:700 1.2rem var(--display);color:var(--amber)}.pcn span{font-size:.78rem;color:var(--muted)}
+.pctiers{display:flex;flex-wrap:wrap;gap:4px 12px}.pctiers .tk{display:inline-flex;align-items:center;gap:5px;font:600 .75rem var(--body);color:var(--cream)}.pctiers i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.pcbests{display:flex;flex-direction:column;gap:3px}.pcbests>small,.pcstats small{font:600 .6rem var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.pcb{display:grid;grid-template-columns:minmax(0,1fr) auto 34px;gap:8px;padding:5px 8px;border-radius:8px;background:var(--panel2);font-size:.85rem}.pcb b{font:700 .9rem var(--display);font-variant-numeric:tabular-nums}.pcb em{font-style:normal;color:var(--amber);text-align:right;font-size:.78rem}
+.pcstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.pcstats div{background:var(--panel2);border-radius:10px;padding:7px 8px;display:flex;flex-direction:column;gap:1px;min-width:0}.pcstats b{font:700 .95rem var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .empty{flex:1;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:.95rem;line-height:1.45;padding:0 12px;max-width:44ch;margin:0 auto}
 .badges{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));grid-auto-rows:auto;align-content:start;gap:8px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:2px 2px 16px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)}
 .gsec{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;margin:6px 2px 0;font:700 .86rem var(--display);color:var(--amber);letter-spacing:.02em}
@@ -4110,8 +4138,8 @@ const ACC={id:null,code:null};try{ACC.id=localStorage.getItem('rc_pid');ACC.code
 const LB={rows:[],state:'loading',uid:ACC.id,noWrite:false,user:null};
 async function refreshBoard(){
   try{
-    const rows=await sb('/rest/v1/scores?select=player_id,name,who,best,best_m,runs,eaten,farts,farts_by,lvl,mode_best&order=best.desc&limit=80');
-    const all=(rows||[]).map(r=>({id:r.player_id,name:r.name,who:r.who,best:r.best,bestM:r.best_m,runs:r.runs,eaten:r.eaten,farts:r.farts,fartsBy:r.farts_by||{},lvl:r.lvl,modes:r.mode_best||{}}));LB.all=all;LB.rows=all.filter(r=>(r.best||0)>0).slice(0,50);LB.state='ok';
+    const rows=await sb('/rest/v1/scores?select=player_id,name,who,best,best_m,runs,eaten,farts,farts_by,lvl,mode_best,week_key,week_best,badge_ids,stats&order=best.desc&limit=80');
+    const all=(rows||[]).map(r=>({id:r.player_id,name:r.name,who:r.who,best:r.best,bestM:r.best_m,runs:r.runs,eaten:r.eaten,farts:r.farts,fartsBy:r.farts_by||{},lvl:r.lvl,modes:r.mode_best||{},weekKey:r.week_key||'',week:r.week_best||{},badges:Array.isArray(r.badge_ids)?r.badge_ids:[],stats:r.stats||{}}));LB.all=all;LB.rows=all.filter(r=>(r.best||0)>0).slice(0,50);LB.state='ok';
   }catch(e){if(LB.state!=='ok')LB.state='off'}
   renderRanks();
 }
@@ -4288,7 +4316,7 @@ function applyRun(){
   const gain=d.meters+d.saved*10+d.cones+d.near*5+d.clears*2;
   const before=level();xp+=gain;const after=level();
   progressMissions(d,now.meters);
-  LIFE.farts+=d.saved;LIFE.eaten+=d.eaten;LIFE.cones+=d.cones;if(!S.countedRun){LIFE.runs++;if(S.mode==='fire')LIFE.fireRuns=(LIFE.fireRuns||0)+1;S.countedRun=true}
+  LIFE.farts+=d.saved;LIFE.eaten+=d.eaten;LIFE.cones+=d.cones;if(!S.countedRun){LIFE.runs++;if(S.mode!=='bear'&&S.leader){const lr=LIFE.leadRuns||(LIFE.leadRuns={});lr[S.leader.id]=(lr[S.leader.id]||0)+1}if(S.mode==='fire')LIFE.fireRuns=(LIFE.fireRuns||0)+1;S.countedRun=true}
   for(const k in st.fartsBy){const add=st.fartsBy[k]-(S.appliedFB[k]||0);if(add>0)LIFE.fartsBy[k]=(LIFE.fartsBy[k]||0)+add;S.appliedFB[k]=st.fartsBy[k]}
   save('rc_life',JSON.stringify(LIFE));persist();
   return {gain,levelUp:after>before?after:0};
@@ -4524,7 +4552,7 @@ function showOver(){
   const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode;S.newBest=isBest;
   {const md=Math.floor(S.dist/12),bk=pbKey();if(S.mode!=='bear'&&md>(bestDist[bk]||0)){bestDist[bk]=md;save('rc_bestdist',JSON.stringify(bestDist))}}
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
-  if(!S.demo){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode;if(BOARDS.some(b=>b[0]===bk))submitModes({[bk]:sc})}
+  if(!S.demo){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode;if(BOARDS.some(b=>b[0]===bk)){submitModes({[bk]:sc});if(sc>0&&ACC.code)rpc('rc_submit_week',{p_code:ACC.code,p_mode:bk,p_score:sc}).then(refreshBoard).catch(()=>{})}}
   if(S.mode==='fire'){ffPlayed[S.ff]=1;save('rc_ffplayed',JSON.stringify(ffPlayed));if(ffPlayed.blaze&&ffPlayed.lava&&ffPlayed.ride)unlockBadge('ff_all')}
   if(S.mode==='classic'&&sc>best){best=sc;save('rc_best',String(best))}
   const gained=S.cones-S.banked;wallet+=gained;S.banked=S.cones;
@@ -4683,56 +4711,115 @@ function showWho(next){
     box.appendChild(b);
   }
 }
-let rankTab='classic';
-function showRanks(){mode='menu';screen('ranksScr');renderRanks()}
+let rankTab='overall';
+function showRanks(){mode='menu';rankPrev=ld('rc_lastranks',{});rankGrid=false;screen('ranksScr');renderRanks()}
 let rankSeq=0;
 async function renderRanks(){
   if($('ranksScr').hidden)return;const seq=++rankSeq;
   const meBox=$('meRow');meBox.innerHTML='';
   const wc=myWho&&byId(myWho),l=el('span');l.append('Playing as ');l.appendChild(el('b',null,wc?nm(wc):myWho==='other'?(myName||'yourself'):'nobody yet'));
   const chg=el('button','linkbtn','Change');chg.type='button';chg.addEventListener('click',()=>showWho(showRanks));meBox.append(l,chg);
-  $('rankNote').hidden=!LB.noWrite;
-  const list=$('rankList'),shame=$('shame');
-  const msg=t=>{list.innerHTML='';list.appendChild(el('div','empty',t));shame.hidden=true};
+  $('rankNote').hidden=!LB.noWrite;$('shame').hidden=true;
+  const list=$('rankList');
+  const msg=t=>{list.innerHTML='';list.appendChild(el('div','empty',t))};
   if(LB.state==='loading')return msg('Loading the crew board...');
   if(LB.state==='slow')return msg("Can't reach the leaderboard right now. Your scores still save on this phone.");
   if(LB.state==='off')return msg("Can't reach the crew board right now. Check your connection. Your progress still saves on this phone.");
-  let tabs=$('rankTabs');if(!tabs){tabs=el('div','cats');tabs.id='rankTabs';tabs.style.cssText='display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:4px 0 6px';$('rankList').parentNode.insertBefore(tabs,$('shame'))}
-  tabs.innerHTML='';for(const [id,label] of BOARDS){const b=el('button','cat',label);b.type='button';b.style.cssText='flex:none;padding:8px 12px;white-space:nowrap';b.setAttribute('aria-selected',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;renderRanks()});tabs.appendChild(b)}
-  {const on=tabs.querySelector('[aria-selected="true"]');if(on)tabs.scrollLeft=Math.max(0,on.offsetLeft-tabs.offsetLeft-40)}
-  list.style.overflowY='auto';list.style.overscrollBehavior='contain';
-  const bval=r=>rankTab==='classic'?(r.best||0):((r.modes||{})[rankTab]||0);
-  const brows=(LB.all||LB.rows).filter(r=>bval(r)>0).sort((a,b)=>bval(b)-bval(a)).map((r,i)=>Object.assign({rank:i+1,sc:bval(r)},r));
-  const meR=brows.find(r=>r.id===LB.uid),myB=Math.max(meR?meR.sc:0,boardModes()[rankTab]||0),lbl=BOARDS.find(b=>b[0]===rankTab)[1];
-  const sum=el('div','mybest');sum.append(el('b',null,myB?'Your best: '+myB.toLocaleString():"You haven't played "+lbl+' yet'),el('span',null,meR?'#'+meR.rank+' of '+brows.length:brows.length?brows.length+' on the board':'Nobody yet. Be first!'));
-  const centerMine=()=>{const m=list.querySelector('.mine');if(m)list.scrollTop=Math.max(0,m.offsetTop-list.offsetTop-list.clientHeight/2)};
-  if(rankTab!=='classic'){
-    shame.hidden=true;const ps=await boardPs(brows.map(r=>r.id));if(seq!==rankSeq||$('ranksScr').hidden)return;
-    list.innerHTML='';list.appendChild(sum);
-    for(const r of brows)rankRow(list,r,ps,r.sc,titleOf(r.lvl||1)+' · Lv '+(r.lvl||1),[]);
-    centerMine();return;
-  }
-  if(!brows.length){list.innerHTML='';list.appendChild(sum);shame.hidden=true;return}
-  const agg={};for(const r of LB.rows)for(const k in (r.fartsBy||{}))agg[k]=(agg[k]||0)+(r.fartsBy[k]||0);
-  const worst=Object.entries(agg).sort((a,b)=>b[1]-a[1])[0];
-  if(worst&&worst[1]>0&&byId(worst[0])){shame.hidden=false;shame.textContent='Hall of shame: '+nm(byId(worst[0]))+' has ripped '+worst[1]+' on the trail.'}else shame.hidden=true;
-  const titles={};const topBy=(f,label)=>{let b=null;for(const r of LB.rows)if((r[f]||0)>0&&(!b||(r[f]||0)>(b[f]||0)))b=r;if(b)(titles[b.id]=titles[b.id]||[]).push(label)};
-  topBy('eaten','Most Eaten');topBy('farts','Iron Gut');topBy('runs','Grinder');topBy('lvl','Veteran');
-  const ps={};await null;
+  /* controls: all time / this week, and a mode picker grid */
+  let ctl=$('rankCtl');if(!ctl){ctl=el('div','rkctl');ctl.id='rankCtl';list.parentNode.insertBefore(ctl,list)}
+  ctl.innerHTML='';
+  const seg=el('div','seg');for(const [id,lab] of [['all','All time'],['week','This week']]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankPeriod===id));b.addEventListener('click',()=>{rankPeriod=id;renderRanks()});seg.appendChild(b)}
+  const curLbl=rankTab==='overall'?'Overall':BOARDS.find(b=>b[0]===rankTab)[1];
+  const mb=el('button','rkmode');mb.type='button';mb.append(el('small',null,'Board'),el('b',null,curLbl+' ▾'));mb.setAttribute('aria-expanded',String(rankGrid));mb.addEventListener('click',()=>{rankGrid=!rankGrid;renderRanks()});
+  ctl.append(seg,mb);
+  if(rankGrid){const gr=el('div','modegrid');for(const [id,lab] of [['overall','Overall'],...BOARDS]){const b=el('button',null,lab);b.type='button';b.setAttribute('aria-pressed',String(rankTab===id));b.addEventListener('click',()=>{rankTab=id;rankGrid=false;renderRanks()});gr.appendChild(b)}ctl.appendChild(gr)}
+  /* scores for the chosen board + period */
+  const wk=weekKey(),rows=(LB.all||LB.rows);
+  const val=(r,k)=>{if(rankPeriod==='week')return r.weekKey===wk?((r.week||{})[k]||0):0;return k==='classic'?(r.best||0):((r.modes||{})[k]||0)};
+  const boardOf=k=>rows.filter(r=>val(r,k)>0).sort((a,b)=>val(b,k)-val(a,k)).map((r,i)=>({id:r.id,rank:i+1,sc:val(r,k)}));
+  let brows;
+  if(rankTab==='overall'){
+    const pts={},wins={},modes={};
+    for(const [k] of BOARDS)for(const e of boardOf(k)){pts[e.id]=(pts[e.id]||0)+Math.max(1,6-e.rank);modes[e.id]=(modes[e.id]||0)+1;if(e.rank===1)wins[e.id]=(wins[e.id]||0)+1}
+    brows=rows.filter(r=>pts[r.id]).sort((a,b)=>pts[b.id]-pts[a.id]||(wins[b.id]||0)-(wins[a.id]||0)).map((r,i)=>Object.assign({rank:i+1,sc:pts[r.id],ov:{wins:wins[r.id]||0,modes:modes[r.id]||0}},r));
+  }else{const m={};for(const e of boardOf(rankTab))m[e.id]=e;brows=rows.filter(r=>m[r.id]).map(r=>Object.assign({},r,m[r.id])).sort((a,b)=>a.rank-b.rank)}
+  /* rank movement since your last visit */
+  const bk=rankTab+'|'+rankPeriod,prev=(rankPrev||{})[bk];
+  {const snap=ld('rc_lastranks',{});snap[bk]={};for(const r of brows)snap[bk][r.id]=r.rank;save('rc_lastranks',JSON.stringify(snap))}
+  /* your summary + who to pass next */
+  const meR=brows.find(r=>r.id===LB.uid),unit=rankTab==='overall'?' pts':'';
+  const sum=el('div','mybest');
+  const myB=meR?meR.sc:(rankPeriod==='all'&&rankTab!=='overall'?(boardModes()[rankTab]||0):0);
+  let line2=meR?'#'+meR.rank+' of '+brows.length:brows.length?brows.length+' on the board':'Nobody yet. Be first!';
+  const head=el('div','mbh');head.append(el('b',null,myB?(rankPeriod==='week'?'This week: ':'Your best: ')+myB.toLocaleString()+unit:(rankPeriod==='week'?'No runs yet this week':"You haven't played "+curLbl+' yet')),el('span',null,line2));
+  sum.appendChild(head);
+  {const nameOf=rowName;let t='';
+   if(meR&&meR.rank>1){const a=brows[meR.rank-2];t=(a.sc-meR.sc+1).toLocaleString()+unit+' to pass '+nameOf(a)}
+   else if(meR&&brows[1]){t="You're on top. "+nameOf(brows[1])+' is '+(meR.sc-brows[1].sc).toLocaleString()+unit+' behind'}
+   else if(!meR&&brows.length){const last=brows[brows.length-1];t='Any score gets you on the board'+(myB?'':'')}
+   if(t)sum.appendChild(el('p','pass',t))}
+  if(rankPeriod==='week'){const d=el('p','pass');d.textContent='Resets Monday. '+weekLeft()+' left this week.';sum.appendChild(d)}
+  {const ps=await boardPs(brows.map(r=>r.id));Object.assign(RPS,ps)}
   if(seq!==rankSeq||$('ranksScr').hidden)return;
   list.innerHTML='';list.appendChild(sum);
-  for(const r of brows)rankRow(list,r,ps,r.sc,titleOf(r.lvl||1)+' · Lv '+(r.lvl||1)+' · '+(r.bestM||0)+' m best',titles[r.id]||[]);
-  centerMine();
+  for(const r of brows){
+    let sub=titleOf(r.lvl||1)+' · Lv '+(r.lvl||1);
+    if(rankTab==='overall')sub=(r.ov.wins?r.ov.wins+(r.ov.wins>1?' boards won':' board won')+' · ':'')+r.ov.modes+' of '+BOARDS.length+' modes';
+    else if(rankTab==='classic'&&rankPeriod==='all'&&r.bestM)sub+=' · '+r.bestM.toLocaleString()+' m best';
+    let mv=null;if(prev){const p=prev[r.id];mv=p==null?'new':p-r.rank}
+    rankRow(list,r,RPS,r.sc,sub,[],mv);
+  }
+  if(!brows.length)list.appendChild(el('div','empty',rankPeriod==='week'?'Nobody has played '+curLbl+' this week. Fresh board.':'Nobody on this board yet.'));
+  /* crew awards */
+  const aw=crewAwards(rows);if(aw.length){list.appendChild(el('div','gsec awh',null)).append(el('span',null,'Crew awards'));const g=el('div','awards');for(const a of aw){const c=el('div','award');c.append(el('small',null,a.t),el('b',null,a.who),el('span',null,a.v));g.appendChild(c)}list.appendChild(g)}
+  {const m=list.querySelector('.mine');if(m&&m.offsetTop-list.offsetTop>list.clientHeight*.6)list.scrollTop=Math.max(0,m.offsetTop-list.offsetTop-list.clientHeight/2)}
+}
+let rankPeriod='all',rankGrid=false,rankPrev=null;
+function weekKey(){const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),g=k=>+p.find(x=>x.type===k).value;
+  const d=new Date(Date.UTC(g('year'),g('month')-1,g('day'))),dn=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-dn+3);const y=d.getUTCFullYear(),f=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-f)/864e5-3+((f.getUTCDay()+6)%7))/7);return y+'-W'+String(w).padStart(2,'0')}
+function weekLeft(){const now=new Date(),c=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'})),dn=(c.getDay()+6)%7,h=(7-dn)*24-c.getHours();return h>=48?Math.floor(h/24)+' days':h+' hours'}
+let RPS={};const rowName=r=>{const c=r.who&&byId(r.who),p=RPS[r.id];return c?nm(c):((p&&p.name)||r.name||'Someone')};
+function crewAwards(rows){
+  const out=[],top=(f,t,fmt)=>{let b=null,bv=0;for(const r of rows){const v=f(r)||0;if(v>bv){bv=v;b=r}}if(b)out.push({t,who:rowName(b),v:fmt(bv)})};
+  {const agg={};for(const r of rows)for(const k in (r.fartsBy||{}))agg[k]=(agg[k]||0)+(r.fartsBy[k]||0);const w=Object.entries(agg).sort((a,b)=>b[1]-a[1])[0];if(w&&w[1]>0&&byId(w[0]))out.push({t:'Gassiest guy',who:nm(byId(w[0])),v:w[1].toLocaleString()+' farts on the trail'})}
+  top(r=>r.eaten,'Bear food',v=>'eaten '+v.toLocaleString()+' times');
+  top(r=>r.runs,'Grinder',v=>v.toLocaleString()+' runs');
+  top(r=>(r.stats||{}).cones||r.cones,'Pinecone hoarder',v=>v.toLocaleString()+' pinecones');
+  top(r=>(r.badges||[]).length,'Badge hunter',v=>v+' badges');
+  top(r=>(r.stats||{}).summits,'Summit junkie',v=>v+(v>1?' summits':' summit'));
+  return out;
+}
+function tierCounts(ids){const n=[0,0,0,0,0];for(const id of ids||[]){const t=TIER_OF[id];if(t)n[t]++}return n}
+/* player card: tap any row */
+function showPlayerCard(r){
+  const scr=$('ranksScr');let ov=$('pcard');if(ov)ov.remove();
+  ov=el('div','pcover');ov.id='pcard';const card=el('div','pcard');ov.appendChild(card);
+  const close=()=>ov.remove();ov.addEventListener('click',e=>{if(e.target===ov)close()});
+  const c=r.who&&byId(r.who),top=el('div','pctop');if(c){const p=portrait(c,2);top.appendChild(p)}
+  const nmb=el('div','pcn');nmb.append(el('b',null,rowName(r)+(r.id===LB.uid?' (you)':'')),el('span',null,titleOf(r.lvl||1)+' · Lv '+(r.lvl||1)));top.appendChild(nmb);
+  const x=el('button','back');x.type='button';x.setAttribute('aria-label','Close');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';x.addEventListener('click',close);top.appendChild(x);card.appendChild(top);
+  const tc=tierCounts(r.badges),tb=el('div','pctiers');for(let k=4;k>=1;k--){const s=el('span','tk t'+k);s.append(el('i'),document.createTextNode(tc[k]+' '+TIERS[k].n));tb.appendChild(s)}card.appendChild(tb);
+  const bl=el('div','pcbests');bl.appendChild(el('small',null,'Best in every mode'));
+  for(const [k,lab] of BOARDS){const v=k==='classic'?(r.best||0):((r.modes||{})[k]||0);const all=(LB.all||LB.rows).filter(q=>(k==='classic'?q.best:(q.modes||{})[k])>0).sort((a,b)=>(k==='classic'?b.best:b.modes[k])-(k==='classic'?a.best:a.modes[k]));const rk=all.findIndex(q=>q.id===r.id)+1;
+    const row=el('div','pcb');row.append(el('span',null,lab),el('b',null,v?v.toLocaleString():'-'),el('em',null,rk?'#'+rk:''));bl.appendChild(row)}
+  card.appendChild(bl);
+  const lr=(r.stats||{}).leadRuns||{},fav=Object.entries(lr).sort((a,b)=>b[1]-a[1])[0];
+  const st=el('div','pcstats');const add=(t,v)=>{const d=el('div');d.append(el('b',null,v),el('small',null,t));st.appendChild(d)};
+  add('Favorite leader',fav&&fav[1]>0&&byId(fav[0])?nm(byId(fav[0])):'-');add('Runs',(r.runs||0).toLocaleString());add('Eaten',(r.eaten||0).toLocaleString());
+  add('Farts held',(r.farts||0).toLocaleString());add('Pinecones',((r.stats||{}).cones||0).toLocaleString());add('Summits',((r.stats||{}).summits||0).toLocaleString());
+  card.appendChild(st);scr.appendChild(ov);
 }
 const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Summit Climb'],['solo','Solo'],['bear','Bear Mode'],['fire_blaze','Human Torch'],['fire_lava','Lava Floor'],['fire_ride','Bear Ride']];
 function boardModes(){const m={};for(const [k] of BOARDS){const v=k==='classic'?Math.max(modeBest.classic||0,best||0):(modeBest[k]||0);if(v>0)m[k]=v}return m}
 async function boardPs(ids){try{return LB.user&&LB.user.profiles?(await LB.user.profiles(ids))||{}:{}}catch(e){return {}}}
-function rankRow(list,r,ps,sc,sub,tt){
-  const row=el('div','rank'+(r.id===LB.uid?' mine':'')+(r.rank<=3?' top':''));row.appendChild(el('span','no',String(r.rank)));
+function rankRow(list,r,ps,sc,sub,tt,mv){
+  const row=el('div','rank'+(r.id===LB.uid?' mine':'')+(r.rank<=3?' top':''));row.tabIndex=0;row.setAttribute('role','button');row.addEventListener('click',()=>showPlayerCard(r));
+  {const no=el('span','no',String(r.rank));if(mv==='new')no.appendChild(el('i','mv mvn','NEW'));else if(mv>0)no.appendChild(el('i','mv mvu','\u25B2'+mv));else if(mv<0)no.appendChild(el('i','mv mvd','\u25BC'+(-mv)));row.appendChild(no)}
   const c=r.who&&byId(r.who),p=ps[r.id];
   if(c)row.appendChild(portrait(c,1));else{const d=el('span','dot');d.style.background=(p&&p.color)||['#e0702b','#2a9d8f','#6d4bb0','#d8b23a','#3a6cc0'][(r.id||'').charCodeAt(0)%5||0];row.appendChild(d)}
   const n=el('div','nm'),nb=el('b');if(r.rank===1)nb.appendChild(el('i','crownic'));nb.appendChild(document.createTextNode((c?nm(c):((p&&p.name)||r.name||'Someone'))+(r.id===LB.uid?' (you)':'')));
   for(const t of tt)nb.appendChild(el('em','ttl',t));
+  {const tc=tierCounts(r.badges);if(tc[3]||tc[4]){const f=el('span','flair');if(tc[4])f.appendChild(el('i','fl t4',String(tc[4])));if(tc[3])f.appendChild(el('i','fl t3',String(tc[3])));nb.appendChild(f)}}
   n.append(nb,el('span',null,sub));row.append(n,el('span','sc',sc.toLocaleString()));list.appendChild(row);
 }
 /* ---------- goals: missions, badges, journal, stories ---------- */
