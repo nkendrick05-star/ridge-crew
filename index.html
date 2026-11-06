@@ -206,6 +206,8 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .badge.got{border-color:var(--amber)}
 .badge.got .ic{background:var(--amber);color:var(--amber-ink)}
 .badge:not(.got){opacity:.6}
+.badge.hard .ic{box-shadow:inset 0 0 0 2px #c98b3a}
+.badge.hard.got{border-color:#f2c14e;background:linear-gradient(135deg,rgba(242,193,78,.14),var(--panel2))}
 @media (min-aspect-ratio:1/1){
   .badge{flex-direction:row;justify-content:flex-start;text-align:left;padding:6px 10px}
   .leaders.who{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
@@ -1087,7 +1089,7 @@ function starTick(dt){
 }
 function starPos(f){const k=Math.min(1,f.t/1.1),e=k*k;return {x:f.tx+40*(1-e),y:f.gy-12-150*(1-e)}}
 function startStar(){
-  S.starDone=true;S.star={t:0,end:S.dist+STAR_M*12,heat:S.heat};S.boost=0;S.steamOn=false;
+  S.starDone=true;unlockBadge('star');S.star={t:0,end:S.dist+STAR_M*12,heat:S.heat};S.boost=0;S.steamOn=false;
   SFX.win();S.shake=6;buzz(30);toast('FALLING STAR! +'+STAR_M.toLocaleString()+' m');say('Hold on to the star!',LX,GY-60,'#fff6c8');
   for(let i=0;i<30;i++)S.parts.push({x:S.dist+LX,y:S.y-12,vx:(Math.random()-.5)*260,vy:(Math.random()-.5)*260,life:.8,c:pick(['#fff6c8','#ffd166','#ffffff','#cfe3ff']),s:2,g:0});
 }
@@ -1254,6 +1256,7 @@ function histY(back){
 }
 function hit(){
   if(S.invuln>0||S.boost>0)return;
+  S.ouch=(S.ouch||0)+1;
   SFX.hit();buzz(30);S.mood=Math.max(0,S.mood-20);
   if(S.shield>0){S.shield=0;S.shieldAt=S.dist;S.invuln=.8;S.shake=4;
     if(S.leader.id==='camo'&&S.hitObs){const o=S.hitObs;o.smashed=.01;o.passed=true;S.boost=Math.max(S.boost,.7);S.mood=Math.min(100,S.mood+30);say('HENRY SMASH!',LX,GY-40,'#f2a541');SFX.thud();S.hitStop=.09;S.shake=Math.max(S.shake,6);for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:40+Math.random()*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#a19d93':'#f2a541',s:2,g:1});return}
@@ -2796,7 +2799,7 @@ function bearModeUpdate(dt,lx){
     const lc=look(c);for(let n=0;n<14;n++)S.parts.push({x:S.dist+LX+16,y:S.y-14,vx:(Math.random()-.2)*150,vy:-110-Math.random()*150,life:1,c:[lc.shirt,lc.pack,lc.skin,lc.pants][n%4],s:2,g:1});
     if(S.prey.length)S.texts.push({s:'They are panicking!',x:LX+110,y:GY-74,t:-.5,color:'#fff3dc'});
     else{const sec=S.t,bonus=Math.max(0,Math.round((150-sec)*20));S.bearPts+=bonus;S.winBonus=bonus;S.winTime=sec;
-      if(sec<60)unlockBadge('bear_fast');if(!S.hits)unlockBadge('bear_clean');markSeen('bj_den');
+      if(sec<60)unlockBadge('bear_fast');if(!S.hits)unlockBadge('bear_clean');if(sec<40&&!S.hits)unlockBadge('bear_apex');markSeen('bj_den');
       S.win=true;die('The bear caught all five in '+Math.round(sec)+' seconds. Feast!','bearwin')}
   }
   if(S.gapX>W-LX+30)die('The crew got away. The bear goes hungry tonight.','bearlose');
@@ -2917,7 +2920,7 @@ function update(dt){
     if(Math.abs(it.x-lx)<(sr?26:9)&&Math.abs(it.y-cy)<(sr?60:15)){
       it.got=true;
       if(it.k==='roar'){S.roars=(S.roars||0)+1;if(S.roars>=3)unlockBadge('ff_roar');SFX.roar();S.shake=7;let n=0;for(const o of S.obs){if(o.type!=='branch'&&!o.hit&&o.x>lx&&o.x-lx<280){o.hit=true;o.passed=true;o.smashed=.01;n++}}say('ROAR! Path cleared',LX,GY-56,'#ffd166');continue}
-      if(it.k!=='cone')S.perkT=12;
+      if(it.k!=='cone'){S.perkT=12;S.ate=true}
       if(it.k==='star'){startStar();continue}
       if(it.k==='leap'){S.leap=true;SFX.win();say('Next jump is a MEGA LEAP',LX,GY-56,'#bfe39a');continue}
       if(it.k==='hitch'){markSeen('ff_hitch');S.hitch=true;SFX.cone();say('A raccoon hopped on top!',LX,GY-56,'#f2d36a');continue}
@@ -3963,6 +3966,7 @@ const BADGES=[
  {id:'ff_burn',ic:'100',name:'Arsonist',desc:'Burn 100 things in The Crew Is the Fire'},
  {id:'ff_inferno',ic:'HOT',name:'Inferno',desc:'Go full inferno'},
  {id:'ff_swing',ic:'50',name:'Tarzan',desc:'50 swings in one Lava Floor run without a lava hit'},
+ {id:'ff_flip',ic:'FLIP',name:'Flip Out',desc:'Land 10 flips in one Lava Floor run'},
  {id:'ff_pyramid',ic:'5UP',name:'Human Pyramid',desc:'Ride 500 m with the whole pyramid'},
  {id:'ff_lake',ic:'H2O',name:'Splashdown',desc:'Ride the bear all the way to the lake'},
  {id:'ff_all',ic:'3/3',name:'Firestarter',desc:'Play all three Forest Fire versions'},
@@ -3970,13 +3974,26 @@ const BADGES=[
  {id:'up_high',ic:'13K',name:'High Camp',desc:'Reach High Camp at 13,000 ft'},
  {id:'up_summit',ic:'TOP',name:'Summiteer',desc:'Reach the 14,505 ft summit'},
  {id:'up_rope',ic:'5UP',name:'Rope Team',desc:'Reach the summit with the whole crew'},
- {id:'up_beyond',ic:'16K',name:'Above the Clouds',desc:'Climb past 16,000 ft'}
+ {id:'up_beyond',ic:'16K',name:'Above the Clouds',desc:'Climb past 16,000 ft'},
+ {id:'meters3000',ic:'3K',name:'Ultramarathon',desc:'Run 3,000 m in one run',hard:1},
+ {id:'night1500',ic:'1.5N',name:'Lights Out',desc:'Reach 1,500 m in Night Hike',hard:1},
+ {id:'solo2000',ic:'2KS',name:'Lone Wolf',desc:'Reach 2,000 m in Solo',hard:1},
+ {id:'cones300',ic:'300',name:'Pinecone Baron',desc:'Grab 300 pinecones in one run',hard:1},
+ {id:'gut15',ic:'15x',name:'Steel Stomach',desc:'Stop 15 farts in one run',hard:1},
+ {id:'clean1k',ic:'0H',name:'Not a Scratch',desc:'Reach 1,000 m without hitting anything',hard:1},
+ {id:'coldturkey',ic:'0S',name:'Cold Turkey',desc:'Reach 1,500 m without grabbing a single snack or power-up',hard:1},
+ {id:'star',ic:'WISH',name:'Wish Upon a Star',desc:'Ride a falling star',hard:1},
+ {id:'bear_apex',ic:'40s',name:'Apex Predator',desc:'As the bear, catch all 5 in under 40 seconds without getting hit',hard:1},
+ {id:'ff_burn300',ic:'300',name:'Scorched Earth',desc:'Burn 300 things in one Crew Is the Fire run',hard:1},
+ {id:'rotation',ic:'5L',name:'Everybody Leads',desc:'Reach 1,000 m with each of the five as leader',hard:1},
+ {id:'legend',ic:'40',name:'Trail Legend',desc:'Earn 40 other badges',hard:1}
 ];
 let ffPlayed={};try{ffPlayed=JSON.parse(localStorage.getItem('rc_ffplayed')||'{}')||{}}catch(e){}
 let badges={};try{badges=JSON.parse(localStorage.getItem('rc_badges')||'{}')||{}}catch(e){}
 function unlockBadge(id){
   if(badges[id])return;const b=BADGES.find(x=>x.id===id);if(!b)return;
   badges[id]=Date.now();save('rc_badges',JSON.stringify(badges));SFX.badge();toast('Badge unlocked: '+b.name);
+  if(id!=='legend'&&Object.keys(badges).filter(k=>k!=='legend').length>=40)setTimeout(()=>unlockBadge('legend'),2500);
 }
 function checkBadges(){
   if(!S||S.demo)return;const m=S.dist/12;
@@ -3984,7 +4001,12 @@ function checkBadges(){
   if(S.cones>=100)unlockBadge('cones100');if(S.saved>=5)unlockBadge('gut5');
   if(m>=800&&S.crew.length===4)unlockBadge('squad');
   if(m>=2000&&S.crew.length===4&&S.mode==='classic')unlockBadge('hewstu');
-  if(S.mode==='fire'){if(S.burned>=100)unlockBadge('ff_burn');if(S.ff==='lava'&&S.swings>=50&&S.crew.length===4)unlockBadge('ff_swing');if(S.flips>=10)unlockBadge('ff_flip');if(S.ff==='ride'&&m>=500&&S.crew.length===4)unlockBadge('ff_pyramid')}
+  const runMode=S.mode==='classic'||S.mode==='night'||S.mode==='solo'||S.mode==='uphill';
+  if(runMode){if(m>=3000)unlockBadge('meters3000');if(m>=1000&&!S.ouch)unlockBadge('clean1k');if(m>=1500&&!S.ate)unlockBadge('coldturkey')}
+  if(S.mode==='night'&&m>=1500)unlockBadge('night1500');if(S.mode==='solo'&&m>=2000)unlockBadge('solo2000');
+  if(S.cones>=300)unlockBadge('cones300');if(S.saved>=15)unlockBadge('gut15');
+  if(S.mode!=='bear'&&m>=1000){const L=LIFE.lead1k||(LIFE.lead1k={});if(!L[S.leader.id]){L[S.leader.id]=1;save('rc_life',JSON.stringify(LIFE));if(Object.keys(L).length>=5)unlockBadge('rotation')}}
+  if(S.mode==='fire'){if(S.burned>=100)unlockBadge('ff_burn');if(S.burned>=300)unlockBadge('ff_burn300');if(S.ff==='lava'&&S.swings>=50&&S.crew.length===4)unlockBadge('ff_swing');if(S.flips>=10)unlockBadge('ff_flip');if(S.ff==='ride'&&m>=500&&S.crew.length===4)unlockBadge('ff_pyramid')}
 }
 
 /* ---------- toast + tutorial tip ---------- */
@@ -4722,9 +4744,10 @@ function renderGoals(){
     });
   }else if(gTab==='badges'){
     const g=$('badgeGrid');g.innerHTML='';
-    for(const [label,list] of [['Trail',BADGES.filter(b=>!b.id.startsWith('ff_')&&!b.id.startsWith('bear_'))],['Bear Mode',BADGES.filter(b=>b.id.startsWith('bear_'))],['Forest Fire',BADGES.filter(b=>b.id.startsWith('ff_'))]]){
+    const nb=BADGES.filter(b=>!b.hard);
+    for(const [label,list] of [['Trail',nb.filter(b=>!/^(ff_|bear_|up_)/.test(b.id))],['Summit Climb',nb.filter(b=>b.id.startsWith('up_'))],['Bear Mode',nb.filter(b=>b.id.startsWith('bear_'))],['Forest Fire',nb.filter(b=>b.id.startsWith('ff_'))],['Legendary',BADGES.filter(b=>b.hard)]]){
       const got=list.filter(b=>badges[b.id]).length,h=el('div','gsec');h.append(el('span',null,label),el('i',null,got+' / '+list.length));g.appendChild(h);
-      for(const b of list){const ok=!!badges[b.id];const d=el('div','badge'+(ok?' got':''));d.appendChild(el('span','ic',b.ic));const t=el('div','bt');t.append(el('b',null,b.name),el('span',null,b.desc));d.appendChild(t);g.appendChild(d)}}
+      for(const b of list){const ok=!!badges[b.id];const d=el('div','badge'+(ok?' got':'')+(b.hard?' hard':''));d.appendChild(el('span','ic',b.ic));const t=el('div','bt');t.append(el('b',null,b.name),el('span',null,b.desc));d.appendChild(t);g.appendChild(d)}}
   }else if(gTab==='journal'){
     const g=$('journalGrid');g.innerHTML='';
     const grp={Wildlife:['bear','skunk','moose','coon','owl','fireflies'],Trail:['rockslide','river','bridge','mud','falls','rain','night','season'],Places:['b0','b1','b2','b3','b4','b5','b6']};
