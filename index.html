@@ -567,8 +567,8 @@ try{document.fonts&&document.fonts.load('700 10px RCD','5');document.fonts&&docu
 (function(){
 const CHARS=[
  {id:'patch',def:'Sam',ability:'Double jump',desc:'Tap again in mid-air',hat:'camo',hatC:'#6c6a48',brim:'#4f4d34',patch:'#e08a33',hair:'#3b2a1e',shirt:'#d4d2cc',pants:'#8a7c62',pack:'#25282b',skin:'#f1c6a2'},
- {id:'curly',def:'Josiah',ability:'Long legs',desc:'Jumps higher. Tap again mid-air to dash',curly:true,hair:'#2e2019',shirt:'#eeede8',pants:'#7c6f5a',pack:'#3a6cc0',skin:'#e6b28c'},
- {id:'camo',def:'Henry',ability:'Tank',desc:'Smashes through a hit every 240 m',hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#22304d',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'},
+ {id:'curly',def:'Josiah',ability:'D1',desc:'Jumps higher. Tap again mid-air to dash',curly:true,hair:'#2e2019',shirt:'#eeede8',pants:'#7c6f5a',pack:'#3a6cc0',skin:'#e6b28c'},
+ {id:'camo',def:'Henry',ability:'Jacked',desc:'Smashes through a hit every 240 m',hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#22304d',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'},
  {id:'stache',def:'Blake',ability:'Cone magnet',desc:'Pulls in nearby pinecones',hat:'tan',hatC:'#9b8c69',brim:'#7a6d50',hair:'#2b1f18',stache:true,shirt:'#d8d6d0',pants:'#5b5a55',pack:'#2f4f84',skin:'#c8946f'},
  {id:'nathan',def:'Nathan',ability:'Hype man',desc:'Pinecones count double for the shop',guest:true,hair:'#8a5a30',stache:true,shirt:'#a19b94',shred:true,pants:'#9a8c70',pack:'#5d7a3c',skin:'#f0c29c'}
 ];
@@ -767,7 +767,7 @@ const UPGRADES=[
 ];
 const SKILLS=[
  {id:'ab_patch',who:'patch',name:'Triple jump',desc:'Sam gets a third jump in mid-air.',price:600},
- {id:'ab_curly',who:'curly',name:'Even longer legs',desc:"Higher jumps, a longer air dash that recharges faster, and longer reach in Lava Floor.",price:600},
+ {id:'ab_curly',who:'curly',name:'Even more D1',desc:"Higher jumps, a longer air dash that recharges faster, and longer reach in Lava Floor.",price:600},
  {id:'ab_camo',who:'camo',name:'Quick recharge',desc:"Henry's smash comes back every 150 m (every 4 swings in Lava Floor).",price:600},
  {id:'ab_stache',who:'stache',name:'Super magnet',desc:'Blake pulls pinecones from twice as far.',price:600},
  {id:'ab_nathan',who:'nathan',name:'Mega hype',desc:'Pinecones count triple for the shop when Nathan leads.',price:600}
@@ -1009,9 +1009,9 @@ let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}cat
 if(!MODES.find(m=>m.id===runMode))runMode='classic';
 const pick=a=>a[Math.random()*a.length|0];
 const LOST_GEN=['Go on without me!',"I'm good here.",'Tell my mom I tried.','Just five minutes.'];
-const LOST_LINES={patch:['My hat fell off!','Sam is down!'],curly:['My legs are too long for this.','Josiah needs a minute.'],camo:['Tank is out of gas.','Not the knees!'],stache:['Save the stache!','Blake out.'],nathan:['Pray for me, boys.','Hype man needs hype.']};
+const LOST_LINES={"patch": ["Don't push me. I'll tickle you.", "Wake me up when we get there."], "curly": ["No.", "Go on. I'll catch up. Probably."], "camo": ["BLEHHHH.", "*dying whale noises*"], "stache": ["I meant to do that.", "A philosophical setback."], "nathan": ["Pray for me, boys.", "This wasn't in the plan."]};
 const CHAT_GEN=['How much farther?','My legs are cooked.','Anyone else hear that?','Is the bear still back there?','Who packed the snacks?','This view though.','Water break soon?','Pretty sure we are lost.'];
-const CHAT={patch:['Sam knows a shortcut.','Trust me on this one.'],curly:['I can see the summit.','Long legs, no problem.'],camo:["Tank's feeling good.",'Heavy pack, strong back.'],stache:['Stache stays fresh.','Who moved the trail?'],nathan:["Let's GO boys!",'Hype check!']};
+const CHAT={"patch": ["Did a robot write that?", "No AI was used on this hike.", "Too tired for this."], "curly": ["Rematch in 8-ball after this.", "Spikeball at the summit?"], "camo": ["*banjo noises*", "This is just Minecraft outside."], "stache": ["This trail is a social construct.", "That bear has great mic presence."], "nathan": ["Alright, here's the plan.", "Hydrate, boys."]};
 const GRUMPY=['I want to go home.','Whose idea was this?','My feet hate me.','Nobody talk to me.'];
 function newRun(leaderId,demo,rm){
   rm=demo?'classic':(rm||'classic');
@@ -1070,7 +1070,7 @@ function doDash(){if(mode!=='play'||!dashOK()||S.spin||S.grounded||S.airDashed||
 function skillInfo(){const id=S.leader.id,m=S.mode,lava=isLava(),blaze=m==='fire'&&S.ff==='blaze';if(m==='bear')return null;
   if(id==='patch')return lava?null:{n:'Double Jump',t:'2X JUMP'};
   if(id==='curly')return lava?{n:'Long Reach',t:'REACH'}:{n:'Air Dash',t:'AIR DASH'};
-  if(id==='camo')return {n:'Tank',t:'TANK'};
+  if(id==='camo')return {n:'Jacked',t:'JACKED'};
   if(id==='stache')return {n:'Magnet',t:'MAGNET'};
   if(id==='nathan'){const k=nb()+'X';return {n:'Cone Bonus',t:k+' CONES'}}
   return null}
@@ -1213,7 +1213,7 @@ function hit(){
   if(S.invuln>0||S.boost>0)return;
   SFX.hit();buzz(30);S.mood=Math.max(0,S.mood-20);
   if(S.shield>0){S.shield=0;S.shieldAt=S.dist;S.invuln=.8;S.shake=4;
-    if(S.leader.id==='camo'&&S.hitObs){const o=S.hitObs;o.smashed=.01;o.passed=true;S.boost=Math.max(S.boost,.7);S.mood=Math.min(100,S.mood+30);say('TANK SMASH!',LX,GY-40,'#f2a541');SFX.thud();S.hitStop=.09;S.shake=Math.max(S.shake,6);for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:40+Math.random()*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#a19d93':'#f2a541',s:2,g:1});return}
+    if(S.leader.id==='camo'&&S.hitObs){const o=S.hitObs;o.smashed=.01;o.passed=true;S.boost=Math.max(S.boost,.7);S.mood=Math.min(100,S.mood+30);say('HENRY SMASH!',LX,GY-40,'#f2a541');SFX.thud();S.hitStop=.09;S.shake=Math.max(S.shake,6);for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:40+Math.random()*120,vy:-60-Math.random()*120,life:.6,c:i%2?'#a19d93':'#f2a541',s:2,g:1});return}
     say('Shrugged it off',LX,GY-34,'#f2a541');return}
   if(S.distract>0&&S.mode!=='fire'&&S.mode!=='bear'){S.invuln=.8;S.shake=4;S.snackSaves=(S.snackSaves||0)+1;say(pick(['Stumbled! The bear is busy eating','Close one. The bear is still munching','Tripped, but the bear did not notice']),LX,GY-40,'#f2d9a8');return}
   if(S.mode==='solo'){caughtEat(nm(S.leader)+' went down with nobody to help. The bear did not wait.');return}
@@ -1384,7 +1384,7 @@ function hopPos(k){
   return {x:fr.x+(to.x-fr.x)*u,y:fr.y+(to.y-fr.y)*u-Math.sin(u*Math.PI)*14,air:true};
 }
 function lavaHit(){
-  if(S.invuln<=0&&S.shield>0){S.shield=0;S.shieldSw=S.swings||0;S.invuln=1.2;S.shake=4;SFX.hit();say('Tank shrugged it off',LX,GY-46,'#f2a541')}
+  if(S.invuln<=0&&S.shield>0){S.shield=0;S.shieldSw=S.swings||0;S.invuln=1.2;S.shake=4;SFX.hit();say('Henry shrugged it off',LX,GY-46,'#f2a541')}
   else if(S.invuln<=0){
     S.hearts=(S.hearts==null?(S.set==='lavaproof'?4:3):S.hearts)-1;
     if(S.hearts>0){say(S.hearts===1?'Last heart!':'Ouch! '+S.hearts+' hearts left',LX,GY-46,'#ff8a5a');SFX.hit();S.invuln=1.2;S.shake=6}
@@ -1458,7 +1458,7 @@ function lavaUpdate(dt){
   S.camY+=(Math.max(-50,Math.min(24,(S.y-GY)*.4+11))-S.camY)*Math.min(1,dt*3);
   S.hist.push({d:S.dist,y:S.y});while(S.hist.length&&S.hist[0].d<S.dist-150)S.hist.shift();
   const cy=S.y-11,lmag=S.leader.id==='stache'?(ups.ab_stache?160:80):0;for(const it of S.items){if(it.got)continue;if(lmag){const dx=lx-it.x,dy=cy-it.y,d=Math.hypot(dx,dy);if(d<lmag&&d>0){it.x+=dx/d*320*dt;it.y+=dy/d*320*dt}}if(Math.abs(it.x-lx)<10&&Math.abs(it.y-cy)<16){it.got=true;S.cones+=nb();S.natX=(S.natX||0)+nb()-1;SFX.cone()}}
-  if(S.leader.id==='camo'&&!S.shield&&S.swings-(S.shieldSw||0)>=(ups.ab_camo?4:7)){S.shield=1;say('Tank ready',LX,GY-56,'#f2a541')}
+  if(S.leader.id==='camo'&&!S.shield&&S.swings-(S.shieldSw||0)>=(ups.ab_camo?4:7)){S.shield=1;say('Jacked ready',LX,GY-56,'#f2a541')}
   if(S.chain)for(const nd of S.chain)for(const it of S.items){if(!it.got&&it.k==='cone'&&Math.abs(it.x-nd.x)<9&&Math.abs(it.y-(nd.y-11))<14){it.got=true;S.cones++;SFX.cone()}}
   S.fireBack=96+(S.cool||0)*14;S.fireClose=.35;SFX.setFire(.45);S.crackT-=dt;if(S.crackT<=0){SFX.crackle(.6);S.crackT=.1+Math.random()*.3}
   if(S.pantsT>0&&Math.random()<dt*20)S.parts.push({x:S.dist+LX-3,y:S.y-8,vx:-40-Math.random()*30,vy:-20-Math.random()*30,life:.5,c:'#6e6662',s:2,g:0});
@@ -2631,9 +2631,9 @@ function splash(r){
 const stamMax=()=>100+25*(ups.bl_lungs||0),roarCdMax=()=>9-1.5*(ups.bl_roar||0),roarLen=()=>1.3+.4*(ups.bl_roar||0),noseK=()=>1+.5*(ups.bl_nose||0);
 const CHARGE_COST=60;
 const BFOOD={berry:{st:20,pts:10,say:'Berries!',col:'#e0608a',c2:'#8a2a5a',j:'bj_berry'},honey:{st:60,pts:40,say:'Honey!',col:'#f2c03a',c2:'#f2c03a',j:'bj_honey'},salmon:{st:35,pts:50,say:'Salmon!',col:'#f28a6a',c2:'#e07a5a',j:'bj_salmon'},bsnack:{st:15,pts:25,say:'Snack!',col:'#f2a541',c2:'#c0392b',j:'bj_snack'}};
-const PREY_LINES={patch:['Sam knows a shortcut!','This way! Trust me!'],curly:['Long legs, do your thing!','See ya, bear!'],camo:['Tank is NOT getting eaten!','My knees, man!'],stache:['Take this, bear!','Save the stache!'],nathan:["LET'S GO BOYS!",'Run like you mean it!']};
+const PREY_LINES={"patch": ["Nope. Nope. Nope.", "Bear, I'm gonna poop all over you!"], "curly": ["Left side's open, go!", "Stay together, I got you."], "camo": ["COME ON BEAR! SQUARE UP!", "RAAAGH! *gorilla noises*"], "stache": ["I could fight it. Choosing not to.", "Manly retreat! MANLY RETREAT!"], "nathan": ["Everybody stay with me!", "I'll hold him off, GO!"]};
 const PANIC_GEN=["IT'S GAINING!",'Run run run!','Why is it so fast?!','Do NOT look back!','I hear breathing!','Throw it a snack!','Whose idea was this hike?!'];
-const LAST_WORDS={patch:['Tell my hat I loved it.','The shortcut was a lie.'],curly:['My legs gave out!','Josiah is down!'],camo:['Tank... is... out.','Not like this!'],stache:['Avenge the stache!','Blake out!'],nathan:['Pray for me, boys!','Keep the hype alive!']};
+const LAST_WORDS={"patch": ["Should've stayed in bed.", "I'll tickle you from heaven, bear."], "curly": ["No.", "Good game. Rematch."], "camo": ["I almost had him!", "Worth it. *drum fill*"], "stache": ["Tell my mics I loved them.", "A manly end. Mostly."], "nathan": ["I did it for the boys!", "Stick to the plan, guys!"]};
 function bearCharge(){
   if(!S||S.mode!=='bear'||mode!=='play'||S.dead||S.chargeT>0||S.stam<CHARGE_COST)return;
   S.stam-=CHARGE_COST;S.chargeT=.7;S.shake=3;SFX.jump();say('CHARGE!',LX,GY-46,'#ffb347');
@@ -2689,7 +2689,7 @@ function bearModeUpdate(dt,lx){
   S.talkIn-=dt;if(S.talkIn<=0&&S.prey.length){S.talkIn=3.2+Math.random()*3;const k=Math.random()*S.prey.length|0,c=S.prey[k];preyTalk(k,S.gapX<45||Math.random()<.5?pick(PANIC_GEN):pick(PREY_LINES[c.id]||PANIC_GEN))}
   /* personalities */
   if(tgt&&tgt.id==='camo'&&!S.shoved&&S.gapX<12&&S.chargeT<=0&&S.freezeT<=0){S.shoved=true;S.gapX=46;S.stun=.5;S.shake=6;SFX.hit();say('Henry shoved you!',LX,GY-50,'#ffb347')}
-  if(tgt&&tgt.id==='patch'&&!S.shortcut&&S.gapX<26&&S.freezeT<=0){S.shortcut=true;S.gapX+=45;preyTalk(0,'Shortcut! Follow me!')}
+  if(tgt&&tgt.id==='patch'&&!S.shortcut&&S.gapX<26&&S.freezeT<=0){S.shortcut=true;S.gapX+=45;preyTalk(0,'Nope! Too tired to die. This way!')}
   const ni=S.prey.findIndex(c=>c.id==='nathan');
   if(ni>=0){S.hypeIn-=dt;if(S.hypeIn<=0){S.hypeIn=11+Math.random()*5;S.hypeT=2;preyTalk(ni,"LET'S GO BOYS! HYPE!")}}
   SFX.setBearI(Math.max(0,Math.min(1,1-(S.gapX-6)/170)));
@@ -2851,7 +2851,7 @@ function update(dt){
     }
   }
   checkBadges();
-  if(S.leader.id==='camo'&&!S.shield&&S.dist-S.shieldAt>(ups.ab_camo?1800:2880)){S.shield=1;say('Tank ready',LX,GY-34,'#f2a541')}
+  if(S.leader.id==='camo'&&!S.shield&&S.dist-S.shieldAt>(ups.ab_camo?1800:2880)){S.shield=1;say('Jacked ready',LX,GY-34,'#f2a541')}
   if(S.chal&&!S.chalDone&&score()>S.chal.best){S.chalDone=true;toast('You passed '+S.chal.name+"'s best!");SFX.badge()}
 }
 function stepKind(x){
@@ -3334,7 +3334,7 @@ function drawHud(){
   if(!S.demo&&!S.dead&&!S.spin){const sk=skillInfo();if(sk){let t=sk.t,c='#ffd166',al=1;const cid=S.leader.id;
     row=Math.round(row+f*.95);
     if(cid==='curly'&&!isLava()&&S.dashCd>0)skBar('AIR DASH',1-S.dashCd/(ups.ab_curly?2:2.5),'#bfe3ff');
-    else if(cid==='camo'&&!S.shield)skBar('TANK',isLava()?(S.swings-(S.shieldSw||0))/(ups.ab_camo?4:7):(S.dist-S.shieldAt)/(ups.ab_camo?1800:2880),'#f2a541');
+    else if(cid==='camo'&&!S.shield)skBar('JACKED',isLava()?(S.swings-(S.shieldSw||0))/(ups.ab_camo?4:7):(S.dist-S.shieldAt)/(ups.ab_camo?1800:2880),'#f2a541');
     else{if(cid==='curly'&&!isLava()&&S.airDashed&&!S.grounded){c='#c9bfa8';al=.8}ctx.save();ctx.font=FONT(sm);ctx.globalAlpha=al;shadow(t,pad,row,c);ctx.restore()}}}
   /* row 5: next camp (Summit Climb) */
   if(up){const nx=UP_CAMPS[S.upCamps.length?(S.upCamps.find(c=>!c.done)||{i:S.upNext}).i:S.upNext];const txt=nx?'NEXT: '+nx.n.toUpperCase()+' · '+nx.ft.toLocaleString()+' FT':S.summited?'BEYOND THE SUMMIT':'';
@@ -3742,7 +3742,7 @@ const SFX=(()=>{
 document.addEventListener('pointerdown',()=>SFX.unlock(),true);
 
 /* ---------- fart lines ---------- */
-const LINES={patch:['My bad, boys.','Saved that one.'],curly:['Long legs, long fart.','Tailwind!'],camo:["Tank's venting.",'Blame the trail mix.'],stache:['The stache filtered it.',"It's the altitude."],nathan:['Hype fart!','That was a bird.']};
+const LINES={"patch": ["I'm gonna just poop all over you.", "That one's on me, boys."], "curly": ["No it wasn't.", "Prove it."], "camo": ["Pbbbbt. Encore?", "*proud honk*"], "stache": ["Low end's a little muddy.", "A real man owns it. ...It was Henry."], "nathan": ["All part of the plan.", "That was a bird."]};
 const fartLine=id=>{const l=LINES[id]||['Oops.'];return l[Math.random()*l.length|0]};
 
 /* ---------- badges ---------- */
@@ -4201,22 +4201,22 @@ function copyCardText(){
 }
 /* ---------- campfire stories ---------- */
 const STORIES=[
- {title:'Legend of the Ridge Bear',need:2,lines:[['nathan','Alright, story time. You guys know why the bear follows us?'],['curly','Because Henry packed bacon again?'],['camo','That was ONE time.'],['nathan','Legend says he can smell a fart from three ridges away.'],['stache',"So we're doomed."],['patch',"Speak for yourself. I've been holding it since Tuesday."]]},
- {title:'The Great Trail Mix Heist',need:5,lines:[['stache','Somebody ate all the M&Ms out of the trail mix.'],['patch','Raisins are trail mix too, Blake.'],['curly','Raisins are a crime.'],['camo','I saw a raccoon with chocolate on his face.'],['nathan','Case closed. Raccoon did it.'],['stache','...Then why is there chocolate on your face, Nathan?']]},
- {title:'Pee Break Rules',need:8,lines:[['camo','New rule: nobody pees uphill of the campsite.'],['curly','Who taught you that? Experience?'],['camo','...Experience.'],['patch','Second rule: never turn around mid pee break.'],['nathan','Third rule: whoever farts in the tent sleeps with the bear.'],['stache',"Then Josiah's sleeping outside forever."],['curly','Tailwind, baby.']]},
- {title:'Who Started the Fire',need:11,lines:[['patch','Okay. Nobody panic. But the forest is on fire.'],['camo','Who had the marshmallows?'],['stache','Nathan said "watch this." Then everything was on fire.'],['nathan','In my defense, it was a really good marshmallow.'],['curly','Your marshmallow is a forest now, bro.'],['nathan',"LET'S GO BOYS. Run to the lake!"],['patch','I know a shortcut.'],['camo','NO.']]},
- {title:'The Zipline Incident',need:14,lines:[['curly','Who builds a zipline over a lava field?'],['patch','Park rangers. For emergencies.'],['camo','This IS an emergency. My shoes are melting.'],['stache','Sam, why are you swinging on the trees instead of using the zipline?'],['patch','Shortcut.'],['nathan','Every time he says shortcut, we lose a heart.'],['curly','We had three hearts, Sam. THREE.']]},
- {title:'Riding the Bear',need:17,lines:[['stache','Can we talk about how we rode a bear today?'],['camo','I was on the bottom. Tank carried four grown men on a bear.'],['curly','My legs dragged on the ground the whole way.'],['nathan','Honestly? Comfy. Like a couch.'],['patch','A couch that eats people.'],['stache','Five stars. Would ride again.'],['camo','Next time somebody else is the bottom of the pyramid.']]},
- {title:"The Bear's Side of the Story",need:20,lines:[['nathan','Okay, hear me out. What if the bear is the main character?'],['curly','Then we are the snacks.'],['camo','Tank is NOT a snack.'],['stache','I threw a whole cooler at it. It just kept coming.'],['patch','It ate my granola bar. Then it ate Josiah.'],['curly','In that order. I felt disrespected.'],['nathan','Plot twist: it was a panda the whole time.']]},
- {title:'The Porta-Potty Standoff',need:23,lines:[['camo','Five guys. One porta-potty. Who goes first?'],['nathan','Oldest goes first. Respect your elders.'],['stache','We were born the same year, Nathan.'],['curly','Sam has been in there for ten minutes.'],['patch','(from inside) I found a shortcut!'],['camo','There is no shortcut in a porta-potty, Sam.'],['nathan','Pray for him, boys.']]},
- {title:'The Salmon Hat',need:26,lines:[['curly',"Blake. Why is there a fish on your head?"],['stache',"It's called fashion, Josiah."],['camo','It smells like the river.'],['stache','It smells like confidence.'],['patch','The bear has been staring at you for an hour.'],['nathan','He thinks you are a snack with a mustache.'],['stache','...Okay, I am taking it off.']]}
+ {title:"Legend of the Ridge Bear",need:2,lines:[["nathan", "Alright, story time. You guys know why the bear follows us?"], ["curly", "No."], ["nathan", "...Okay, I'm telling you anyway."], ["camo", "*spooky ghost noises* Ooooooo"], ["nathan", "Legend says he can smell a fart from three ridges away."], ["stache", "So, philosophically, we are the problem."], ["patch", "Can we go to bed? I'm too tired for lore."]]},
+ {title:"The 8-Ball Beef",need:5,lines:[["patch", "Can you two stop playing 8-ball in the group chat?"], ["nathan", "Josiah owes me a rematch."], ["curly", "No."], ["nathan", "He said that last time. Then he played fourteen games."], ["curly", "Fifteen. I won nine."], ["camo", "I've had the chat muted since Tuesday."], ["stache", "That notification sound is a crime against audio."]]},
+ {title:"Pee Break Rules",need:8,lines:[["nathan", "Okay, pee break rules. I made a list."], ["curly", "Of course you did."], ["nathan", "Rule one: nobody pees uphill of the campsite."], ["camo", "Rule two: *makes a noise that is not a word*"], ["patch", "Rule three: nobody bugs me, or I'm gonna tickle you."], ["stache", "A real man pees facing the bear."], ["curly", "Then go first, Blake."], ["stache", "...Rule four: we go together."]]},
+ {title:"Who Started the Fire",need:11,lines:[["patch", "Okay. Nobody panic. But the forest is on fire."], ["camo", "Who had the marshmallows?"], ["stache", "Henry said \"watch this.\" Then everything was on fire."], ["camo", "In Minecraft you just dump water on it."], ["stache", "This is not Minecraft, Henry."], ["camo", "...Not with that attitude."], ["nathan", "Alright, who brought the burning bush?"], ["curly", "Lake's that way. Stay behind me. Go."]]},
+ {title:"The Zipline Incident",need:14,lines:[["curly", "Who builds a zipline over a lava field?"], ["nathan", "Park rangers. For emergencies."], ["camo", "In Minecraft, lava just deletes your stuff."], ["stache", "In real life it deletes YOU, Henry."], ["patch", "I'm too tired to be scared right now."], ["curly", "Clip in. Henry, you go first."], ["camo", "*offended dolphin noise*"]]},
+ {title:"Riding the Bear",need:17,lines:[["stache", "Can we talk about how we rode a bear today?"], ["camo", "I was on the bottom. My arms are now noodles."], ["curly", "Four guys on one bear. That's a D1 move."], ["nathan", "Honestly? Comfy. Like a couch."], ["patch", "A couch that eats people."], ["stache", "I tamed it with my bare hands. Like a man."], ["curly", "You screamed, Blake."], ["stache", "Manly screaming."]]},
+ {title:"The Bear's Side of the Story",need:20,lines:[["nathan", "Okay, hear me out. What if the bear is the main character?"], ["stache", "Then the real question is: are WE the bad guys?"], ["patch", "Bro, it's 2am. Don't."], ["stache", "Think about it. We are in HIS woods."], ["camo", "*bear noises*"], ["curly", "Henry, that's worse."], ["nathan", "Daniel made it out of the lions' den. We can handle one bear."], ["patch", "Daniel didn't have Henry with him."]]},
+ {title:"Clanker Sympathizer",need:23,lines:[["patch", "Nathan. Did you use AI to plan this hike?"], ["nathan", "...It helped with the route."], ["patch", "Clanker sympathizer."], ["curly", "Explains why we're lost."], ["stache", "To be fair, the robot has no free will. Blame Nathan."], ["camo", "BEEP BOOP. *robot noises*"], ["nathan", "It found us the lake, didn't it?"], ["patch", "The lake was on the sign, bro."]]},
+ {title:"Sound Check",need:26,lines:[["stache", "Everyone quiet. I'm recording the forest."], ["camo", "*drums on a log*"], ["stache", "Henry. Great timing. Please stop."], ["camo", "*switches to banjo*"], ["stache", "That bear has incredible mic presence, by the way."], ["curly", "Want to mic the bear? Go ahead."], ["stache", "I could. I'm choosing not to."], ["patch", "If you get eaten, I'm taking your Fortnite account."], ["stache", "I got a win last week."], ["curly", "Bot lobby."]]}
 ];
 let STORY=null;
 function playStory(i){STORY={s:i,i:0,who:STORIES[i].lines[0][0]};screen('storyScr');renderStory()}
 function renderStory(){
   const st=STORIES[STORY.s],ln=st.lines[STORY.i];STORY.who=ln[0];
   $('storyWho').textContent=nm(byId(ln[0]));$('storyText').textContent=ln[1];
-  $('storyStep').textContent=st.title+'  ·  '+(STORY.i+1)+' / '+st.lines.length;
+  $('storyStep').textContent=st.title+'  ·  '+(STORY.i+1)+'\u00a0/\u00a0'+st.lines.length;
   $('storyNext').textContent=STORY.i===st.lines.length-1?'Done':'Next';SFX.voice(ln[0],4);
 }
 function nextStory(){const st=STORIES[STORY.s];if(STORY.i<st.lines.length-1){STORY.i++;renderStory()}else{STORY=null;showGoals('stories')}}
