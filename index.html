@@ -22,7 +22,8 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 .home .leadcard{padding:5px 12px 5px 8px}.home .leadcard canvas{height:48px}.home .lcname{font-size:1.18rem}
 .home .btn.big{padding:10px 18px;font-size:clamp(1.45rem,6vw,1.9rem)}
 .home .modepick{padding-block:10px}
-.home .playrow{margin-bottom:5px}
+.home .playrow{margin-bottom:5px;grid-template-columns:calc((100% - 30px) / 4 * 2.5 + 20px) minmax(0,1fr);column-gap:10px}
+.home .playrow .modepick{width:100%;min-width:0;padding-inline:6px;font-size:clamp(.82rem,3.6vw,1rem);line-height:1.1;white-space:normal;text-wrap:balance}
 .home .dockbtn{padding:7px 6px;gap:2px;font-size:.86rem}
 @media (min-height:541px){.home .logo{margin-top:clamp(0px,2.5vh,28px)}}
 .drcard{padding:4px 10px}.drcard canvas{height:32px}
