@@ -1416,6 +1416,7 @@ function lavaUpdate(dt){
       const spd=Math.hypot(S.vx,S.vy),top=s.th>.5&&S.vx>0&&S.vy<0;S.swing=null;
       if(top&&!a.gone){S.vx*=1.22;S.vy*=1.12;say('BIG LAUNCH!',LX+30,GY-62,'#ffd166')}
       if(S.leader.id==='curly'&&!a.gone){S.vx*=1.08;if(S.vy<0)S.vy*=1.1}
+      if(S.leader.id==='patch'&&!a.gone&&!S.bubble&&S.t-(S.lgT||-99)>25&&Math.random()<.3){S.lgT=S.t;S.bubble={i:-1,text:'Let go and let God!',t:0};SFX.voice('patch',3)}
       S.vx=Math.max(S.vx,95);S.grabCD=.12;if(a.gone)say('The branch snapped!',LX,GY-50,'#ffb38a');
       S.air={peakDone:false,minGap:99,hit:false};
     }
@@ -2633,7 +2634,7 @@ const CHARGE_COST=60;
 const BFOOD={berry:{st:20,pts:10,say:'Berries!',col:'#e0608a',c2:'#8a2a5a',j:'bj_berry'},honey:{st:60,pts:40,say:'Honey!',col:'#f2c03a',c2:'#f2c03a',j:'bj_honey'},salmon:{st:35,pts:50,say:'Salmon!',col:'#f28a6a',c2:'#e07a5a',j:'bj_salmon'},bsnack:{st:15,pts:25,say:'Snack!',col:'#f2a541',c2:'#c0392b',j:'bj_snack'}};
 const PREY_LINES={"patch": ["Nope. Nope. Nope.", "Bear, I'm gonna poop all over you!"], "curly": ["Left side's open, go!", "Stay together, I got you."], "camo": ["COME ON BEAR! SQUARE UP!", "RAAAGH! *gorilla noises*"], "stache": ["I could fight it. Choosing not to.", "Manly retreat! MANLY RETREAT!"], "nathan": ["Everybody stay with me!", "I'll hold him off, GO!"]};
 const PANIC_GEN=["IT'S GAINING!",'Run run run!','Why is it so fast?!','Do NOT look back!','I hear breathing!','Throw it a snack!','Whose idea was this hike?!'];
-const LAST_WORDS={"patch": ["Should've stayed in bed.", "I'll tickle you from heaven, bear."], "curly": ["No.", "Good game. Rematch."], "camo": ["I almost had him!", "Worth it. *drum fill*"], "stache": ["Tell my mics I loved them.", "A manly end. Mostly."], "nathan": ["I did it for the boys!", "Stick to the plan, guys!"]};
+const LAST_WORDS={"patch": ["Should've stayed in bed.", "I'll tickle you from heaven, bear."], "curly": ["No.", "Good game. Rematch."], "camo": ["I almost had him!", "Worth it. *drum fill*"], "stache": ["Tell my mics I loved them.", "A manly end. Mostly."], "nathan": ["I did it for the boys!", "Stick to the plan, guys!","At least Jonah got a whale!"]};
 function bearCharge(){
   if(!S||S.mode!=='bear'||mode!=='play'||S.dead||S.chargeT>0||S.stam<CHARGE_COST)return;
   S.stam-=CHARGE_COST;S.chargeT=.7;S.shake=3;SFX.jump();say('CHARGE!',LX,GY-46,'#ffb347');
@@ -3844,7 +3845,7 @@ function startEvent(){
     S.evIn=25+Math.random()*25;return;
   }
   S.ev={type,t:0,dur:type==='rain'?16:14};
-  if(type==='rain'){S.flash=.6;SFX.thunder();toast('Rain rolled in');markSeen('rain',true)}
+  if(type==='rain'){S.flash=.6;SFX.thunder();toast('Rain rolled in');markSeen('rain',true);const hi=S.leader.id==='camo'?-1:S.crew.findIndex(c=>c.id==='camo');if(hi>-2&&(hi>=0||S.leader.id==='camo')&&S.mode!=='bear'&&!S.demo){S.bubble={i:hi,text:'Should we start building a boat?',t:0};SFX.voice('camo',3)}}
   else{toast('Night fell. Stay close.');markSeen('night',true)}
 }
 function endEvent(){
@@ -4209,7 +4210,8 @@ const STORIES=[
  {title:"Riding the Bear",need:17,lines:[["stache", "Can we talk about how we rode a bear today?"], ["camo", "I was on the bottom. My arms are now noodles."], ["curly", "Four guys on one bear. That's a D1 move."], ["nathan", "Honestly? Comfy. Like a couch."], ["patch", "A couch that eats people."], ["stache", "I tamed it with my bare hands. Like a man."], ["curly", "You screamed, Blake."], ["stache", "Manly screaming."]]},
  {title:"The Bear's Side of the Story",need:20,lines:[["nathan", "Okay, hear me out. What if the bear is the main character?"], ["stache", "Then the real question is: are WE the bad guys?"], ["patch", "Bro, it's 2am. Don't."], ["stache", "Think about it. We are in HIS woods."], ["camo", "*bear noises*"], ["curly", "Henry, that's worse."], ["nathan", "Daniel made it out of the lions' den. We can handle one bear."], ["patch", "Daniel didn't have Henry with him."]]},
  {title:"Clanker Sympathizer",need:23,lines:[["patch", "Nathan. Did you use AI to plan this hike?"], ["nathan", "...It helped with the route."], ["patch", "Clanker sympathizer."], ["curly", "Explains why we're lost."], ["stache", "To be fair, the robot has no free will. Blame Nathan."], ["camo", "BEEP BOOP. *robot noises*"], ["nathan", "It found us the lake, didn't it?"], ["patch", "The lake was on the sign, bro."]]},
- {title:"Sound Check",need:26,lines:[["stache", "Everyone quiet. I'm recording the forest."], ["camo", "*drums on a log*"], ["stache", "Henry. Great timing. Please stop."], ["camo", "*switches to banjo*"], ["stache", "That bear has incredible mic presence, by the way."], ["curly", "Want to mic the bear? Go ahead."], ["stache", "I could. I'm choosing not to."], ["patch", "If you get eaten, I'm taking your Fortnite account."], ["stache", "I got a win last week."], ["curly", "Bot lobby."]]}
+ {title:"Sound Check",need:26,lines:[["stache", "Everyone quiet. I'm recording the forest."], ["camo", "*drums on a log*"], ["stache", "Henry. Great timing. Please stop."], ["camo", "*switches to banjo*"], ["stache", "That bear has incredible mic presence, by the way."], ["curly", "Want to mic the bear? Go ahead."], ["stache", "I could. I'm choosing not to."], ["patch", "If you get eaten, I'm taking your Fortnite account."], ["stache", "I got a win last week."], ["curly", "Bot lobby."]]},
+ {title: "The Longest Prayer", need: 29, lines: [["nathan", "Alright boys, let's pray before we hit the trail."], ["nathan", "Lord, thank you for this day, the trail, the boys, the snacks..."], ["patch", "(whispering) He's doing the snacks one by one."], ["nathan", "...the trail mix, the M&Ms in the trail mix, even the raisins..."], ["camo", "*fake snoring*"], ["curly", "Amen."], ["nathan", "I wasn't done."], ["curly", "Amen."], ["stache", "Acoustically, this campfire is perfect for a worship sing-along."], ["stache", "Natural reverb off the trees. Warm low end."], ["camo", "*starts drumming on a log*"], ["nathan", "Alright. One song. Then bed."]]}
 ];
 let STORY=null;
 function playStory(i){STORY={s:i,i:0,who:STORIES[i].lines[0][0]};screen('storyScr');renderStory()}
