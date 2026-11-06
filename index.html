@@ -1285,16 +1285,17 @@ function genCore(){
       if(late&&len>220&&Math.random()<.14){const mx=x0+50;S.muds.push({x0:mx,x1:mx+50+Math.random()*40})}
       let ox=x0+spd*0.5;const gapMin=spd*0.62;
       const RIDE=S.mode==='fire'&&S.ff==='ride';
+      const RAMP=!S.tut&&(S.mode==='classic'||S.mode==='night'||S.mode==='solo'),rk=RAMP?S.genX*(S.daily?1.5:1)/8000:1,rP=RAMP?.9-.6/(1+rk):.6,rG=RAMP?1+.9/(1+rk):1,rX=RAMP?40+140/(1+rk):90,early=RAMP&&S.genX>500;
       while(ox<x1-50){
         if(RIDE&&ox<4200){ox+=50;continue}
-        if(Math.random()<(RIDE?.45:.6)){
+        if(Math.random()<(RIDE?.45:rP)){
           const q=Math.random();let type=q<.6?'rock':'log';
-          if(late&&q<.07)type='moose';else if(late&&q<.14)type='coon';
+          if((late||early)&&q<.07)type='moose';else if((late||early)&&q<.14)type='coon';
           if(S.mode==='uphill'&&late&&(type==='moose'||type==='coon'))type=upAlt(seg.y0)>8500?'goat':'coon';
           const blz=S.mode==='fire'&&S.ff==='blaze';if(blz&&q>.3&&!(late&&q<.14))type=pickBurn();if(RIDE){type=q<.75?'rock':'log';if(Math.random()<Math.max(0,Math.min(.33,(ox-3000)/15000*.33)))type='branch'}if(S.mode==='fire'&&S.ff==='blaze'&&late&&Math.random()<.07)type='falltree';
           const dim=type==='falltree'?[34,0]:type==='branch'?[26,0]:BURN[type]&&blz?[BURN[type].w,BURN[type].h]:{rock:[14,11],log:[24,9],moose:[22,20],coon:[12,8],goat:[15,15]}[type];
           if(ox+dim[0]<x1-30)S.obs.push({type,x:ox,w:dim[0],h:dim[1],hit:false,gy:segY(seg,ox+dim[0]/2),vx:type==='coon'?-55:0,burnable:blz&&!!BURN[type],state:type==='falltree'?'up':undefined});
-          ox+=dim[0]+gapMin*(blz&&BURN[type]?.45:RIDE?1.5:1)+Math.random()*90;
+          ox+=dim[0]+gapMin*(blz&&BURN[type]?.45:RIDE?1.5:rG)+Math.random()*rX;
         }else ox+=50;
       }
       if(Math.random()<.75){
@@ -3082,6 +3083,33 @@ function drawMoon(nk){
     disc(mx-4,my-3,3,'#dcd2b0');disc(mx+3,my+3,2,'#dcd2b0');disc(mx-2,my+6,1,'#dcd2b0');disc(mx+5,my-5,1,'#dcd2b0');px(ctx,'#ffffff',mx-6,my-7,3,1);
     ctx.globalAlpha=1;
 }
+/* constellations: a random handful per run, each named once */
+const CONS=[
+ {n:'Big Dipper',p:[[0,8],[9,10],[17,9],[24,12],[26,20],[37,22],[38,13]],l:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]},
+ {n:'Little Dipper',p:[[0,0],[7,3],[13,7],[18,12],[20,19],[28,20],[26,13]],l:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]},
+ {n:'Orion',p:[[4,4],[20,6],[9,16],[12,17],[15,18],[2,30],[22,29],[12,0]],l:[[0,7],[7,1],[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]]},
+ {n:'Cassiopeia',p:[[0,4],[8,12],[15,6],[23,13],[30,3]],l:[[0,1],[1,2],[2,3],[3,4]]},
+ {n:'Cygnus',p:[[15,0],[15,10],[15,20],[15,32],[3,8],[27,12]],l:[[0,1],[1,2],[2,3],[4,1],[1,5]]},
+ {n:'Scorpius',p:[[4,3],[7,10],[9,16],[14,20],[18,25],[19,32],[24,35],[30,33],[32,28],[0,7],[8,0]],l:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[0,9],[0,10]]},
+ {n:'Leo',p:[[0,18],[5,12],[8,6],[14,4],[18,8],[24,16],[34,20],[28,24]],l:[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,0]]},
+ {n:'Pleiades',p:[[0,4],[4,0],[7,3],[5,7],[10,6],[2,9]],l:[],big:1},
+ {n:'The Banjo',p:[[0,10],[6,4],[12,10],[6,16],[24,4],[28,1]],l:[[0,1],[1,2],[2,3],[3,0],[2,4],[4,5]]},
+ {n:"Henry's Flex",p:[[0,22],[12,22],[17,14],[13,5],[8,0],[20,8]],l:[[0,1],[1,2],[2,3],[3,4],[2,5],[5,3]]},
+ {n:'The Nap',p:[[0,8],[8,8],[0,16],[8,16],[12,0],[17,0],[12,5],[17,5]],l:[[0,1],[1,2],[2,3],[4,5],[5,6],[6,7]]},
+ {n:'Big Pinecone',p:[[8,0],[2,8],[14,8],[0,16],[16,16],[4,24],[12,24],[8,29]],l:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7],[1,2],[3,4]]},
+ {n:'Fart Cloud',p:[[0,10],[5,4],[12,2],[19,5],[24,11],[18,15],[6,15]],l:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0]]},
+ {n:'Hungry Bear',p:[[0,4],[4,0],[8,6],[18,6],[22,0],[26,4],[24,16],[13,22],[2,16]],l:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,0]]}];
+function drawCons(nk){
+  if(!S.cons){const ids=[...CONS.keys()].sort(()=>Math.random()-.5).slice(0,3),slots=[.15,.29,.58].sort(()=>Math.random()-.5);
+    S.cons={list:ids.map((i,k)=>({i,fx:slots[k]+Math.random()*.04,fy:Math.random()})),next:0,t:0}}
+  const C=S.cons,top=(GY-60+oy)*.32;
+  C.list.forEach((c,k)=>{const d=CONS[c.i],x0=Math.round(W*c.fx),y0=Math.round(6+c.fy*Math.max(4,top-30));
+    ctx.globalAlpha=.45*nk;ctx.strokeStyle='#cfe3ff';ctx.lineWidth=.7;ctx.beginPath();for(const [a,b] of d.l){ctx.moveTo(x0+d.p[a][0]+.5,y0+d.p[a][1]+.5);ctx.lineTo(x0+d.p[b][0]+.5,y0+d.p[b][1]+.5)}ctx.stroke();
+    d.p.forEach((q,j)=>{ctx.globalAlpha=nk*(.75+.25*Math.sin(S.t*2+j+k));px(ctx,'#ffffff',x0+q[0],y0+q[1],2,2)});
+    if(C.next===k&&nk>.4){C.t+=1/60;const a=Math.min(1,C.t*2,Math.max(0,(4.5-C.t)/1.2));if(a>0){const xs=d.p.map(q=>q[0]),ys=d.p.map(q=>q[1]);ctx.globalAlpha=a*nk;ctx.font='700 7px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.fillText(d.n,x0+(Math.min(...xs)+Math.max(...xs))/2,y0+Math.max(...ys)+8);ctx.textAlign='left'}
+      if(C.t>4.5){C.next++;C.t=-2}}else if(C.next===k&&C.t<0)C.t+=1/60});
+  ctx.globalAlpha=1;
+}
 function drawSkyExtras(tod){
   const t=S.t,nk=nightK(tod);
   if(nk>.02){
@@ -3400,8 +3428,10 @@ function render(){
   drawPrints(d);drawPB(d);
   if(S.mode==='uphill'&&S.upCamps)for(const c of S.upCamps)drawUpCamp(c,Math.round(c.x-d));
   if(S.mode==='bear'&&S.htrees){S.htrees=S.htrees.filter(it=>it.x>d-120);for(const it of S.htrees)drawHoneyTree(it,Math.round(it.x-d))}
+  const NKo=(S.demo||S.mode==='fire')?0:nightK(todAt()),LRo=(look(S.leader).lamp?135:90)*(S.set==='owl'?1.5:1)*(S.mode==='night'&&look(S.leader).lamp?1.15:1);
+  const sil=(o,x,fn)=>{if(NKo<=0)return;const dd=Math.abs(x+o.w/2-(LX-30)),a=NKo*Math.max(0,Math.min(1,(dd-LRo*.7)/(LRo*1.2)));if(a<.03)return;ctx.globalAlpha=a;PXC='#020306';fn();PXC=null;ctx.globalAlpha=1};
   for(const o of S.obs){const x=Math.round(o.x-d),t=Math.round(o.gy)-o.h;if(x>W+4||x+o.w<-4)continue;if(o.smashed){o.smashed+=1/60;if(o.smashed<.8){ctx.globalAlpha=1-o.smashed;outlined(ctx,()=>drawObstacle(o,Math.round(x+o.smashed*120),Math.round(o.gy-o.h-o.smashed*60)));ctx.globalAlpha=1}continue}
-  if(o.type==='branch'){outlined(ctx,()=>drawBranch(o,x));continue}if(o.type==='puddle'){drawPuddle(o,x);continue}if(o.type==='sprinkler'||o.type==='ranger'){drawWaterHazard(o,x);continue}if(!o.burnable&&o.type==='falltree'){drawFallTree(o,x);continue}if(!o.burnable&&o.type==='spot'){drawSpot(o,x);continue}if(o.burnable){outlined(ctx,()=>drawBurnable(o,x,S.t));continue}outlined(ctx,()=>drawObstacle(o,x,t))}
+  if(o.type==='branch'){outlined(ctx,()=>drawBranch(o,x));sil(o,x,()=>drawBranch(o,x));continue}if(o.type==='puddle'){drawPuddle(o,x);continue}if(o.type==='sprinkler'||o.type==='ranger'){drawWaterHazard(o,x);continue}if(!o.burnable&&o.type==='falltree'){drawFallTree(o,x);continue}if(!o.burnable&&o.type==='spot'){drawSpot(o,x);continue}if(o.burnable){outlined(ctx,()=>drawBurnable(o,x,S.t));continue}outlined(ctx,()=>drawObstacle(o,x,t));sil(o,x,()=>drawObstacle(o,x,t))}
   if(S.fstar){const f=S.fstar,q=starPos(f);drawFallingStar(q.x-d,q.y,f.t)}
   for(const it of S.items){const x=it.x-d,y=it.y+(it.k==='honey'?Math.sin(S.t*2+it.x)*.5:Math.sin(S.t*4+it.x*.1)*1.5);if(x<-10||x>W+10)continue;if(it.k!=='cone'&&it.k!=='mix')drawItem(it,x,y);outlined(ctx,()=>drawItem(it,x,y))}
   MUD=S.muddy;
@@ -3463,7 +3493,7 @@ function render(){
   if(S.mode==='fire'&&!S.demo)drawFireFX();
   if(tod.dark>0){ctx.fillStyle='rgba(8,12,26,'+tod.dark.toFixed(3)+')';ctx.fillRect(0,0,W+2,viewH)}
   drawWeather();
-  {const nk2=nightK(tod);drawNightLife(nk2);drawFireLight(nk2)}
+  {const nk2=nightK(tod);drawNightLife(nk2);drawFireLight(nk2);if(!S.demo&&nk2>.02&&!(S.mode==='fire'&&S.ff==='lava'))drawCons(nk2*.7)}
   {const nk=S.demo?0:Math.max(S.mode==='night'?1:0,S.ev&&S.ev.type==='night'?Math.max(0,Math.min(1,S.ev.t/1.2)):0,Math.min(1,tod.dark*2.2)),g=groundY(S.dist+LX);
    if(nk>0&&g!=null){const sy=g+oy-Math.round(S.camY);ctx.save();ctx.translate(LX,sy+2);ctx.scale(1,.22);const lg=ctx.createRadialGradient(0,0,4,0,0,90);
      lg.addColorStop(0,'rgba(255,214,140,'+(.3*nk)+')');lg.addColorStop(1,'rgba(255,214,140,0)');ctx.fillStyle=lg;ctx.fillRect(-95,-95,190,190);ctx.restore()}}
