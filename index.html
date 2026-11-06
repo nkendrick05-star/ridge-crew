@@ -742,7 +742,7 @@ function petUpdate(dt){
   if(P.air){
     P.vy+=G*dt;P.y+=P.vy*dt;const g=groundY(wx);
     if(P.vy>0&&g!=null&&!petGap(wx)&&P.y>=g-1){P.y=g;P.vy=0;P.air=false;if(P.big&&!PXC)puff(wx,g,4)}
-    if(P.y>GY+140){const g2=groundY(wx+20);P.y=(g2!=null?g2:S.lastGY)-40;P.vy=0}
+    {const ref=g!=null?g:S.lastGY;if(P.y>ref+120){let g2=null;for(let dx=10;dx<260&&g2==null;dx+=6)if(!petGap(wx+dx))g2=groundY(wx+dx);P.y=(g2!=null?g2:S.lastGY)-6;P.vy=0}}
   }
 }
 function petPos(xoff){
@@ -2698,8 +2698,18 @@ function chatter(){
 }
 function roar(){S.shake=7;S.mood=Math.max(0,S.mood-3);SFX.roar();say('ROAR',LX-S.bearBack+10,GY-52,'#ff6b5a')}
 function moveObs(dt){
-  for(const o of S.obs)if(o.vx){o.x+=o.vx*dt;const g=groundY(o.x+o.w/2);if(g!=null)o.gy=g;o.rot=(o.rot||0)+dt*o.vx*.08}
-  if(S.terr.k==='descent'&&S.mode!=='bear'&&S.mode!=='uphill'){S.rollIn-=dt;if(S.rollIn<=0){S.rollIn=3+Math.random()*3;const x=S.dist+W+30,g=groundY(x+8);if(g!=null){S.obs.push({type:'roll',x,w:16,h:16,vx:-115,gy:g,hit:false});toast('Rockslide!')}}}
+  /* moving animals (and rolling stuff) hop across gaps instead of walking on air */
+  for(const o of S.obs)if(o.vx){
+    o.rot=(o.rot||0)+dt*o.vx*.08;
+    if(o.hop){const h=o.hop;h.t+=dt;const k=Math.min(1,h.t/h.dur);o.x+=o.vx*dt;o.gy=h.y0+(h.y1-h.y0)*k-h.h*4*k*(1-k);if(k>=1){o.hop=null;o.gy=h.y1}continue}
+    const dir=Math.sign(o.vx),lead=dir<0?o.x-3:o.x+o.w+3;
+    if(groundY(lead)==null){
+      let e=lead;while(Math.abs(e-lead)<240&&groundY(e)==null)e+=dir*3;
+      const land=e+dir*(o.w/2+5),y1=groundY(land);
+      if(y1==null||Math.abs(e-lead)>=240){if(o.type==='roll')o.x=-1e6;else{o.vx=-o.vx}continue}
+      const cx=o.x+o.w/2,d=Math.abs(land-cx);o.hop={t:0,dur:Math.max(.25,d/Math.abs(o.vx)),y0:o.gy,y1,h:8+d*.18};continue}
+    o.x+=o.vx*dt;const g=groundY(o.x+o.w/2);if(g!=null)o.gy=g}
+  /* no rockslides on descents: rocks don't roll uphill. They only come down at you in Summit Climb. */
   if(S.mode==='uphill'&&!S.demo&&S.dist>2500&&!S.dead){S.rollIn-=dt;if(S.rollIn<.75&&!S.rollWarn&&S.rollIn>0){S.rollWarn=true;S.shake=Math.max(S.shake,3);SFX.rumble();for(let k=0;k<6;k++)S.parts.push({x:S.dist+W-10-Math.random()*50,y:S.y-90-Math.random()*20,vx:-30-Math.random()*40,vy:20+Math.random()*30,life:.9,c:k%2?'#7d7a73':'#a19d93',s:2,g:1})}if(S.rollIn<=0){S.rollWarn=false;const al=S.upMax;S.rollIn=Math.max(2.2,6.5-(al-UP_BASE)/2500)+Math.random()*3;const x=S.dist+W+30,g=groundY(x+8),near=S.upCamps.some(c=>!c.done&&c.x>S.dist&&c.x-S.dist<W+160);if(g!=null&&!near&&!S.obs.some(o=>Math.abs(o.x-x)<60)){const big=al>10000&&Math.random()<.35;S.obs.push({type:'roll',x,w:big?20:16,h:big?20:16,vx:big?-95:-125,gy:g,hit:false,bounce:1,big});markSeen('rockslide');if(Math.random()<.4)say(pick(['ROCK!','Heads up!','Incoming!']),LX+60,GY-56,'#ffb38a')}}}
 }
 function splash(r){
@@ -4193,7 +4203,7 @@ const JOURNAL=[
  {id:'coon',ic:'RC',name:'Raccoon',desc:'Steals pinecones.'},
  {id:'owl',ic:'OW',name:'Owl',desc:'Only out at night.'},
  {id:'fireflies',ic:'FF',name:'Fireflies',desc:'Around the campfire.'},
- {id:'rockslide',ic:'RS',name:'Rockslide',desc:'Comes on descents.'},
+ {id:'rockslide',ic:'RS',name:'Rockslide',desc:'Comes down at you in Summit Climb.'},
  {id:'river',ic:'RV',name:'River crossing',desc:'Hop the stones.'},
  {id:'bridge',ic:'BG',name:'Rope bridge',desc:'Slow and wobbly.'},
  {id:'mud',ic:'MD',name:'Mud pit',desc:'Slows the crew.'},
