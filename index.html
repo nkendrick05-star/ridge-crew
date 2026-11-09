@@ -1355,8 +1355,8 @@ function genCore(){
         const cg=13+.25*(spd*.6/(n-1)-13),ch=34;for(let i=0;i<n;i++){const ix=cx+i*cg,u=i/(n-1);S.items.push({k:'cone',x:ix,y:segY(seg,ix)-14-4*u*(1-u)*ch,got:false})}
       }
       if(S.mode==='fire'&&S.ff==='blaze'){
-        if(Math.random()<.35){const n=2+(Math.random()*2|0),mx=x0+40+Math.random()*Math.max(10,len-120);for(let i=0;i<n;i++)S.items.push({k:'mallow',x:mx+i*16,y:segY(seg,mx+i*16)-30-i*4,got:false})}
-        if(late&&Math.random()<.22){const hx=x0+len*.6,kind=pick(['puddle','puddle','sprinkler','ranger']);if(!S.obs.some(o=>Math.abs(o.x-hx)<50))S.obs.push({type:kind,x:hx,w:kind==='puddle'?30:kind==='ranger'?10:8,h:kind==='puddle'?2:kind==='ranger'?0:4,hit:false,gy:segY(seg,hx),vx:0})}
+        if(false){const n=2+(Math.random()*2|0),mx=x0+40+Math.random()*Math.max(10,len-120);for(let i=0;i<n;i++)S.items.push({k:'mallow',x:mx+i*16,y:segY(seg,mx+i*16)-30-i*4,got:false})}
+        if(late&&Math.random()<.22){const hx=x0+len*.6,kind=pick(['puddle','puddle','ranger']);if(!S.obs.some(o=>Math.abs(o.x-hx)<50))S.obs.push({type:kind,x:hx,w:kind==='puddle'?30:kind==='ranger'?10:8,h:kind==='puddle'?2:kind==='ranger'?0:4,hit:false,gy:segY(seg,hx),vx:0})}
       }
       if(S.mode!=='bear'&&!drHard()&&!(S.mode==='fire'&&S.ff==='ride')&&Math.random()<.08+.06*(ups.snack||0))S.items.push({k:'mix',x:x0+len*.55,y:segY(seg,x0+len*.55)-44,got:false});
       if(S.mode==='bear'&&!S.demo&&len>60){if(Math.random()<.5)S.items.push({k:'berry',x:x0+len*.3,y:segY(seg,x0+len*.3)-7,got:false});if(Math.random()<.2){const hv={k:'honey',x:x0+len*.72,y:segY(seg,x0+len*.72)-48,gy:segY(seg,x0+len*.72),got:false};S.items.push(hv);(S.htrees||(S.htrees=[])).push(hv)}}
@@ -1416,7 +1416,7 @@ function caughtEat(reason){
 }
 /* ---------- forest fire mode: three random variants ---------- */
 const FF_INFO={
-  blaze:{name:'The Crew Is the Fire',intro:l=>nm(l)+' caught fire! Burn stuff to stay lit. Dodge the water!'},
+  blaze:{name:'The Crew Is the Fire',intro:l=>nm(l)+' caught fire! Burn stuff to GROW. Water shrinks you. Bigger fire, more points, more planes.'},
   lava:{name:'Lava Floor Forest',intro:()=>'The floor is lava! Hold to grab and climb, let go to swing.'},
   ride:{name:'Ride the Bear',intro:()=>'Bear rodeo! When he bucks one way, tap the other side. Get to the lake at 1,500 m!'}
 };
@@ -1429,19 +1429,28 @@ const ffOn=v=>S&&S.mode==='fire'&&(!v||S.ff===v);
 /* --- blaze: you are the fire --- */
 function burnIt(o){
   const b=BURN[o.type];o.hit=true;o.burning=0.001;
-  if(S.t-S.lastBurn<1.6)S.combo=Math.min(9,S.combo+1);else S.combo=1;S.lastBurn=S.t;S.bestCombo=Math.max(S.bestCombo,S.combo);
+  S.lastBurn=S.t;S.combo=(S.ff==='blaze'?fStageOf(S.heat):0)+1;
   const pts=b.pts*S.combo;S.burnPts+=pts;S.burned++;S.heat=Math.min(100,S.heat+b.heat);
-  S.burnTypes[o.type]=(S.burnTypes[o.type]||0)+1;if(o.type==='outhouse')markSeen('ff_outhouse');if(S.combo>=9)unlockBadge('ff_combo9');if(BIGBURN[o.type]){S.kabooms=(S.kabooms||0)+1;if(S.kabooms>=3)unlockBadge('ff_kaboom')}
-  if(S.combo>=5&&S.infernoT<=0){S.infernoT=4.5;unlockBadge('ff_inferno');markSeen('ff_inferno');say('INFERNO!',LX,GY-70,'#ff5a1a');SFX.roar();S.shake=8}
+  S.burnTypes[o.type]=(S.burnTypes[o.type]||0)+1;if(o.type==='outhouse')markSeen('ff_outhouse');if(BIGBURN[o.type]){S.kabooms=(S.kabooms||0)+1;if(S.kabooms>=3)unlockBadge('ff_kaboom')}
   SFX.crackle(1);SFX.crackle(.8);if(BIGBURN[o.type]){SFX.roar();S.shake=7;say('KABOOM! +'+pts,LX,GY-46,'#ffd166');
     for(const q of S.obs)if(q!==o&&q.burnable&&!q.hit&&Math.abs((q.x+q.w/2)-(o.x+o.w/2))<80)q.chainT=.25+Math.random()*.25}
   else say((S.combo>1?'x'+S.combo+' ':'')+'+'+pts,LX+10,GY-40,'#ffb347');
   for(let i=0;i<10;i++)S.parts.push({x:o.x+o.w/2,y:o.gy-o.h/2,vx:(Math.random()-.5)*140,vy:-60-Math.random()*120,life:.6,c:i%2?'#ffb347':'#ff6a2a',s:2,g:1});
 }
+const FSTG=[{n:'SPARK',c:'#ffd166'},{n:'BLAZE',c:'#ffb347'},{n:'INFERNO',c:'#ff7a2a'},{n:'FIRESTORM',c:'#ff4a1a'}],fStageOf=h=>h>=85?3:h>=60?2:h>=30?1:0;
 function blazeUpdate(dt){
-  let drain=4+Math.min(5,S.dist/4000);if(S.ev&&S.ev.type==='rain')drain*=3;if(S.rainCloud)drain+=7;
-  S.infernoT=Math.max(0,S.infernoT-dt);if(S.infernoT>0)drain=0;
-  S.heat-=drain*dt;
+  if(S.fStage==null){S.fStage=0;S.heat=Math.min(S.heat,27);S.drops=[]}
+  const stg=fStageOf(S.heat);
+  if(stg>S.fStage){S.stCard={n:FSTG[stg].n,m:'x'+(stg+1)+' points',t:0,c:FSTG[stg].c};SFX.roar();S.shake=8;if(stg>=2){unlockBadge('ff_inferno');markSeen('ff_inferno')}if(stg>=3)unlockBadge('ff_combo9')}
+  S.fStage=stg;S.combo=stg+1;S.bestCombo=Math.max(S.bestCombo,S.combo);
+  let drain=(S.t<9?.8:3)+stg*1.7;if(S.ev&&S.ev.type==='rain')drain*=2;
+  S.infernoT=0;S.heat-=drain*dt;
+  /* the bigger the fire, the harder the planes hunt it: shadows show where the water lands */
+  for(const dp of S.drops){dp.t+=dt;if(!dp.done&&dp.t>=dp.warn){dp.done=true;const g=groundY(dp.x);SFX.splash();
+      for(let i=0;i<18;i++)S.parts.push({x:dp.x+(Math.random()-.5)*40,y:(g||S.y)-2,vx:(Math.random()-.5)*160,vy:-90-Math.random()*140,life:.7,c:i%2?'#9fd0e8':'#e8f6fb',s:2,g:1});
+      const lx0=S.dist+LX;if(Math.abs(lx0-dp.x)<26&&g!=null&&S.y>g-26){S.heat-=30*(S.set==='firefighter'?.6:1);S.splashes++;S.shake=6;say('DIRECT HIT! PSSSHH',LX,GY-50,'#cfe3ef')}
+      if(g!=null)S.obs.push({type:'puddle',x:dp.x-23,w:46,h:2,hit:Math.abs(lx0-dp.x)<30,gy:g,vx:0})}}
+  S.drops=S.drops.filter(dp=>dp.t<dp.warn+.4);
   for(const o of S.obs)if(o.chainT>0){o.chainT-=dt;if(o.chainT<=0&&!o.hit)burnIt(o)}
   /* 21. fire ring from a hot jump */
   if(S.ring){S.ring.t+=dt;const r=S.ring.t/.35*48,lx=S.dist+LX;for(const o of S.obs)if(o.burnable&&!o.hit&&Math.abs(o.x+o.w/2-lx)<r)burnIt(o);if(S.ring.t>.4)S.ring=null}
@@ -1449,7 +1458,7 @@ function blazeUpdate(dt){
   for(const m of S.mallows){m.t+=dt;if(!m.done&&m.t>=2){m.done=true;if(S.heat>40){S.burnPts+=100;S.perfect=(S.perfect||0)+1;if(S.perfect>=10)unlockBadge('ff_mallow');say('Perfectly toasted! +100',LX,GY-56,'#f2e6c8')}else{S.burnPts+=20;say('Burnt marshmallow +20',LX,GY-56,'#c8935a')}}}
   S.mallows=S.mallows.filter(m=>!m.done||m.t<2.2);
   /* 19. rain cloud that follows you */
-  S.cloudIn-=dt;if(S.cloudIn<=0&&!S.rainCloud&&S.dist>4000){S.rainCloud={t:0};S.cloudIn=30+Math.random()*20;say('A rain cloud is following you!',LX+30,GY-62,'#9fd0e8')}
+  S.cloudIn=99;if(false){S.rainCloud={t:0};S.cloudIn=30+Math.random()*20;say('A rain cloud is following you!',LX+30,GY-62,'#9fd0e8')}
   if(S.rainCloud){S.rainCloud.t+=dt;if(S.rainCloud.t>6){S.rainCloud=null;say('Cloud gone. Burn baby burn',LX,GY-56,'#ffb347')}}
   /* 19. sprinklers + ranger hoses */
   const lx=S.dist+LX;
@@ -1461,7 +1470,7 @@ function blazeUpdate(dt){
   for(const o of S.obs)if(o.burning)o.burning+=dt;
   /* the crew throws water from behind */
   S.waterIn-=dt;
-  if(S.waterIn<=0&&S.crew.length){S.waterIn=2.2+Math.random()*2.6;const t0=.9,g=groundY(S.dist+LX)||S.y,pred=S.grounded?S.y:Math.min(g,S.y+S.vy*t0+.5*G*t0*t0);S.water.push({x:LX-CB(0),y:histY(CB(0))-20,t:0,dur:t0,ty:pred-14});
+  if(S.waterIn<=0&&false){S.waterIn=2.2+Math.random()*2.6;const t0=.9,g=groundY(S.dist+LX)||S.y,pred=S.grounded?S.y:Math.min(g,S.y+S.vy*t0+.5*G*t0*t0);S.water.push({x:LX-CB(0),y:histY(CB(0))-20,t:0,dur:t0,ty:pred-14});
     if(S.dist>7200&&S.crew.length>1)S.water.push({x:LX-CB(1),y:histY(CB(1))-20,t:-.35,dur:t0,ty:S.y-14});say(pick(['Hold still!','Stop drop and roll!','Water incoming!','We are helping!']),LX-40,GY-58,'#9fd0e8')}
   for(const w of S.water){w.t+=dt;if(!w.done&&w.t>=w.dur){w.done=true;
     if(S.y>w.ty-8&&S.y-24<w.ty+8&&S.infernoT<=0){S.heat-=18*(S.set==='firefighter'?.6:1);S.splashes++;SFX.splash();S.combo=1;say('PSSHHH',LX,GY-44,'#cfe3ef');for(let i=0;i<10;i++)S.parts.push({x:S.dist+LX,y:S.y-14,vx:(Math.random()-.5)*90,vy:-80-Math.random()*90,life:.6,c:'#cfe3ef',s:2,g:1})}
@@ -1791,10 +1800,11 @@ function ffShared(dt){
   S.emberFx=S.emberFx.filter(e=>e.t<1.2);
   /* 9. firefighting plane */
   S.planeIn=ride?99:(S.planeIn==null?18+Math.random()*10:S.planeIn)-dt;
-  if(S.planeIn<=0&&!S.plane){S.planeIn=26+Math.random()*14;S.plane={x:W+50,t:0,dropped:false};markSeen('ff_bomber');SFX.plane&&SFX.plane()}
+  if(blaze&&!S.plane)S.planeIn=Math.min(S.planeIn,[99,11,7.5,5][S.fStage||0]+Math.random()*3);
+  if(S.planeIn<=0&&!S.plane&&!(blaze&&!(S.fStage>0))){S.planeIn=blaze?[99,11,7.5,5][S.fStage||0]+Math.random()*3:26+Math.random()*14;S.plane={x:W+50,t:0,dropped:false};markSeen('ff_bomber');SFX.plane&&SFX.plane()}
   if(S.plane){const p=S.plane;p.t+=dt;p.x-=150*dt;
     if(!p.dropped&&p.x<W*(blaze?.92:.55)){p.dropped=true;p.dropT=0;
-      if(blaze){const wx=S.dist+p.x+150,g=groundY(wx);if(g!=null)S.obs.push({type:'puddle',x:wx,w:34,h:2,hit:false,gy:g,vx:0});say('Water bomber! Jump the puddle',LX+40,GY-60,'#9fd0e8')}
+      if(blaze){const lead=Math.min(260,speed()*1.15);(S.drops=S.drops||[]).push({x:S.dist+LX+lead,t:0,warn:1.15});if(S.fStage>=3)S.drops.push({x:S.dist+LX+lead+90,t:-.35,warn:1.15});say(S.fStage>=3?'Double drop! Watch the shadows':'Water bomber! Watch the shadow',LX+40,GY-60,'#9fd0e8')}
       else{S.cool=7;S.cones+=10;say('Water drop! Fire backs off (+10)',LX+40,GY-60,'#9fd0e8')}}
     if(p.dropped)p.dropT+=dt;if(p.x<-60)S.plane=null}
   /* 6. smoke banks */
@@ -2175,8 +2185,9 @@ function drawFFActors(d){
   if(S.ff==='blaze'){
     for(const tr of S.trail){const x=Math.round(tr.x-d),k=1-tr.t/3.6;if(x<-6||x>W+6)continue;const g=groundY(tr.x);if(g==null)continue;drawFlame(ctx,x,Math.round(g),2+k*6,t,tr.x)}
     for(let i=0;i<S.crew.length;i++){const back=CB(i),y=histY(back);px(ctx,'#5aa0d8',LX-back+5,Math.round(y)-12,3,5);px(ctx,'#9fd0f2',LX-back+5,Math.round(y)-12,1,4)}
-    const inf=S.infernoT>0,hk=inf?2.2:S.heat>80?1.4:S.heat<25?.35:.5+.5*(S.heat/100),y=Math.round(S.y);
-    if(hk>1.2&&!PXC){const gl=ctx.createRadialGradient(LX,y-14,2,LX,y-14,inf?44:30);gl.addColorStop(0,'rgba(255,170,60,.55)');gl.addColorStop(1,'rgba(255,120,40,0)');ctx.fillStyle=gl;ctx.fillRect(LX-46,y-60,92,92);
+    const stg=S.fStage||0,inf=stg>=3,hk=[.45,.85,1.45,2.2][stg]+.12*Math.sin(t*3),y=Math.round(S.y);
+    for(const dp of S.drops||[]){const x=Math.round(dp.x-d),g=groundY(dp.x);if(g==null||x<-30||x>W+30)continue;const k=Math.max(0,Math.min(1,dp.t/dp.warn));if(!dp.done&&!PXC){ctx.globalAlpha=.25+.45*k;ctx.fillStyle='#0a1a2a';ctx.beginPath();ctx.ellipse(x,Math.round(g),8+18*k,2+2*k,0,0,6.283);ctx.fill();ctx.globalAlpha=1;if(k>.55){for(let i=0;i<10;i++){const yy=Math.round(g-90+(k-.55)/.45*90-hash(i)*30);if(yy<g)px(ctx,i%2?'#9fd0e8':'#cfe3ef',x-16+Math.round(hash(i+5)*32),yy,2,5)}}}}
+    if(hk>.8&&!PXC){const gl=ctx.createRadialGradient(LX,y-14,2,LX,y-14,inf?60:stg>=2?42:30);gl.addColorStop(0,'rgba(255,170,60,.55)');gl.addColorStop(1,'rgba(255,120,40,0)');ctx.fillStyle=gl;ctx.fillRect(LX-46,y-60,92,92);
       for(let j=0;j<(inf?9:6);j++){const a=j/(inf?9:6)*Math.PI*2+t*2;drawFlame(ctx,Math.round(LX+Math.cos(a)*(inf?13:10)),Math.round(y-14+Math.sin(a)*(inf?14:11)),5+hk*3,t,j+9)}}
     drawFlame(ctx,LX-1,y-24,7+7*hk,t,1);drawFlame(ctx,LX-5,y-16,4+5*hk,t,2);drawFlame(ctx,LX+4,y-15,4+5*hk,t,3);drawFlame(ctx,LX-7,y-6,3+3*hk,t,4);
     if(S.ring&&!PXC){const r=Math.round(S.ring.t/.35*48);for(let j=0;j<20;j++){const a=j/20*Math.PI*2;drawFlame(ctx,Math.round(LX+Math.cos(a)*r),Math.round(y-12+Math.sin(a)*r*.45),5,t,j)}}
@@ -2219,8 +2230,8 @@ function ffHud(cw,pad,f,shadow){
   if(S.ff==='blaze'){
     const bw=Math.round(Math.min(220,cw*.3)),bh=Math.round(f*.45),bx=Math.round(cw/2-bw/2),by=Math.round(pad+f*.2),k=Math.max(0,S.heat/100);
     ctx.fillStyle='rgba(20,30,24,.75)';ctx.fillRect(bx-2,by-2,bw+4,bh+4);ctx.fillStyle=k>.5?'#ff8a2a':k>.25?'#f2a541':'#ff5a4a';ctx.fillRect(bx,by,Math.round(bw*k),bh);
-    ctx.font='700 '+Math.round(f*.55)+'px "RCD","Pixelify Sans", monospace';ctx.fillStyle='#fff3dc';ctx.fillText('HEAT',cw/2,by+bh/2+1);
-    ctx.font='700 '+Math.round(f*.7)+'px "RCD","Pixelify Sans", monospace';shadow((S.infernoT>0?'INFERNO! ':'')+'Burned '+S.burned+(S.combo>1&&S.t-S.lastBurn<1.6?'   x'+S.combo+' combo':''),cw/2,pad+f*1.3,S.infernoT>0?'#ff5a1a':'#ffb347');
+    ctx.font='700 '+Math.round(f*.55)+'px "RCD","Pixelify Sans", monospace';ctx.fillStyle='#fff3dc';{const sg=S.fStage||0;ctx.fillStyle='rgba(255,243,220,.5)';for(const th of [30,60,85])ctx.fillRect(bx+Math.round(bw*th/100),by,1,bh);ctx.fillStyle='#fff3dc';ctx.fillText(FSTG[sg].n+'  x'+(sg+1),cw/2,by+bh/2+1)}
+    ctx.font='700 '+Math.round(f*.7)+'px "RCD","Pixelify Sans", monospace';shadow('Burned '+S.burned,cw/2,pad+f*1.3,'#ffb347');
     {const top=Object.entries(S.burnTypes).sort((a,b)=>b[1]-a[1]).slice(0,4);if(top.length){const isz=Math.round(f*.9),gap=isz*2.6,x0=cw/2-(top.length-1)*gap/2,yy=pad+f*2.25;
       top.forEach(([k,n],i)=>{const b=BURN[k];if(!b)return;const s2=Math.min(isz/b.h,isz*1.6/b.w)*.9;ctx.save();ctx.translate(x0+i*gap-isz*.6,yy+isz*.5);ctx.scale(s2,s2);drawBurnable({type:k,w:b.w,h:b.h,gy:0,x:0,burning:0},Math.round(-b.w/2),S.t);ctx.restore();
         ctx.font='700 '+Math.round(f*.55)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='left';shadow('x'+n,x0+i*gap+isz*.3,yy+isz*.2,'#fff3dc');ctx.textAlign='center'})}}
@@ -3857,6 +3868,7 @@ function render(){
     ctx.globalAlpha=.28;for(let i=0;i<9;i++){const y=Math.round(GY-90+hash(i)*100+oy),L=18+hash(i+4)*24,x=W-((S.t*520+hash(i+3)*W*2)%(W*1.6));px(ctx,'#ffffff',Math.round(x),y,Math.round(L),1)}ctx.globalAlpha=1;
   }
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.textBaseline='middle';
+  if(S.stCard&&!S.demo){const bc=S.stCard;bc.t+=1/60;const a=bc.t<.25?bc.t/.25:bc.t<1.6?1:Math.max(0,1-(bc.t-1.6)/.6);if(a<=0)S.stCard=null;else{ctx.globalAlpha=a;ctx.textAlign='center';const fs=Math.round(Math.max(30,sc*17)*(1+Math.max(0,.25-bc.t)*1.2)),y=Math.round(ch*.36);ctx.font='700 '+fs+'px "RCD","Pixelify Sans", monospace';ctx.fillStyle='rgba(30,10,4,.8)';ctx.fillText(bc.n+'!',cw/2+2,y+2);ctx.fillStyle=bc.c;ctx.fillText(bc.n+'!',cw/2,y);ctx.font='700 '+Math.round(fs*.4)+'px "RCD","Pixelify Sans", monospace';ctx.fillStyle='#fff3dc';ctx.fillText(bc.m,cw/2,y+fs*.8);ctx.globalAlpha=1}}
   if(S.bCard&&!S.demo){const bc=S.bCard;bc.t+=1/60;const a=bc.t<.5?bc.t/.5:bc.t<2.4?1:Math.max(0,1-(bc.t-2.4)/.9);
     if(a<=0)S.bCard=null;else{ctx.globalAlpha=a;ctx.textAlign='center';const fs=Math.round(Math.max(26,sc*14)),y=Math.round(ch*.36);
       ctx.font='700 '+fs+'px "RCD","Pixelify Sans", monospace';ctx.fillStyle='rgba(16,22,18,.75)';ctx.fillText(bc.n,cw/2+2,y+2);ctx.fillStyle='#fff3dc';ctx.fillText(bc.n,cw/2,y);
