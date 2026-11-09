@@ -4312,7 +4312,7 @@ async function submitScore(sc,meters,eaten){
 async function submitModes(m){try{await ensurePlayer();await rpc('rc_submit_modes',{p_code:ACC.code,p_modes:m});refreshBoard()}catch(e){}}
 setTimeout(()=>{if(ACC.code){const m=boardModes();if(Object.keys(m).length)submitModes(m)}},2500);
 function pushName(){if(ACC.code)rpc('rc_set_name',{p_code:ACC.code,p_name:myName||'',p_who:myWho||''}).then(refreshBoard).catch(()=>{})}
-const SYNC_KEYS=['rc_wallet','rc_owned','rc_equip','rc_ups','rc_xp','rc_badges','rc_missions','rc_journal','rc_life','rc_modebest','rc_bestdist','rc_seen','rc_best','rc_sel','rc_mode','rc_tut','rc_me','rc_name','rc_mute'];
+const SYNC_KEYS=['rc_wallet','rc_owned','rc_equip','rc_ups','rc_xp','rc_badges','rc_missions','rc_journal','rc_life','rc_modebest','rc_bestdist','rc_seen','rc_best','rc_sel','rc_mode','rc_tut','rc_me','rc_name','rc_mute','rc_onb2'];
 let pushT=null;
 function syncPush(){
   save('rc_t',String(Date.now()));if(!ACC.code)return;
@@ -5013,17 +5013,17 @@ let ONB=null;
 function showWho(next){openOnb(next,true)}
 function openOnb(next,short){
   const cur=icParse(myWho),wc=myWho&&byId(myWho);
-  ONB={step:0,next:next||showHome,short:!!short,name:myName||(wc?nm(wc):''),ic:cur?cur.id:(wc?'h_'+wc.id:'cone'),col:cur?cur.col:(Math.random()*IC_COL.length|0)};
+  ONB={step:0,next:next||showHome,short:!!short,name:myName||(wc?nm(wc):''),ic:cur?cur.id:(wc?'h_'+wc.id:'cone'),col:cur?cur.col:(Math.random()*IC_COL.length|0)};ONB.cs=HASCODE&&!(typeof ACC!=='undefined'&&ACC.code);
   mode='menu';hideNoBear();screen('onbScr');onbRender();
 }
 function onbFinish(){
   myName=ONB.name.trim().slice(0,20);myWho='ic:'+ONB.ic+':'+ONB.col;save('rc_name',myName);save('rc_me',myWho);save('rc_onb2','1');onbSync();
 }
 function onbRender(){
-  const box=$('onbCard');box.innerHTML='';const n=ONB.short?2:HASCODE?4:3;
-  const dots=el('div','ondots');for(let i=0;i<n;i++)dots.appendChild(el('i',i===(HASCODE||ONB.step<2?ONB.step:ONB.step-1)?'on':null));
+  const box=$('onbCard');box.innerHTML='';const n=ONB.short?2:ONB.cs?4:3;
+  const dots=el('div','ondots');for(let i=0;i<n;i++)dots.appendChild(el('i',i===(ONB.cs||ONB.step<2?ONB.step:ONB.step-1)?'on':null));
   const go=(lab,fn,dis)=>{const b=el('button','btn big',lab);b.type='button';b.disabled=!!dis;b.addEventListener('click',()=>{SFX.tap();fn()});return b};
-  const nextStep=()=>{if(ONB.step===1&&ONB.short){onbFinish();ONB.next();return}if(ONB.step===1){onbFinish();if(!HASCODE)ONB.step++}ONB.step++;onbRender()};
+  const nextStep=()=>{if(ONB.step===1&&ONB.short){onbFinish();ONB.next();return}if(ONB.step===1){onbFinish();if(!ONB.cs)ONB.step++}ONB.step++;onbRender()};
   if(ONB.step===0){
     box.append(el('h2',null,"What's your name?"),el('p','sub','This is what the crew sees on the leaderboard.'));
     const f=el('form');const inp=el('input');inp.maxLength=20;inp.autocomplete='nickname';inp.placeholder='Your name';inp.value=ONB.name;inp.setAttribute('aria-label','Your name');
@@ -5042,6 +5042,11 @@ function onbRender(){
     const back=el('button','linkbtn','Back');back.type='button';back.addEventListener('click',()=>{ONB.step=0;onbRender()});
     box.append(row,dots,go(ONB.short?'Save':'Next',nextStep),back);
   }else if(ONB.step===2){
+    if(!ACC.code&&!ONB.made){
+      box.append(el('h2',null,'Your save code'),el('p','sub','Your save code is your account. Played before on another phone? Type your code to bring everything over. New here? We will make you one.'));
+      const f=el('form','frow'),inp=el('input');inp.maxLength=16;inp.autocomplete='off';inp.setAttribute('autocapitalize','characters');inp.spellcheck=false;inp.placeholder='ABCD-EFGH-JKLM';inp.setAttribute('aria-label','Save code');
+      const rb=el('button','btn ghost','Restore');rb.type='submit';f.append(inp,rb);f.addEventListener('submit',e=>{e.preventDefault();restoreCode(inp.value,rb)});
+      box.append(f,dots,go("I'm new, make my code",()=>{ONB.made=true;onbRender()}));return}
     box.append(el('h2',null,'Your save code'),el('p','sub','This code is your account. If you get a new phone or clear your browser, type it in Settings to get everything back. Screenshot it or copy it somewhere safe.'));
     const cb=el('div','codebox'),cd=el('b',null,ACC.code||'Making your code...'),cp=el('button','btn ghost','Copy');cp.type='button';cp.disabled=!ACC.code;
     cp.addEventListener('click',()=>{if(!ACC.code)return;try{navigator.clipboard.writeText(ACC.code).then(()=>toast('Code copied')).catch(()=>toast('Copy blocked. Write it down.'))}catch(e){toast('Copy blocked. Write it down.')}});
@@ -5305,18 +5310,20 @@ function showSettings(){
 }
 $('setBtn').addEventListener('click',showSettings);
 $('copyCode').addEventListener('click',()=>{if(!ACC.code)return;try{navigator.clipboard.writeText(ACC.code).then(()=>toast('Code copied')).catch(()=>toast('Copy blocked. Write it down.'))}catch(e){toast('Copy blocked. Write it down.')}});
-$('restoreForm').addEventListener('submit',async e=>{
-  e.preventDefault();const code=$('restoreInput').value.trim().toUpperCase();if(code.replace(/[^A-Z0-9]/g,'').length<12){toast('Codes have 12 letters and numbers');return}
-  $('restoreBtn').disabled=true;$('restoreBtn').textContent='Checking...';
+async function restoreCode(raw,btn){
+  const code=String(raw||'').trim().toUpperCase();if(code.replace(/[^A-Z0-9]/g,'').length<12){toast('Codes have 12 letters and numbers');return}
+  btn.disabled=true;btn.textContent='Checking...';
   try{
     const r=await rpc('rc_load',{p_code:code});
     if(!r){toast("That code didn't match anyone");return}
     save('rc_pid',r.id);save('rc_code',code.replace(/[^A-Z0-9]/g,'').replace(/(.{4})(.{4})(.{4})/,'$1-$2-$3'));
     for(const k of SYNC_KEYS)if(r.data&&r.data[k]!=null)save(k,r.data[k]);save('rc_t',String((r.data&&r.data.t)||Date.now()));
+    if(!$('onbScr').hidden&&myWho&&myName){save('rc_me',myWho);save('rc_name',myName);save('rc_onb2','1');ACC.id=r.id;ACC.code=code;pushName()}
     toast('Progress restored');setTimeout(()=>location.reload(),700);
   }catch(err){toast("Can't reach the server. Check your connection.")}
-  finally{$('restoreBtn').disabled=false;$('restoreBtn').textContent='Restore'}
-});
+  finally{btn.disabled=false;btn.textContent='Restore'}
+}
+$('restoreForm').addEventListener('submit',e=>{e.preventDefault();restoreCode($('restoreInput').value,$('restoreBtn'))});
 $('setWho').addEventListener('click',()=>showWho(showSettings));
 $('nameForm').addEventListener('submit',e=>{
   e.preventDefault();const v=$('nameInput').value.trim().slice(0,20);if(!v){$('nameInput').focus();return}
