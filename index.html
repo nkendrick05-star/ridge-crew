@@ -3051,6 +3051,47 @@ function bearRoar(){
   for(let k=0;k<S.prey.length;k++){const p=preyPos(k);for(let n=0;n<3;n++)S.parts.push({x:S.dist+p.x,y:p.y-14,vx:(Math.random()-.3)*80,vy:-80-Math.random()*60,life:.7,c:['#f2e2b0','#c0392b','#e8e2d0'][n],s:2,g:1})}
 }
 function preyTalk(k,txt){if(k<0||k>=S.prey.length)return;const p=preyPos(k);S.texts.push({s:txt,x:Math.max(40,Math.min(W-40,p.x)),y:p.y-34,w:1,t:0,color:'#fff3dc'})}
+/* bear mode variety: leaping salmon, a ranger with an air horn, picnic raids, angry bees */
+function bearEvents(dt,lx){
+  if(S.demo)return;
+  S.beeT=Math.max(0,(S.beeT||0)-dt);
+  /* salmon leap out of the river you're wading through: jump to catch them */
+  S.fish=S.fish||[];
+  const rv=S.rivers.find(r=>lx>r.x0-60&&lx<r.x1);
+  if(rv){S.fishIn=(S.fishIn==null?.4:S.fishIn)-dt;if(S.fishIn<=0){S.fishIn=.55+Math.random()*.5;const fx=Math.min(rv.x1-6,lx+50+Math.random()*60);if(fx>rv.x0+4)S.fish.push({x:fx,wy:rv.wy,t:0,dur:.8+Math.random()*.25,h:26+Math.random()*16,vx:-30-Math.random()*30})}}
+  for(const f of S.fish){f.t+=dt;f.x+=f.vx*dt;f.y=f.wy-Math.sin(Math.min(1,f.t/f.dur)*Math.PI)*f.h;
+    if(!f.got&&f.t<f.dur&&Math.abs(f.x-lx-6)<14&&Math.abs(f.y-(S.y-18))<13){f.got=true;S.bearPts+=20;S.stam=Math.min(stamMax(),S.stam+20);S.fishCaught=(S.fishCaught||0)+1;SFX.cone();say(S.fishCaught%5===0?'SALMON STREAK! +20':'Caught one! +20',LX,GY-50,'#f28a6a');
+      for(let n=0;n<6;n++)S.parts.push({x:f.x,y:f.y,vx:(Math.random()-.5)*80,vy:-60-Math.random()*60,life:.5,c:'#9fd0e8',s:2,g:1})}}
+  S.fish=S.fish.filter(f=>f.t<f.dur&&!f.got);
+  /* the ranger: stands his ground and blasts an air horn. Roar to scare him off, or charge through him */
+  S.rangerIn=(S.rangerIn==null?16:S.rangerIn)-dt;
+  if(!S.ranger&&S.rangerIn<=0){const x=lx+W*.62,g=groundY(x);if(g!=null&&!S.rivers.some(r=>x>r.x0-30&&x<r.x1+30)){S.ranger={x,t:0,st:'stand'};S.rangerIn=22+Math.random()*12;preyTalk(0,pick(['RANGER! Help us!','Sir! The bear!','Do the horn thing!']))}else S.rangerIn=2}
+  if(S.ranger){const R=S.ranger,dx=R.x-lx;R.t+=dt;
+    if(R.st==='stand'){if(S.freezeT>0&&dx<230&&dx>-10){R.st='flee';R.t=0;S.bearPts+=40;say('The ranger ran for it! +40',LX,GY-56,'#bfe39a')}
+      else if(S.chargeT>0&&Math.abs(dx)<16){R.st='flee';R.t=0;S.bearPts+=60;S.shake=6;SFX.hit();say('BOWLED OVER! +60',LX,GY-56,'#ffb347')}
+      else if(R.t>2.2&&!R.blew){R.blew=true;R.blowT=0;SFX.roar&&SFX.hit();if(dx>-10&&dx<170){S.stun=Math.max(S.stun,1.1);S.gapX+=22;S.shake=7;say('BWAAAMP!',LX+40,GY-60,'#fff3dc')}else say('bwamp.',LX+60,GY-60,'#fff3dc')}
+      if(R.blew){R.blowT+=dt;if(R.blowT>.9){R.st='flee';R.t=0}}}
+    else{R.x+=180*dt}
+    if(R.x-lx<-60||R.x-lx>W)S.ranger=null}
+  /* picnic tables: free food, but stopping to eat lets the crew pull ahead */
+  S.picIn=(S.picIn==null?10:S.picIn)-dt;
+  if(S.picIn<=0){const x=lx+W*.7,g=groundY(x),g2=groundY(x+20);S.picIn=2;if(g!=null&&g2!=null&&Math.abs(g-g2)<3&&!S.rivers.some(r=>x>r.x0-30&&x<r.x1+30)){(S.pics=S.pics||[]).push({x,gy:g,eaten:false});S.picIn=17+Math.random()*12}}
+  if(S.pics){for(const p of S.pics){if(!p.eaten&&Math.abs(p.x+10-lx)<14&&S.grounded){p.eaten=true;S.bearPts+=45;S.stam=Math.min(stamMax(),S.stam+40);S.eatT=Math.max(S.eatT,.8);SFX.chomp();say('PICNIC RAID! +45',LX,GY-50,'#f2a541');for(let n=0;n<10;n++)S.parts.push({x:p.x+10,y:p.gy-12,vx:(Math.random()-.5)*120,vy:-80-Math.random()*90,life:.7,c:n%2?'#d23a2a':'#f2e6c8',s:2,g:1})}}
+    S.pics=S.pics.filter(p=>p.x-lx>-80)}
+}
+function drawBearEvents(d){
+  const t=S.t;
+  for(const f of S.fish||[]){const x=Math.round(f.x-d),y=Math.round(f.y),up=f.t<f.dur/2;outlined(ctx,()=>{px(ctx,'#e07a5a',x-3,y-1,7,3);px(ctx,'#f2a08a',x-2,y,5,1);px(ctx,'#c05a3a',x+(up?3:-5),y-2,2,5);px(ctx,'#1a1210',x-2,y-1,1,1)})}
+  if(S.ranger){const R=S.ranger,x=Math.round(R.x-d),g=groundY(R.x);if(g!=null){const y=Math.round(g),fl=R.st==='flee',ph=fl?Math.floor(t*12)%2:0;
+    outlined(ctx,()=>{px(ctx,'#4a5a3a',x-2+(ph?-1:0),y-7,2,7);px(ctx,'#4a5a3a',x+1+(ph?1:0),y-7,2,7);px(ctx,'#c9a24a',x-3,y-16,7,9);px(ctx,'#e0b48a',x-2,y-21,5,5);px(ctx,'#1d1d1d',x-2,y-19,1,1);px(ctx,'#8a6a3a',x-4,y-22,9,1);px(ctx,'#8a6a3a',x-2,y-25,5,3);
+      if(!fl){px(ctx,'#e0b48a',x-6,y-15,3,2);px(ctx,'#d0d0d0',x-10,y-17,4,3);px(ctx,'#d23a2a',x-8,y-17,2,3)}});
+    if(R.blew&&R.blowT<.9&&!PXC){ctx.strokeStyle='rgba(255,243,220,'+(.8-R.blowT*.8)+')';ctx.lineWidth=1.5;for(let k=0;k<3;k++){const rr=8+((R.blowT*90+k*16)%48);ctx.beginPath();ctx.arc(x-10,y-15,rr,Math.PI*.7,Math.PI*1.3);ctx.stroke()}}
+    else if(!R.blew&&R.st==='stand'&&R.t>1.2&&Math.floor(t*8)%2){ctx.font='700 8px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#ff6b5a';ctx.fillText('ROAR!',x,y-32)}}}
+  for(const p of S.pics||[]){const x=Math.round(p.x-d),y=Math.round(p.gy);if(x<-30||x>W+10)continue;
+    outlined(ctx,()=>{px(ctx,'#6b4423',x+2,y-8,2,8);px(ctx,'#6b4423',x+16,y-8,2,8);px(ctx,'#8a5a2e',x,y-10,20,2);for(let k=0;k<5;k++)px(ctx,k%2?'#f2e6c8':'#d23a2a',x+k*4,y-11,4,2);px(ctx,'#6b4423',x-2,y-5,24,1);
+      if(!p.eaten){px(ctx,'#c49a62',x+5,y-16,9,5);px(ctx,'#a07a48',x+5,y-16,9,1);px(ctx,'#8a6a3a',x+7,y-19,1,3);px(ctx,'#8a6a3a',x+11,y-19,1,3);px(ctx,'#8a6a3a',x+7,y-19,5,1);px(ctx,'#e8c050',x+14,y-13,3,2)}})}
+  if(S.beeT>0&&!PXC){const bx=LX+4,by=Math.round(S.y)-26;for(let i=0;i<7;i++){const a=t*9+i*.9,rx=Math.round(bx+Math.cos(a)*(10+i%3*3)),ry=Math.round(by+Math.sin(a*1.3)*6);px(ctx,'#f2d23a',rx,ry,2,1);px(ctx,'#1a1a1a',rx+1,ry,1,1)}}
+}
 function bearModeUpdate(dt,lx){
   S.stun=Math.max(0,S.stun-dt);S.roarCd=Math.max(0,S.roarCd-dt);S.freezeT=Math.max(0,S.freezeT-dt);S.eatT=Math.max(0,S.eatT-dt);S.hypeT=Math.max(0,S.hypeT-dt);
   if(S.chargeT>0)S.chargeT-=dt;else S.stam=Math.min(stamMax(),S.stam+9*dt);
@@ -3061,6 +3102,7 @@ function bearModeUpdate(dt,lx){
   let esc=20+S.chomps*3;
   if(tgt){if(tgt.id==='curly')esc+=5;if(tgt.id==='camo')esc-=4}
   if(S.hypeT>0)esc+=10;
+  if(S.beeT>0)esc+=9;
   if(S.freezeT>0)esc=-6;
   const close=S.stun>0?-25:S.eatT>0?-6:24+(S.chargeT>0?70:0);
   S.gapX+=(esc-close)*dt;
@@ -3081,9 +3123,11 @@ function bearModeUpdate(dt,lx){
     if(it.k==='cone'){if(dx<12&&dy<18){it.got=true;S.cones++;S.coneK=S.t-(S.coneT??-9)<.7?(S.coneK||0)+1:0;S.coneT=S.t;SFX.cone(S.coneK);S.texts.push({s:'+1',x:Math.round(it.x-S.dist),y:Math.round(it.y)-8,w:1,t:.7,color:'#fff3dc'})}continue}
     const f=BFOOD[it.k];if(!f)continue;
     if(dx<14&&dy<20){it.got=true;const nk=noseK(),pts=Math.round(f.pts*nk);S.stam=Math.min(stamMax(),S.stam+f.st*nk);S.bearPts+=pts;markSeen(f.j);SFX.cone();say(f.say+' +'+pts,LX,GY-44,f.col);
+      if(it.k==='honey'&&Math.random()<.6){S.beeT=3.2;say('BEES! Worth it.',LX,GY-60,'#f2d23a')}
       if(it.k==='bsnack'){S.eatT=.45;S.snacksEaten++;if(S.snacksEaten>=8)unlockBadge('bear_snack')}
       for(let n=0;n<6;n++)S.parts.push({x:lx+6,y:S.y-14,vx:(Math.random()-.5)*90,vy:-60-Math.random()*80,life:.5,c:f.c2,s:2,g:1})}
   }
+  bearEvents(dt,lx);
   /* the crew fights back: snacks and traps thrown behind them */
   if(S.prey.length&&S.freezeT<=0&&S.gapX>45){
     S.throwIn-=dt*(S.prey.some(c=>c.id==='stache')?1.35:1);
@@ -3737,6 +3781,7 @@ function render(){
   drawPrints(d);drawPB(d);
   if(S.mode==='uphill'&&S.upCamps)for(const c of S.upCamps)drawUpCamp(c,Math.round(c.x-d));
   if(S.mode==='bear'&&S.htrees){S.htrees=S.htrees.filter(it=>it.x>d-120);for(const it of S.htrees)drawHoneyTree(it,Math.round(it.x-d))}
+  if(S.mode==='bear')drawBearEvents(d);
   const NKo=(S.demo||S.mode==='fire')?0:nightK(todAt()),LRo=(look(S.leader).lamp?135:90)*(S.set==='owl'?1.5:1)*(S.mode==='night'&&look(S.leader).lamp?1.15:1);
   const sil=(o,x,fn)=>{return;const dd=Math.abs(x+o.w/2-(LX-30)),a=NKo*Math.max(0,Math.min(1,(dd-LRo*.7)/(LRo*1.2)));if(a<.03)return;ctx.globalAlpha=a;PXC='#020306';fn();PXC=null;ctx.globalAlpha=1};
   for(const o of S.obs){const x=Math.round(o.x-d),t=Math.round(o.gy)-o.h;if(x>W+4||x+o.w<-4||o.eaten)continue;if(o.smashed){o.smashed+=1/60;if(o.smashed<.8){ctx.globalAlpha=1-o.smashed;outlined(ctx,()=>drawObstacle(o,Math.round(x+o.smashed*120),Math.round(o.gy-o.h-o.smashed*60)));ctx.globalAlpha=1}continue}
