@@ -1173,7 +1173,7 @@ const MODES=[
  {id:'night',name:'Night Hike',desc:'The whole run is in the dark. Headlamps help a lot.'},
  {id:'uphill',name:'Summit Climb',desc:'Climb from the trailhead to the 14,505 ft summit. Camps, rockslides, and something waiting up top.'},
  {id:'solo',name:'Solo Hike',desc:'No crew behind you. One hit ends it, but pinecones count double.'},
- {id:'bear',name:'Bear Mode',desc:'You are the bear. Charge, roar, and catch all five.'},
+ {id:'bear',name:'Bear Mode',desc:'You are the bear. Catch all five as fast as you can. Fastest time wins.'},
  {id:'fire',name:'Forest Fire',desc:'Be the fire, swing over lava, or ride the bear.'}
 ];
 let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}catch(e){}
@@ -5080,6 +5080,7 @@ function showModes(){
     const b=el('button','modebtn');b.type='button';b.setAttribute('aria-pressed',String(m.id===runMode));
     const t=el('div');t.append(el('b',null,m.name),el('span',null,m.desc));b.appendChild(t);
     if(m.id==='fire'){const fb=[['blaze','Torch'],['lava','Lava'],['ride','Ride']];if(fb.some(([k])=>modeBest['fire_'+k])){const st=el('i','fstack');for(const [k,nm2] of fb){const ln=el('span');ln.append(nm2+' ',el('b',null,modeBest['fire_'+k]?modeBest['fire_'+k].toLocaleString():'\u2014'));st.appendChild(ln)}b.appendChild(st)}}
+    else if(m.id==='bear'){if(modeBest.bear_t)b.appendChild(el('i',null,'Fastest '+fmtB('bear_t',modeBest.bear_t)))}
     else if(modeBest[m.id])b.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
     b.addEventListener('click',()=>{runMode=m.id;save('rc_mode',m.id);showHome()});box.appendChild(b);
   }
@@ -5229,8 +5230,9 @@ function showOver(){
   $('again').textContent='Play again';$('shareBtn').textContent='Share';
   const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode&&!S.daily;S.newBest=isBest;
   {const md=Math.floor(S.dist/12),bk=pbKey();if(S.mode!=='bear'&&!S.daily&&md>(bestDist[bk]||0)){bestDist[bk]=md;save('rc_bestdist',JSON.stringify(bestDist))}}
+  S.newBestT=false;if(S.mode==='bear'&&S.win&&S.winTime&&!S.demo){const tv=bearTV(S.winTime);if(tv>(modeBest.bear_t||0)){modeBest.bear_t=tv;S.newBestT=true;save('rc_modebest',JSON.stringify(modeBest))}}
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
-  if(!S.demo&&!S.daily){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode;if(BOARDS.some(b=>b[0]===bk)){submitModes({[bk]:sc});if(sc>0&&ACC.code)rpc('rc_submit_week',{p_code:ACC.code,p_mode:bk,p_score:sc}).then(refreshBoard).catch(()=>{})}}
+  if(!S.demo&&!S.daily){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode==='bear'?'bear_t':S.mode,bsc=S.mode==='bear'?(S.win&&S.winTime?bearTV(S.winTime):0):sc;if(BOARDS.some(b=>b[0]===bk)&&bsc>0){submitModes({[bk]:bsc});if(ACC.code)rpc('rc_submit_week',{p_code:ACC.code,p_mode:bk,p_score:bsc}).then(refreshBoard).catch(()=>{})}}
   if(S.mode==='fire'){ffPlayed[S.ff]=1;save('rc_ffplayed',JSON.stringify(ffPlayed));if(ffPlayed.blaze&&ffPlayed.lava&&ffPlayed.ride)unlockBadge('ff_all')}
   if(S.mode==='classic'&&!S.daily&&sc>best){best=sc;save('rc_best',String(best))}
   const gained=S.cones-S.banked;wallet+=gained;S.banked=S.cones;
@@ -5249,7 +5251,8 @@ function showOver(){
   else if(S.mode==='bear'){chip('chomped',S.chomps+'/5');chip('time',S.winTime?Math.round(S.winTime)+'s':Math.round(S.t)+'s');chip('double chomps',S.doubles||0);chip('snacks eaten',S.snacksEaten||0)}
   else if(S.mode==='uphill'&&S.upMax){const cs=(S.upNext||0)-(S.summited?1:0);chip('summit',S.summited?'yes!':'not yet');chip('camps',Math.max(0,Math.min(4,cs)));chip('distance',Math.floor(S.dist/12)+' m');chip('no bears',S.saved)}
   else{chip('jumps',S.stats.jumps);chip('no bears',S.saved);chip('close calls',S.stats.near);chip('top biome',top?top[0].split(' ')[0]:'Pine')}
-  $('bestLine').textContent=(isBest?'New '+(S.mode==='classic'?'':S.mode==='fire'?FF_INFO[S.ff].name+' ':MODES.find(m=>m.id===S.mode).name+' ')+'best!':'Best score: '+prevMode.toLocaleString())+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
+  if(S.mode==='bear')$('bestLine').textContent=(S.win?(S.newBestT?'NEW FASTEST CATCH! '+S.winTime.toFixed(1)+'s':'Caught all five in '+S.winTime.toFixed(1)+'s \u00B7 fastest '+fmtB('bear_t',modeBest.bear_t)):'Catch all five to get a time'+(modeBest.bear_t?' \u00B7 fastest '+fmtB('bear_t',modeBest.bear_t):''))+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
+  else $('bestLine').textContent=(isBest?'New '+(S.mode==='classic'?'':S.mode==='fire'?FF_INFO[S.ff].name+' ':MODES.find(m=>m.id===S.mode).name+' ')+'best!':'Best score: '+prevMode.toLocaleString())+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
   $('bankLine').textContent='+'+gained+' pinecones, +'+res.gain+' XP. You have '+wallet+' pinecones.';
   const cost=100,can=S.mode!=='bear'&&S.mode!=='fire'&&S.revives===0&&S.dtype!=='bearwin';
   $('secondBtn').hidden=!can;$('secondBtn').textContent='Second chance (100)';$('secondBtn').disabled=wallet<cost;
@@ -5511,11 +5514,11 @@ async function renderRanks(){
   const sum=el('div','mybest');
   const myB=meR?meR.sc:(rankPeriod==='all'&&rankTab!=='overall'?(boardModes()[rankTab]||0):0);
   let line2=meR?'#'+meR.rank+' of '+brows.length:brows.length?brows.length+' on the board':'Nobody yet. Be first!';
-  const head=el('div','mbh');head.append(el('b',null,myB?(rankPeriod==='week'?'This week: ':'Your best: ')+myB.toLocaleString()+unit:(rankPeriod==='week'?'No runs yet this week':"You haven't played "+curLbl+' yet')),el('span',null,line2));
+  const head=el('div','mbh');head.append(el('b',null,myB?(rankPeriod==='week'?'This week: ':'Your best: ')+(rankTab==='overall'?myB.toLocaleString():fmtB(rankTab,myB))+unit:(rankPeriod==='week'?'No runs yet this week':"You haven't played "+curLbl+' yet')),el('span',null,line2));
   sum.appendChild(head);
   {const nameOf=rowName;let t='';
-   if(meR&&meR.rank>1){const a=brows[meR.rank-2];t=(a.sc-meR.sc+1).toLocaleString()+unit+' to pass '+nameOf(a)}
-   else if(meR&&brows[1]){t="You're on top. "+nameOf(brows[1])+' is '+(meR.sc-brows[1].sc).toLocaleString()+unit+' behind'}
+   if(meR&&meR.rank>1){const a=brows[meR.rank-2];t=(rankTab==='bear_t'?((a.sc-meR.sc)/10+.1).toFixed(1)+'s faster':(a.sc-meR.sc+1).toLocaleString()+unit)+' to pass '+nameOf(a)}
+   else if(meR&&brows[1]){t="You're on top. "+nameOf(brows[1])+' is '+(rankTab==='bear_t'?((meR.sc-brows[1].sc)/10).toFixed(1)+'s slower':(meR.sc-brows[1].sc).toLocaleString()+unit+' behind')}
    else if(!meR&&brows.length){const last=brows[brows.length-1];t='Any score gets you on the board'+(myB?'':'')}
    if(t)sum.appendChild(el('p','pass',t))}
   if(rankPeriod==='week'){const d=el('p','pass');d.textContent='Resets Monday. '+weekLeft()+' left this week.';sum.appendChild(d)}
@@ -5583,7 +5586,7 @@ function showPlayerCard(r){
   const tc=tierCounts(r.badges),tb=el('div','pctiers');for(let k=4;k>=1;k--){const s=el('span','tk t'+k);s.append(el('i'),document.createTextNode(tc[k]+' '+TIERS[k].n));tb.appendChild(s)}card.appendChild(tb);
   const bl=el('div','pcbests');bl.appendChild(el('small',null,'Best in every mode'));
   for(const [k,lab] of BOARDS){const v=k==='classic'?(r.best||0):((r.modes||{})[k]||0);const all=(LB.all||LB.rows).filter(q=>(k==='classic'?q.best:(q.modes||{})[k])>0).sort((a,b)=>(k==='classic'?b.best:b.modes[k])-(k==='classic'?a.best:a.modes[k]));const rk=all.findIndex(q=>q.id===r.id)+1;
-    const row=el('div','pcb');row.append(el('span',null,lab),el('b',null,v?v.toLocaleString():'-'),el('em',null,rk?'#'+rk:''));bl.appendChild(row)}
+    const row=el('div','pcb');row.append(el('span',null,lab),el('b',null,v?fmtB(k,v):'-'),el('em',null,rk?'#'+rk:''));bl.appendChild(row)}
   card.appendChild(bl);
   const lr=(r.stats||{}).leadRuns||{},fav=Object.entries(lr).sort((a,b)=>b[1]-a[1])[0];
   const st=el('div','pcstats');const add=(t,v)=>{const d=el('div');d.append(el('b',null,v),el('small',null,t));st.appendChild(d)};
@@ -5591,7 +5594,9 @@ function showPlayerCard(r){
   add('Farts held',(r.farts||0).toLocaleString());add('Pinecones',((r.stats||{}).cones||0).toLocaleString());add('Summits',((r.stats||{}).summits||0).toLocaleString());
   card.appendChild(st);scr.appendChild(ov);
 }
-const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Summit Climb'],['solo','Solo'],['bear','Bear Mode'],['fire_blaze','Human Torch'],['fire_lava','Lava Floor'],['fire_ride','Bear Ride']];
+const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Summit Climb'],['solo','Solo'],['bear_t','Bear Mode'],['fire_blaze','Human Torch'],['fire_lava','Lava Floor'],['fire_ride','Bear Ride']];
+/* Bear Mode ranks by fastest full catch: stored as 100000 - tenths of a second so bigger is still better */
+const bearTV=sec=>Math.max(1,100000-Math.round(sec*10)),fmtB=(k,v)=>k==='bear_t'?((100000-v)/10).toFixed(1)+'s':Number(v).toLocaleString();
 function boardModes(){const m={};for(const [k] of BOARDS){const v=k==='classic'?Math.max(modeBest.classic||0,best||0):(modeBest[k]||0);if(v>0)m[k]=v}return m}
 async function boardPs(ids){try{return LB.user&&LB.user.profiles?(await LB.user.profiles(ids))||{}:{}}catch(e){return {}}}
 function rankRow(list,r,ps,sc,sub,tt,mv){
@@ -5602,7 +5607,7 @@ function rankRow(list,r,ps,sc,sub,tt,mv){
   const n=el('div','nm'),nb=el('b');if(r.rank===1)nb.appendChild(el('i','crownic'));nb.appendChild(document.createTextNode((c?nm(c):((icParse(r.who)&&r.name)||(p&&p.name)||r.name||'Someone'))+(r.id===LB.uid?' (you)':'')));
   for(const t of tt)nb.appendChild(el('em','ttl',t));
   {const tc=tierCounts(r.badges);if(tc[3]||tc[4]){const f=el('span','flair');if(tc[4])f.appendChild(el('i','fl t4',String(tc[4])));if(tc[3])f.appendChild(el('i','fl t3',String(tc[3])));nb.appendChild(f)}}
-  n.append(nb,el('span',null,sub));row.append(n,el('span','sc',sc.toLocaleString()));list.appendChild(row);
+  n.append(nb,el('span',null,sub));row.append(n,el('span','sc',rankTab==='overall'?sc.toLocaleString():fmtB(rankTab,sc)));list.appendChild(row);
 }
 /* ---------- goals: missions, badges, journal, stories ---------- */
 let gTab='missions';
