@@ -1237,7 +1237,7 @@ function starFly(dt,lx){
 }
 function speed(){return (drTw('fast')?1.12:1)*Math.min(280,150+S.dist*(S.mode==='uphill'?0.006:0.011))}
 const nb=()=>S.leader.id==='nathan'?(ups.ab_nathan?3:2):1;
-const reachR=()=>S.leader.id==='curly'?(ups.ab_curly?160:150):118;
+const reachR=()=>S.leader.id==='curly'?(ups.ab_curly?180:170):140;
 const isLava=()=>S.mode==='fire'&&S.ff==='lava';
 function dashOK(){return S&&S.leader.id==='curly'&&S.mode!=='bear'&&!isLava()&&!S.demo&&!S.dead&&!S.eat}
 function doDash(){if(mode!=='play'||!dashOK()||S.spin||S.grounded||S.airDashed||(S.dashCd||0)>0)return false;{const g0=groundY(S.dist+LX);if(g0!=null&&g0-S.y<16&&S.vy>0)return false}const d=ups.ab_curly?.42:.32;S.airDashed=true;S.dashT=d;S.dashCd=ups.ab_curly?2:2.5;S.vy=Math.min(S.vy,-40);S.invuln=Math.max(S.invuln,d+.15);S.dashes=(S.dashes||0)+1;SFX.jump();buzz(15);say('DASH!',LX+16,S.y-40-S.camY,'#bfe3ff');puff(S.dist+LX-6,S.y-8,6);return true}
@@ -1417,7 +1417,7 @@ function caughtEat(reason){
 /* ---------- forest fire mode: three random variants ---------- */
 const FF_INFO={
   blaze:{name:'The Crew Is the Fire',intro:l=>nm(l)+' caught fire! Burn stuff to GROW. Water shrinks you. Bigger fire, more points, more planes.'},
-  lava:{name:'Lava Floor Forest',intro:()=>'The floor is lava! Hold to grab and climb, let go to swing.'},
+  lava:{name:'Lava Floor Forest',intro:()=>'The floor is lava! Hold to grab a branch, let go to fly.'},
   ride:{name:'Ride the Bear',intro:()=>'Bear rodeo! When he bucks one way, tap the other side. Get to the lake at 1,500 m!'}
 };
 let LAVA_Y=GY+18;
@@ -1593,7 +1593,7 @@ function lavaUpdate(dt){
   let lx=S.dist+LX;S.grabCD=Math.max(0,(S.grabCD||0)-dt);S.pantsT=Math.max(0,(S.pantsT||0)-dt);
   const gy=groundY(lx);
   if(S.swing){
-    const s=S.swing,a=s.a;if(S.hold){const nl=Math.max(30,s.L-15*dt);if(nl<=30)unlockBadge('ff_climb');s.w*=Math.pow(s.L/nl,1.2);s.L=nl}
+    const s=S.swing,a=s.a;
     s.w+=-(G/s.L)*Math.sin(s.th)*dt;s.w*=1+.22*dt;s.w=Math.max(-6,Math.min(6,s.w));s.th+=s.w*dt;
     const hx=a.x+s.L*Math.sin(s.th),hy=a.by+s.L*Math.cos(s.th);lx=hx;S.y=hy+16;
     S.vx=s.L*s.w*Math.cos(s.th);S.vy=-s.L*s.w*Math.sin(s.th);
@@ -1634,7 +1634,7 @@ function lavaUpdate(dt){
     if(a.collapse&&a.colT<0&&a.x-lx<230&&a.x-lx>70){a.colT=0;a.burnT=Math.max(a.burnT,0);say('That tree is going down!',LX+50,GY-64,'#ffb38a')}
     if(a.colT>=0&&!a.gone){a.colT+=dt;if(a.colT>1.15){a.gone=true;a.treeFall=0;S.shake=Math.max(S.shake,4)}}
     if(a.treeFall!=null)a.treeFall+=dt;
-    if(a.burnT>=0&&!a.gone){if(!(S.swing&&S.swing.a===a))a.burnT+=dt;if(a.burnT>2.4)a.gone=true}if(a.gone)a.fall+=dt;if(!a.gone&&a.burnT<0&&a.x<S.dist+10)a.burnT=0}
+    if(a.burnT>=0&&!a.gone){if(!(S.swing&&S.swing.a===a))a.burnT+=dt;if(a.burnT>5&&a.x<lx-40)a.gone=true}if(a.gone)a.fall+=dt;if(!a.gone&&a.burnT<0&&a.x<S.dist+10)a.burnT=0}
   /* 29. eruptions */
   
   let erHit=false;for(const e of S.erupts){e.t+=dt;if(e.t>1.2&&e.t<2.4){const h=Math.min(95,(e.t-1.2)*320);if(Math.abs(lx-e.x)<8&&S.y>LAVA_Y-h)erHit=true}}
@@ -2152,12 +2152,13 @@ function drawBlazeForest(d,bottom){
 }
 function drawLava(d,bottom){
   const t=S.t,y0=LAVA_Y;
-  const g=ctx.createLinearGradient(0,y0-60,0,y0);g.addColorStop(0,'rgba(255,90,30,0)');g.addColorStop(1,'rgba(255,90,30,.35)');ctx.fillStyle=g;ctx.fillRect(0,y0-60,W+2,60);
+  const pul=.5+.5*Math.sin(t*1.7),g=ctx.createLinearGradient(0,y0-110,0,y0);g.addColorStop(0,'rgba(255,90,30,0)');g.addColorStop(.6,'rgba(255,110,40,'+(.12+.06*pul)+')');g.addColorStop(1,'rgba(255,90,30,'+(.45+.1*pul)+')');ctx.fillStyle=g;ctx.fillRect(0,y0-110,W+2,110);
+  for(let i=0;i<26;i++){const sp=.18+hash(i*3.1)*.3,k=(t*sp+hash(i))%1,x=Math.round(((hash(i+11)*W*1.4-d*.15-t*12)%(W+40)+W+40)%(W+40)-20+Math.sin(t*2+i)*6),y=Math.round(y0-k*150);ctx.globalAlpha=(1-k)*.9;px(ctx,k<.3?'#ffd166':k<.6?'#ff8a2a':'#c8461e',x,y,k<.2?2:1,k<.2?2:1)}ctx.globalAlpha=1;
   px(ctx,'#7a1e10',0,y0,W+2,bottom-y0);px(ctx,'#a8321a',0,y0+4,W+2,6);px(ctx,'#c8461e',0,y0+3,W+2,2);
   for(let k=0;k*17<W+17;k++){const c=Math.floor(d/17)+k,x=Math.round(c*17-d),r=hash(c*.61);if(r<.45){px(ctx,'#4a120a',x,y0+10+Math.round(r*14),6+Math.round(r*8),2);px(ctx,'#ff6a2a',x+2,y0+10+Math.round(r*14),2,1)}}
   for(let x=0;x<W+2;x+=2){const c=Math.floor((x+d)/2),h=Math.round(Math.sin(c*.35+t*2.2)*1.5+Math.sin(c*.11-t*1.3));px(ctx,'#ff8a2a',x,y0+h,2,2);px(ctx,'#ffd166',x,y0+h,2,1);
     if(hash(c*.37)<.08)px(ctx,'#5a140a',x,y0+6+Math.round(hash(c)*10),3,1)}
-  for(let i=0;i<8;i++){const k=(t*.9+hash(i))%1,x=Math.round(hash(i+3+Math.floor(t*.9+hash(i)))*W);if(k<.5){const r=Math.round(1+k*4);px(ctx,'#ffb347',x-r,y0-r+1,r*2,r)}else{px(ctx,'#ffd166',x,y0-Math.round((k-.5)*14),1,1)}}
+  for(let i=0;i<12;i++){const k=(t*.9+hash(i))%1,x=Math.round(hash(i+3+Math.floor(t*.9+hash(i)))*W);if(k<.5){const r=Math.round(1+k*6);px(ctx,'#ffb347',x-r,y0-r+1,r*2,r);px(ctx,'#ffe0a0',x-1,y0-r+1,2,1)}else{const h=Math.round((k-.5)*30);px(ctx,'#ffd166',x-1,y0-h,2,2);px(ctx,'#ff8a2a',x+2,y0-h+4,1,1);px(ctx,'#ff8a2a',x-3,y0-h+6,1,1)}}
 }
 function drawAnchors(d){
   const t=S.t,top=Math.round(S.camY-oy-10);
@@ -2237,7 +2238,7 @@ function ffHud(cw,pad,f,shadow){
         ctx.font='700 '+Math.round(f*.55)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='left';shadow('x'+n,x0+i*gap+isz*.3,yy+isz*.2,'#fff3dc');ctx.textAlign='center'})}}
   }else if(S.ff==='lava'){
     shadow('THE FLOOR IS LAVA',cw/2,pad+f*.4,'#ff8a2a');ctx.font='700 '+Math.round(f*.7)+'px "RCD","Pixelify Sans", monospace';
-    shadow(S.t<9?'Hold: grab + climb  ·  Let go: swing':'Swings '+S.swings,cw/2,pad+f*1.3,'#fff3dc');
+    shadow(S.t<9?'Hold: grab  ·  Let go: fly':'Swings '+S.swings,cw/2,pad+f*1.3,'#fff3dc');
   }else{
     shadow('RIDE THE BEAR',cw/2,pad+f*.4,'#ffb347');ctx.font='700 '+Math.round(f*.7)+'px "RCD","Pixelify Sans", monospace';
     shadow(S.t<9?'Tap the side OPPOSITE the buck':(S.lakeX&&S.lakeX-S.dist<3000?'Lake ahead!  ·  ':'Lake in '+Math.max(0,Math.round((18000-S.dist)/12))+' m  ·  ')+'Riders '+(1+S.crew.length)+(S.drag.length?'  ·  '+S.drag.length+' hanging on':''),cw/2,pad+f*1.3,'#fff3dc');
