@@ -136,6 +136,18 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .cat{font:700 .95rem var(--display);background:none;border:0;border-radius:10px;color:var(--muted);padding:9px 2px;cursor:pointer}
 .cat[aria-selected="true"]{background:var(--amber);color:var(--amber-ink)}
 /* modals */
+.onb{width:min(100%,560px);overflow-y:auto;text-align:left}
+.onb h2{text-align:center}.onb .sub{margin:0;text-align:center}
+.onb .ondots{display:flex;gap:6px;justify-content:center}.onb .ondots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.onb .ondots i.on{background:var(--amber)}
+.onb input{font:600 1.05rem var(--body);color:var(--cream);background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;box-sizing:border-box}
+.onb input:focus{outline:none;border-color:var(--amber)}
+.icrow{display:flex;gap:12px;align-items:flex-start}.icrow .icprev{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;font:700 .85rem var(--display);color:var(--cream);max-width:90px;text-align:center;word-break:break-word}
+.icgrid{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.icgrid button,.swrow button{padding:0;border:2px solid transparent;background:none;border-radius:9px;cursor:pointer;line-height:0}
+.icgrid button[aria-pressed=true],.swrow button[aria-pressed=true]{border-color:var(--amber)}
+.swrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.swrow button span{display:block;width:24px;height:24px;border-radius:7px}
+canvas.wicon{image-rendering:pixelated;border-radius:6px}
+.onb .tips{margin:0}
 .mcard{width:min(100%,400px);max-height:100%;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.3)}
 .mcard h2{margin:0;font:700 2.1rem var(--display);color:var(--amber);line-height:1}
 .mcard .reason{margin:0;color:var(--muted);font-size:.92rem}
@@ -549,6 +561,11 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- First-time setup -->
+  <div class="screen modal" id="onbScr" hidden>
+    <div class="mcard onb" id="onbCard"></div>
   </div>
 
   <!-- Who are you -->
@@ -4617,7 +4634,7 @@ function nextStory(){const st=STORIES[STORY.s];if(STORY.i<st.lines.length-1){STO
 /* ---------- screens ---------- */
 const $=id=>document.getElementById(id);
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
-const SCREENS=['home','leaderScr','shopScr','howScr','pauseScr','over','whoScr','ranksScr','badgesScr','modeScr','cardScr','storyScr','setScr'];
+const SCREENS=['home','onbScr','leaderScr','shopScr','howScr','pauseScr','over','whoScr','ranksScr','badgesScr','modeScr','cardScr','storyScr','setScr'];
 function screen(id){
   homeScene=id==='home'||id==='storyScr'||((id==='howScr'||id==='modeScr'||id==='setScr')&&homeScene);
   SFX.scene(id===null?'run':id==='pauseScr'?'pause':'menu');
@@ -4634,7 +4651,7 @@ function challenge(){
   if(!LB.rows.length||!LB.uid)return null;
   const mine=LB.rows.find(r=>r.id===LB.uid),myBest=mine?mine.best:best;
   const above=LB.rows.filter(r=>r.id!==LB.uid&&(r.best||0)>myBest).sort((a,b)=>a.best-b.best)[0];
-  const who=r=>{const c=r.who&&byId(r.who);return c?nm(c):'a friend'};
+  const who=r=>{const c=r.who&&byId(r.who);return c?nm(c):(r.name||'a friend')};
   if(above)return {name:who(above),best:above.best};
   return mine?{top:true}:null;
 }
@@ -4963,8 +4980,82 @@ function renderShop(){
     else for(const s of SKILLS)up.appendChild(upRow(s.name,s.desc,ups[s.id]?1:0,1,s.price,()=>{ups[s.id]=1},s.who));
   }
 }
+/* ---------- player icons + first-time setup ---------- */
+const IC_COL=['#3d6b45','#2f6c92','#b8401a','#7a4fa3','#c9962e','#4a4f57','#b04a6f','#2a8a7a'];
+const IC_PAL={a:'#fff3dc',b:'#2a1d14',c:'#ffd166',r:'#e05a3a',g:'#7cc46a',w:'#9a6a3a',k:'#b4b9bf'};
+const ICONS=[
+ {id:'cone',n:'Pinecone',p:['....g.....','...www....','..wcwcw...','..wwwww...','.wcwcwcw..','.wwwwwww..','..wcwcw...','..wwwww...','...wcw....','....w.....']},
+ {id:'tent',n:'Tent',p:['..........','....r.....','...rrr....','..rrbrr...','..rrbrr...','.rrrbrrr..','.rrbbbrr..','rrrbbbrrr.','rrrbbbrrr.','aaaaaaaaaa']},
+ {id:'fire',n:'Campfire',p:['....c.....','...cr.....','...crc....','..crrrc...','..rcrcr...','..rrcrr...','...rrr....','.ww.ww.ww.','..wwwww...','.w.....w..']},
+ {id:'peak',n:'Peak',p:['..........','....a.....','...aak....','..akkkk...','..kkkkk...','.kkkkkkk..','.kkkkkkkk.','kkkkkkkkkk','kkkkkkkkkk','..........']},
+ {id:'pine',n:'Pine',p:['....g.....','...ggg....','..ggggg...','...ggg....','..ggggg...','.ggggggg..','..ggggg...','.ggggggg..','....w.....','....w.....']},
+ {id:'paw',n:'Bear paw',p:['..b...b...','.bbb.bbb..','..b...b...','b.......b.','bb.bbb.bb.','...bbbbb..','..bbbbbbb.','..bbbbbbb.','...bbbbb..','..........']},
+ {id:'mallow',n:'Marshmallow',p:['.........w','........w.','.......w..','..aaaw....','.aaaaa....','.aaaaa....','.cccaa....','..ccc.....','..........','..........']},
+ {id:'banjo',n:'Banjo',p:['........ww','.......ww.','......w...','.....w....','..aaaw....','.aaaaaa...','aaabbaaa..','aaabbaaa..','.aaaaaa...','..aaaa....']},
+ {id:'spike',n:'Spikeball',p:['..........','...cccc...','..cbcbcc..','.cbcbcbcc.','.ccbcbcbc.','.cbcbcbcc.','.ccbcbcbc.','..ccbcbc..','...cccc...','..........']},
+ {id:'stache',n:'Stache',p:['..........','..........','..........','..bb..bb..','.bbbbbbbb.','bbbbbbbbbb','bb.bbbb.bb','b...bb...b','..........','..........']},
+ {id:'cross',n:'Cross',p:['....aa....','....aa....','..aaaaaa..','..aaaaaa..','....aa....','....aa....','....aa....','....aa....','....aa....','....aa....']},
+ {id:'fish',n:'Fish',p:['..........','..........','..aaaa..a.','.a....aa..','a......a..','.a....aa..','..aaaa..a.','..........','..........','..........']},
+ {id:'fih',n:'Fih',p:['..........','..........','aaa.a.a...','a.....a...','aa..a.aaa.','a...a.a.a.','a...a.a.a.','..........','..........','..........']},
+ {id:'propane',n:'Propane',p:['...kkk....','....k.....','..ggggg...','.gaaaaag..','.ggggggg..','.ggggggg..','.ggggggg..','.gaaaaag..','.ggggggg..','..k...k...']},
+ {id:'star',n:'Star',p:['....c.....','....c.....','...ccc....','cccccccccc','.cccccccc.','..cccccc..','..cccccc..','.ccc..ccc.','.cc....cc.','..........']},
+ {id:'boot',n:'Boot',p:['..........','..www.....','..www.....','..wbw.....','..www.....','..wbw.....','..wwwwww..','.wwwwwwww.','.bbbbbbbb.','..........']}];
+const icParse=w=>{const m=/^ic:([a-z0-9_]+):(\d+)$/.exec(w||'');return m?{id:m[1],col:+m[2]%IC_COL.length}:null};
+function iconCanvas(w,px){const q=icParse(w);if(!q)return null;px=px||22;const s=Math.max(1,Math.round(px/12)),cv=document.createElement('canvas');cv.width=cv.height=12*s;cv.className='wicon';cv.style.width=cv.style.height=px+'px';
+  const g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle=IC_COL[q.col];g.fillRect(0,0,12*s,12*s);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(0,11*s,12*s,s);
+  const c=q.id.startsWith('h_')&&byId(q.id.slice(2));
+  if(c){const t=document.createElement('canvas');t.width=16;t.height=29;const tg=t.getContext('2d');drawHiker(tg,c,9,28,0,false);g.drawImage(t,2,1,12,12,0,0,12*s,12*s)}
+  else{const ic=ICONS.find(i=>i.id===q.id);if(ic)ic.p.forEach((row,y)=>{for(let x=0;x<row.length;x++){const k=row[x];if(k==='.')continue;g.fillStyle=IC_PAL[k];g.fillRect((x+1)*s,(y+1)*s,s,s)}})}
+  return cv}
+const ICON_IDS=()=>[...ICONS.map(i=>({id:i.id,n:i.n})),...CHARS.map(c=>({id:'h_'+c.id,n:nm(c)}))];
+const HASCODE=true;function onbSync(){pushName()}
+let ONB=null;
+function showWho(next){openOnb(next,true)}
+function openOnb(next,short){
+  const cur=icParse(myWho),wc=myWho&&byId(myWho);
+  ONB={step:0,next:next||showHome,short:!!short,name:myName||(wc?nm(wc):''),ic:cur?cur.id:(wc?'h_'+wc.id:'cone'),col:cur?cur.col:(Math.random()*IC_COL.length|0)};
+  mode='menu';hideNoBear();screen('onbScr');onbRender();
+}
+function onbFinish(){
+  myName=ONB.name.trim().slice(0,20);myWho='ic:'+ONB.ic+':'+ONB.col;save('rc_name',myName);save('rc_me',myWho);save('rc_onb2','1');onbSync();
+}
+function onbRender(){
+  const box=$('onbCard');box.innerHTML='';const n=ONB.short?2:HASCODE?4:3;
+  const dots=el('div','ondots');for(let i=0;i<n;i++)dots.appendChild(el('i',i===(HASCODE||ONB.step<2?ONB.step:ONB.step-1)?'on':null));
+  const go=(lab,fn,dis)=>{const b=el('button','btn big',lab);b.type='button';b.disabled=!!dis;b.addEventListener('click',()=>{SFX.tap();fn()});return b};
+  const nextStep=()=>{if(ONB.step===1&&ONB.short){onbFinish();ONB.next();return}if(ONB.step===1){onbFinish();if(!HASCODE)ONB.step++}ONB.step++;onbRender()};
+  if(ONB.step===0){
+    box.append(el('h2',null,"What's your name?"),el('p','sub','This is what the crew sees on the leaderboard.'));
+    const f=el('form');const inp=el('input');inp.maxLength=20;inp.autocomplete='nickname';inp.placeholder='Your name';inp.value=ONB.name;inp.setAttribute('aria-label','Your name');
+    const b=go('Next',()=>{ONB.name=inp.value.trim();if(ONB.name){ONB.step=1;onbRender()}},!ONB.name.trim());
+    inp.addEventListener('input',()=>{b.disabled=!inp.value.trim()});f.addEventListener('submit',e=>{e.preventDefault();b.click()});f.appendChild(inp);
+    box.append(f,dots,b);setTimeout(()=>{try{inp.focus()}catch(e){}},50);
+  }else if(ONB.step===1){
+    box.append(el('h2',null,'Pick your icon'),el('p','sub','It shows next to your name. Pick a color too.'));
+    const row=el('div','icrow'),pv=el('div','icprev'),grid=el('div','icgrid');
+    const paint=()=>{pv.innerHTML='';pv.append(iconCanvas('ic:'+ONB.ic+':'+ONB.col,64),el('span',null,ONB.name));
+      grid.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===ONB.ic)));sw.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.c===ONB.col)))};
+    for(const o of ICON_IDS()){const b=el('button');b.type='button';b.dataset.id=o.id;b.setAttribute('aria-label',o.n);b.appendChild(iconCanvas('ic:'+o.id+':'+ONB.col,34));b.addEventListener('click',()=>{ONB.ic=o.id;SFX.tap();paint()});grid.appendChild(b)}
+    const sw=el('div','swrow');IC_COL.forEach((c,i)=>{const b=el('button');b.type='button';b.dataset.c=i;b.setAttribute('aria-label','Color '+(i+1));const sp=el('span');sp.style.background=c;b.appendChild(sp);
+      b.addEventListener('click',()=>{ONB.col=i;SFX.tap();grid.querySelectorAll('button').forEach(gb=>{gb.innerHTML='';gb.appendChild(iconCanvas('ic:'+gb.dataset.id+':'+i,34))});paint()});sw.appendChild(b)});
+    const right=el('div');right.style.minWidth='0';right.append(grid,sw);row.append(pv,right);paint();
+    const back=el('button','linkbtn','Back');back.type='button';back.addEventListener('click',()=>{ONB.step=0;onbRender()});
+    box.append(row,dots,go(ONB.short?'Save':'Next',nextStep),back);
+  }else if(ONB.step===2){
+    box.append(el('h2',null,'Your save code'),el('p','sub','This code is your account. If you get a new phone or clear your browser, type it in Settings to get everything back. Screenshot it or copy it somewhere safe.'));
+    const cb=el('div','codebox'),cd=el('b',null,ACC.code||'Making your code...'),cp=el('button','btn ghost','Copy');cp.type='button';cp.disabled=!ACC.code;
+    cp.addEventListener('click',()=>{if(!ACC.code)return;try{navigator.clipboard.writeText(ACC.code).then(()=>toast('Code copied')).catch(()=>toast('Copy blocked. Write it down.'))}catch(e){toast('Copy blocked. Write it down.')}});
+    cb.append(el('span','lbl2','Your save code'),cd,cp);
+    if(!ACC.code)ensurePlayer().then(()=>{cd.textContent=ACC.code;cp.disabled=false;onbSync()}).catch(()=>{cd.textContent='Offline right now. It will show in Settings later.'});
+    box.append(cb,dots,go('Got it',nextStep));
+  }else{
+    box.append(el('h2',null,'How to play'));
+    const ul=el('ul','tips');[['Tap anywhere to jump','rocks, logs and gaps. Tap again in the air to double jump.'],['Hit something','and the last guy drops out. Trail mix brings him back.'],['Somebody farts?','Smash No Bear! fast, or the bear eats the crew.'],['Grab pinecones','to buy gear and upgrades in the shop.'],['New Daily Ridge every night at midnight','Same trail for everyone. Beat the crew.']].forEach((t,i)=>{const li=el('li');const a=el('span','ic',String(i+1)),b=el('span');b.append(el('b',null,t[0]),document.createTextNode(' '+t[1]));li.append(a,b);ul.appendChild(li)});
+    box.append(ul,dots,go('Hit the trail',()=>{const nx=ONB.next;ONB=null;nx()}));
+  }
+}
 /* ---------- who am I / ranks ---------- */
-function showWho(next){
+function oldShowWho(next){
   mode='menu';hideNoBear();screen('whoScr');$('nameForm').hidden=true;const box=$('whoGrid');box.innerHTML='';
   const opts=[...CHARS.map(c=>({id:c.id,c})),{id:'other'}];
   for(const o of opts){
@@ -4984,7 +5075,7 @@ let rankSeq=0;
 async function renderRanks(){
   if($('ranksScr').hidden)return;const seq=++rankSeq;
   const meBox=$('meRow');meBox.innerHTML='';
-  const wc=myWho&&byId(myWho),l=el('span');l.append('Playing as ');l.appendChild(el('b',null,wc?nm(wc):myWho==='other'?(myName||'yourself'):'nobody yet'));
+  const wc=myWho&&byId(myWho),l=el('span');l.append('Playing as ');{const wi=iconCanvas(myWho,18);if(wi){wi.style.verticalAlign='middle';wi.style.marginRight='4px';l.appendChild(wi)}}l.appendChild(el('b',null,wc?nm(wc):myWho?(myName||'yourself'):'nobody yet'));
   const chg=el('button','linkbtn','Change');chg.type='button';chg.addEventListener('click',()=>showWho(showRanks));meBox.append(l,chg);
   $('rankNote').hidden=!LB.noWrite;$('shame').hidden=true;
   const list=$('rankList');
@@ -5069,7 +5160,7 @@ let rankPeriod='all',rankGrid=false,rankPrev=null;
 function weekKey(){const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),g=k=>+p.find(x=>x.type===k).value;
   const d=new Date(Date.UTC(g('year'),g('month')-1,g('day'))),dn=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-dn+3);const y=d.getUTCFullYear(),f=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-f)/864e5-3+((f.getUTCDay()+6)%7))/7);return y+'-W'+String(w).padStart(2,'0')}
 function weekLeft(){const now=new Date(),c=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'})),dn=(c.getDay()+6)%7,h=(7-dn)*24-c.getHours();return h>=48?Math.floor(h/24)+' days':h+' hours'}
-let RPS={};const rowName=r=>{const c=r.who&&byId(r.who),p=RPS[r.id];return c?nm(c):((p&&p.name)||r.name||'Someone')};
+let RPS={};const rowName=r=>{const c=r.who&&byId(r.who),p=RPS[r.id];return c?nm(c):((icParse(r.who)&&r.name)||(p&&p.name)||r.name||'Someone')};
 function crewAwards(rows){
   const out=[],top=(f,t,fmt)=>{let b=null,bv=0;for(const r of rows){const v=f(r)||0;if(v>bv){bv=v;b=r}}if(b)out.push({t,who:rowName(b),v:fmt(bv)})};
   {const agg={};for(const r of rows)for(const k in (r.fartsBy||{}))agg[k]=(agg[k]||0)+(r.fartsBy[k]||0);const w=Object.entries(agg).sort((a,b)=>b[1]-a[1])[0];if(w&&w[1]>0&&byId(w[0]))out.push({t:'Gassiest guy',who:nm(byId(w[0])),v:w[1].toLocaleString()+' farts on the trail'})}
@@ -5086,7 +5177,7 @@ function showPlayerCard(r){
   const scr=$('ranksScr');let ov=$('pcard');if(ov)ov.remove();
   ov=el('div','pcover');ov.id='pcard';const card=el('div','pcard');ov.appendChild(card);
   const close=()=>ov.remove();ov.addEventListener('click',e=>{if(e.target===ov)close()});
-  const c=r.who&&byId(r.who),top=el('div','pctop');if(c){const p=portrait(c,2);top.appendChild(p)}
+  const c=r.who&&byId(r.who),top=el('div','pctop');if(c){const p=portrait(c,2);top.appendChild(p)}else{const wi=iconCanvas(r.who,44);if(wi)top.appendChild(wi)}
   const nmb=el('div','pcn');nmb.append(el('b',null,rowName(r)+(r.id===LB.uid?' (you)':'')),el('span',null,titleOf(r.lvl||1)+' · Lv '+(r.lvl||1)));top.appendChild(nmb);
   const x=el('button','back');x.type='button';x.setAttribute('aria-label','Close');x.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';x.addEventListener('click',close);top.appendChild(x);card.appendChild(top);
   const tc=tierCounts(r.badges),tb=el('div','pctiers');for(let k=4;k>=1;k--){const s=el('span','tk t'+k);s.append(el('i'),document.createTextNode(tc[k]+' '+TIERS[k].n));tb.appendChild(s)}card.appendChild(tb);
@@ -5107,8 +5198,8 @@ function rankRow(list,r,ps,sc,sub,tt,mv){
   const row=el('div','rank'+(r.id===LB.uid?' mine':'')+(r.rank<=3?' top':''));row.tabIndex=0;row.setAttribute('role','button');row.addEventListener('click',()=>showPlayerCard(r));
   {const no=el('span','no',String(r.rank));if(mv==='new')no.appendChild(el('i','mv mvn','NEW'));else if(mv>0)no.appendChild(el('i','mv mvu','\u25B2'+mv));else if(mv<0)no.appendChild(el('i','mv mvd','\u25BC'+(-mv)));row.appendChild(no)}
   const c=r.who&&byId(r.who),p=ps[r.id];
-  if(c)row.appendChild(portrait(c,1));else{const d=el('span','dot');d.style.background=(p&&p.color)||['#e0702b','#2a9d8f','#6d4bb0','#d8b23a','#3a6cc0'][(r.id||'').charCodeAt(0)%5||0];row.appendChild(d)}
-  const n=el('div','nm'),nb=el('b');if(r.rank===1)nb.appendChild(el('i','crownic'));nb.appendChild(document.createTextNode((c?nm(c):((p&&p.name)||r.name||'Someone'))+(r.id===LB.uid?' (you)':'')));
+  const wi=!c&&iconCanvas(r.who,22);if(c)row.appendChild(portrait(c,1));else if(wi)row.appendChild(wi);else{const d=el('span','dot');d.style.background=(p&&p.color)||['#e0702b','#2a9d8f','#6d4bb0','#d8b23a','#3a6cc0'][(r.id||'').charCodeAt(0)%5||0];row.appendChild(d)}
+  const n=el('div','nm'),nb=el('b');if(r.rank===1)nb.appendChild(el('i','crownic'));nb.appendChild(document.createTextNode((c?nm(c):((icParse(r.who)&&r.name)||(p&&p.name)||r.name||'Someone'))+(r.id===LB.uid?' (you)':'')));
   for(const t of tt)nb.appendChild(el('em','ttl',t));
   {const tc=tierCounts(r.badges);if(tc[3]||tc[4]){const f=el('span','flair');if(tc[4])f.appendChild(el('i','fl t4',String(tc[4])));if(tc[3])f.appendChild(el('i','fl t3',String(tc[3])));nb.appendChild(f)}}
   n.append(nb,el('span',null,sub));row.append(n,el('span','sc',sc.toLocaleString()));list.appendChild(row);
@@ -5232,6 +5323,7 @@ $('nameForm').addEventListener('submit',e=>{
   myName=v;myWho='other';save('rc_name',v);save('rc_me','other');SFX.tap();pushName();$('nameForm').hidden=true;(whoNext||showRanks)();
 });
 showHome();
+{let o2=null;try{o2=localStorage.getItem('rc_onb2')}catch(e){}if(!o2)setTimeout(()=>{if(mode==='menu'&&!$('home').hidden)openOnb(showHome)},400)}
 requestAnimationFrame(frame);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 try{if(ACC.code&&!sessionStorage.getItem('rc_pulled')){sessionStorage.setItem('rc_pulled','1');syncPull(ACC.code).then(r=>{if(r==='applied')location.reload()}).catch(()=>{})}}catch(e){}
