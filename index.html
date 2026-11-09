@@ -796,6 +796,7 @@ const STYLE_GROUPS=[
  {k:'pee',title:'Pee-break style',note:'Changes the pause screen.',items:[{id:'none',name:'Classic line-up',price:0},{id:'curtain',name:'Privacy curtain',price:720},{id:'outhouse',name:'Portable outhouse',price:900},{id:'wrong',name:'Wrong-way guy',price:480}]},
  {k:'home',title:'Home screen',note:'Where the crew hangs out on the main menu.',items:[{id:'none',name:'Campfire',price:0},{id:'apt',name:'The Hew Stu living room',price:2400,need:'hewstu',desc:'Your actual apartment. Whole crew on the couch.'}]},
  {k:'tent',title:'Camp tent',note:'Shows up at the campfire.',items:[{id:'none',name:'No tent',price:0},{id:'dome',name:'Orange dome',price:600},{id:'aframe',name:'Canvas A-frame',price:720},{id:'teepee',name:'Teepee',price:960}]},
+ {k:'music',title:'Soundtrack',note:'Plays on the home screen and during regular runs. Equip one and head back home to hear it.',items:[{id:'none',name:'Trail theme',price:0},{id:'grace',name:'Amazing Grace',price:900},{id:'doxo',name:'The Doxology',price:900},{id:'joyful',name:'Joyful, Joyful',price:900},{id:'saints',name:'When the Saints',price:1050},{id:'mountain',name:"Comin' Round the Mountain",price:1050},{id:'susanna',name:'Oh! Susanna',price:1050},{id:'mtnking',name:'Hall of the Mountain King',desc:'Speeds up every loop.',price:1500},{id:'tell',name:'William Tell Gallop',price:1500},{id:'ridge',name:'King of the Ridge',desc:'Backyard twang. An original.',price:1800},{id:'smell',name:'Smell It in the Air',desc:'Build... and drop. An original.',price:2100}]},
  {k:'fire',title:'Campfire',note:'The fire at camp and in stories.',items:[{id:'none',name:'Classic flames',price:0},{id:'blue',name:'Blue flames',price:720},{id:'green',name:'Ghost green',price:900},{id:'purple',name:'Purple haze',price:1080}]}
 ];
 const styleOf=k=>((equip.style||{})[k])||'none';
@@ -4244,10 +4245,65 @@ const SFX=(()=>{
     windG=mk('lowpass',420,.7,.1);waterG=mk('bandpass',1300,.55,0);
     setInterval(tick,60);
   }
+  /* ---------- shop soundtracks: public-domain tunes + two originals, as note data [midi, eighths] ---------- */
+  const TRK={
+   grace:{bpm:76,bar:6,key:7,w:'triangle',bass:'waltz',mel:[[0,4],[62,2],[67,4],[71,1],[67,1],[71,4],[69,2],[67,4],[64,2],[62,4],[62,2],[67,4],[71,1],[67,1],[71,4],[69,2],[74,4],[71,2],[74,4],[71,1],[67,1],[71,4],[69,2],[67,4],[64,2],[62,4],[62,2],[67,4],[71,1],[67,1],[71,4],[69,2],[67,6],[0,6]]},
+   doxo:{bpm:92,bar:8,key:7,w:'triangle',bass:'boom',mel:[[67,8],[67,4],[66,4],[64,4],[62,4],[67,4],[69,4],[71,8],[71,8],[71,4],[71,4],[69,4],[67,4],[72,4],[71,4],[69,8],[67,8],[69,4],[71,4],[69,4],[67,4],[64,4],[66,4],[67,8],[74,8],[71,4],[67,4],[69,4],[72,4],[71,4],[69,4],[67,8]]},
+   joyful:{bpm:112,bar:8,key:0,w:'square',bass:'boom',mel:[[64,2],[64,2],[65,2],[67,2],[67,2],[65,2],[64,2],[62,2],[60,2],[60,2],[62,2],[64,2],[64,3],[62,1],[62,4],[64,2],[64,2],[65,2],[67,2],[67,2],[65,2],[64,2],[62,2],[60,2],[60,2],[62,2],[64,2],[62,3],[60,1],[60,4],
+     [62,2],[62,2],[64,2],[60,2],[62,2],[64,1],[65,1],[64,2],[60,2],[62,2],[64,1],[65,1],[64,2],[62,2],[60,2],[62,2],[55,4],[64,2],[64,2],[65,2],[67,2],[67,2],[65,2],[64,2],[62,2],[60,2],[60,2],[62,2],[64,2],[62,3],[60,1],[60,4]]},
+   mtnking:{bpm:96,bar:8,key:9,minor:1,w:'square',bass:'pulse',accel:1,drums:'march',mel:[[57,1],[59,1],[60,1],[62,1],[64,1],[60,1],[64,2],[63,1],[59,1],[63,2],[62,1],[58,1],[62,2],[57,1],[59,1],[60,1],[62,1],[64,1],[60,1],[64,1],[69,1],[67,1],[64,1],[60,1],[64,1],[67,4],
+     [64,1],[66,1],[68,1],[69,1],[71,1],[68,1],[71,2],[72,1],[68,1],[72,2],[71,1],[68,1],[71,2],[64,1],[66,1],[68,1],[69,1],[71,1],[68,1],[71,1],[76,1],[74,1],[71,1],[68,1],[71,1],[74,4]]},
+   tell:{bpm:300,bar:16,key:9,w:'square',bass:'gallop',drums:'march',mel:[[76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[76,1],[81,2],[83,2],[85,2],[76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[73,1],[73,1],[69,2],[73,2],[76,2],
+     [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[76,1],[81,2],[83,2],[85,2],[76,1],[76,1],[76,2],[73,1],[73,1],[69,2],[71,1],[71,1],[68,2],[64,4]]},
+   mountain:{bpm:104,bar:8,key:0,w:'square',bass:'boom',drums:'country',mel:[[0,6],[67,1],[69,1],[72,1],[72,1],[72,1],[72,1],[69,1],[67,1],[64,1],[67,1],[72,6],[72,1],[74,1],[76,1],[76,1],[76,1],[76,1],[79,1],[76,1],[74,1],[72,1],[74,6],[77,1],[79,1],
+     [81,1],[81,1],[81,1],[81,1],[79,1],[77,1],[76,1],[74,1],[76,1],[76,1],[76,1],[76,1],[74,1],[72,1],[71,1],[69,1],[71,1],[71,1],[71,1],[71,1],[74,1],[72,1],[71,1],[74,1],[72,8]]},
+   susanna:{bpm:112,bar:8,key:0,w:'square',bass:'boom',drums:'country',mel:[[0,6],[60,1],[62,1],[64,2],[67,2],[67,3],[69,1],[67,2],[64,2],[60,3],[62,1],[64,2],[64,2],[62,2],[60,2],[62,6],[60,1],[62,1],[64,2],[67,2],[67,3],[69,1],[67,2],[64,2],[60,3],[62,1],[64,2],[64,2],[62,2],[62,2],[60,8],
+     [65,4],[65,4],[69,2],[69,4],[69,2],[67,2],[67,2],[64,2],[60,2],[62,6],[60,1],[62,1],[64,2],[67,2],[67,3],[69,1],[67,2],[64,2],[60,3],[62,1],[64,2],[64,2],[62,2],[62,2],[60,8]]},
+   saints:{bpm:120,bar:8,key:0,w:'square',bass:'boom',drums:'march',mel:[[0,2],[60,2],[64,2],[65,2],[67,8],[0,2],[60,2],[64,2],[65,2],[67,8],[0,2],[60,2],[64,2],[65,2],[67,4],[64,4],[60,4],[64,4],[62,8],
+     [0,2],[64,2],[64,2],[62,2],[60,6],[60,2],[64,4],[67,2],[67,2],[65,8],[0,2],[64,2],[65,2],[67,2],[64,4],[60,4],[62,8],[60,8]]},
+   ridge:{bpm:100,bar:8,key:4,w:'sawtooth',twang:1,bass:'boom',drums:'country',mel:[[64,1],[67,1],[68,2],[71,2],[68,1],[71,1],[73,2],[71,2],[68,4],[64,1],[67,1],[68,2],[71,1],[73,1],[71,1],[68,1],[69,2],[68,2],[64,4],
+     [76,2],[74,1],[71,1],[73,2],[71,2],[68,2],[69,1],[71,1],[68,4],[66,1],[68,1],[69,2],[71,2],[73,2],[71,6],[0,2]]},
+   smell:{bpm:128,bar:8,key:9,minor:1,w:'sawtooth',bass:'pulse',drums:'edm',chords:[[9,0,4],[9,0,4],[5,9,0],[5,9,0],[0,4,7],[0,4,7],[7,11,2],[7,11,2],[9,0,4],[9,0,4],[5,9,0],[5,9,0],[0,4,7],[0,4,7],[7,11,2],[7,11,2]],
+     mel:[[0,64],[76,2],[76,1],[74,1],[72,2],[69,2],[72,2],[74,2],[76,4],[77,2],[76,1],[74,1],[72,2],[69,2],[67,2],[69,2],[72,4],[76,2],[76,1],[74,1],[72,2],[69,2],[72,2],[74,2],[76,2],[79,2],[81,4],[79,2],[76,2],[74,2],[72,2],[71,4],[69,4]]}
+  };
+  function trkPrep(T){if(T.ev)return T;const ev=[];let p=0;for(const [m,d] of T.mel){ev.push({p,m,d});p+=d}T.len=Math.ceil(p/T.bar)*T.bar;const bars=T.len/T.bar;
+    const CH=T.minor?[[0,3,7],[5,8,0],[7,11,2],[8,0,3],[3,7,10]]:[[0,4,7],[5,9,0],[7,11,2],[9,0,4]];
+    if(T.chords)T.ch=T.chords.map(c=>c.map(x=>((x-T.key)%12+12)%12));
+    else{T.ch=[];let prev=0;for(let b=0;b<bars;b++){const s0=b*T.bar,e=ev.find(e=>e.m&&e.p<=s0&&e.p+e.d>s0)||ev.find(e=>e.m&&e.p>=s0&&e.p<s0+T.bar);let c=prev;if(e){const pc=((e.m-T.key)%12+12)%12,i=CH.findIndex(x=>x.includes(pc));if(i>=0)c=i}T.ch.push(CH[c]);prev=c}}
+    T.at=new Map(ev.filter(e=>e.m).map(e=>[e.p,e]));T.ev=ev;return T}
+  let trkI=0,trkLast=null,trkNB=null;
+  const trkId=()=>{try{const v=styleOf('music');return v&&v!=='none'&&TRK[v]?v:null}catch(e){return null}};
+  function drum(bus,k,t,v){if(k==='kick'){const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(40,t+.14);g.gain.setValueAtTime(.32*v,t);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.connect(g).connect(bus);o.start(t);o.stop(t+.2);return}
+    if(!trkNB){const n=ac.sampleRate*.3|0;trkNB=ac.createBuffer(1,n,ac.sampleRate);const d=trkNB.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}
+    const s=ac.createBufferSource();s.buffer=trkNB;const fl=ac.createBiquadFilter(),g=ac.createGain(),hat=k==='hat';fl.type=hat?'highpass':'bandpass';fl.frequency.value=hat?7000:1800;g.gain.setValueAtTime((hat?.05:.12)*v,t);g.gain.exponentialRampToValueAtTime(.001,t+(hat?.04:.12));s.connect(fl).connect(g).connect(bus);s.start(t);s.stop(t+.15)}
+  function trkStep(T,bus,vol){
+    const L=T.len,i=trkI%L,loop=Math.floor(trkI/L),bar=Math.floor(i/T.bar),b=i%T.bar,ch=T.ch[bar]||T.ch[0],sl=trkLen(T),t=nextT;
+    const e=T.at.get(i);
+    if(e){const f=mf(e.m),d=Math.max(.08,sl*e.d*.92),v=(T.w==='sawtooth'?.02:T.w==='square'?.028:.05)*vol;
+      if(T.twang){const o=ac.createOscillator(),g=ac.createGain();o.type=T.w;o.frequency.setValueAtTime(f*.94,t);o.frequency.exponentialRampToValueAtTime(f,t+.05);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(bus);o.start(t);o.stop(t+d+.03)}
+      else note(bus,f,t,d,T.w,v)}
+    const root=36+((T.key+ch[0])%12),fifth=root+((ch[2]-ch[0]+12)%12),bv=.075*vol;
+    if(T.bass==='waltz'){if(b===0)note(bus,mf(root),t,sl*2,'triangle',bv);else if(b===2||b===4)ch.forEach(c=>note(bus,mf(60+((T.key+c)%12)),t,sl*1.2,'sine',.01*vol))}
+    else if(T.bass==='boom'){if(b%4===0)note(bus,mf(b===0?root:fifth),t,sl*1.8,'triangle',bv);else if(b%4===2)ch.forEach(c=>note(bus,mf(60+((T.key+c)%12)),t,sl*.9,'sine',.009*vol))}
+    else if(T.bass==='pulse'){if(b%2===0)note(bus,mf(root+(b%4===2?12:0)),t,sl*1.4,'sawtooth',.03*vol)}
+    else if(T.bass==='gallop'){if(b%4===0)note(bus,mf(root),t,sl*2,'triangle',bv);else if(b%4===2)note(bus,mf(fifth),t,sl*1.5,'triangle',bv*.8)}
+    if(b===0&&T.bass!=='pulse')ch.forEach(c=>note(bus,mf(72+((T.key+c)%12)),t,sl*T.bar*.9,'sine',.006*vol));
+    const dv=vol*.8;
+    if(T.drums==='country'){if(b%4===0)drum(bus,'kick',t,dv*.7);if(b%4===2)drum(bus,'snare',t,dv*.6);if(b%2===1)drum(bus,'hat',t,dv*.5)}
+    else if(T.drums==='march'){if(b%4===0)drum(bus,'kick',t,dv*.6);if(b%4===2)drum(bus,'snare',t,dv*.45)}
+    else if(T.drums==='edm'){const drop=bar>=8;
+      if(drop){if(b%2===0)drum(bus,'kick',t,dv);if(b%2===1)drum(bus,'hat',t,dv*1.2);if(b===4)drum(bus,'snare',t,dv*.8);if(b===0)ch.forEach(c=>{note(bus,mf(48+((T.key+c)%12)),t,sl*7,'sawtooth',.016*vol);note(bus,mf(60+((T.key+c)%12)),t,sl*7,'sawtooth',.012*vol)})}
+      else{const k=bar/8;note(bus,mf(60+((T.key+ch[b%3])%12)+(b%6>=3?12:0)),t,sl*.8,'square',(.008+.018*k)*vol);if(bar>=6&&(b%2===0||bar===7))drum(bus,'snare',t,dv*(.2+.5*k));if(bar===7&&b===0){const o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(200,t);o.frequency.exponentialRampToValueAtTime(1600,t+sl*8);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.02*vol,t+sl*7);g.gain.exponentialRampToValueAtTime(.0001,t+sl*8);o.connect(g).connect(bus);o.start(t);o.stop(t+sl*8+.05)}}}
+    trkI++;
+  }
+  const trkLen=T=>60/(T.bpm*(T.accel?Math.min(2.1,1+.22*Math.floor(trkI/T.len)):1))/2;
   function tick(){
     if(!ac||ac.state!=='running')return;const now=ac.currentTime;
     if(nextT<now)nextT=now+.05;
+    const tid=trkId();if(tid!==trkLast){trkLast=tid;trkI=0}
     while(nextT<now+.25){
+      const T=tid?trkPrep(TRK[tid]):null;
+      if(T&&(scn==='menu'||(scn==='run'&&!ffm))){const sl=trkLen(T);trkStep(T,scn==='menu'?musicG:runG,scn==='menu'?1:.55);nextT+=sl;continue}
       if(scn==='menu'){
         const i=stepI%64,bar=Math.floor(i/8),m=MEL[i],b=i%8;
         if(m)note(musicG,mf(m),nextT,STEP*1.6,'square',.03);
