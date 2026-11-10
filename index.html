@@ -448,6 +448,22 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
 .modebtn i.fstack{display:flex;flex-direction:column;align-items:flex-end;gap:0;flex:none;line-height:1.2;font-size:.66rem;white-space:nowrap;margin:-2px 0}
 .modebtn i.fstack span{display:block;font:500 .64rem var(--display);color:var(--muted);line-height:1.25}
 .modebtn i.fstack b{font:700 .72rem var(--display);color:var(--amber)}
+.unlockscr{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));background:radial-gradient(circle at 50% 45%,rgba(52,26,88,.985),rgba(8,4,14,.995));overflow:hidden;animation:ulIn .35s ease both}
+.unlockscr[hidden]{display:none}
+.ulrays{position:absolute;left:50%;top:45%;width:220vmax;height:220vmax;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,rgba(255,216,74,.10) 0 8deg,transparent 8deg 22deg);animation:ulSpin 18s linear infinite;pointer-events:none}
+.ulcard{position:relative;width:min(100%,380px);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;animation:ulPop .6s cubic-bezier(.2,1.5,.4,1) .1s both}
+.ulkick{margin:0;font:700 .9rem var(--display);letter-spacing:.18em;color:#2a1408;background:linear-gradient(90deg,#ffd84a,#fff6c0,#ffd84a);background-size:200% 100%;padding:6px 14px;border-radius:999px;box-shadow:0 0 24px rgba(255,216,74,.5);animation:ovShine 1.6s linear infinite}
+.ulart{width:100%;border-radius:14px;overflow:hidden;border:3px solid #ffd84a;box-shadow:0 0 0 3px #2a1840,0 0 40px rgba(255,216,74,.35),0 12px 30px rgba(0,0,0,.5);background:#0d0a14}
+.ulart canvas{display:block;width:100%;aspect-ratio:240/135;image-rendering:pixelated}
+.ulname{margin:4px 0 0;font:700 clamp(1.7rem,8vw,2.4rem) var(--display);color:#ffd84a;text-shadow:0 3px 0 rgba(0,0,0,.4),0 0 22px rgba(255,180,40,.5);line-height:1.05;text-wrap:balance}
+.uldesc{margin:0;color:var(--cream);font-size:.92rem;line-height:1.35;max-width:34ch}
+.ulhow{margin:0;color:#c8b0f0;font:700 .72rem var(--display);letter-spacing:.08em;text-transform:uppercase}
+.ulbtns{display:flex;gap:8px;width:100%;margin-top:4px}.ulbtns .btn{flex:1}
+@keyframes ulIn{from{opacity:0}}@keyframes ulSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}@keyframes ulPop{from{transform:scale(.6) translateY(20px);opacity:0}}
+@media (max-height:540px){.ulcard{width:min(100%,560px);display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:8px 14px}.ulkick,.ulbtns{grid-column:1/-1;justify-self:center}.ulart{grid-row:2/5}.ulname{font-size:1.6rem}}
+@media (prefers-reduced-motion:reduce){.ulrays,.ulkick{animation:none}.ulcard{animation:none}}
+.modebtn.locked{opacity:.62;border-style:dashed;cursor:pointer}.modebtn.locked b::before{content:"🔒 ";font-size:.85em}
+.modebtn .req{display:block;margin-top:3px;font-style:normal;font-size:.72rem;color:var(--amber)}
 .modebtn{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:9px 12px;color:var(--cream);cursor:pointer;text-align:left}
 .modebtn div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .modebtn b{font:700 1.05rem var(--display)}
@@ -796,16 +812,16 @@ const HATS=[
  {id:'beanie',name:'Red beanie',price:360,hat:'beanie',hatC:'#b8322e',brim:'#8f2320'},
  {id:'bucket',name:'Bucket hat',price:540,hat:'bucket',hatC:'#c9b48a',brim:'#a8956c'},
  {id:'bcap',name:'Belmont cap',price:600,hat:'cap',hatC:'#1f3a6e',brim:'#16294d',patch:'#c8102e',lvl:2},
- {id:'headlamp',name:'Headlamp',price:720,lamp:true},
+ {need:'night',id:'headlamp',name:'Headlamp',price:720,lamp:true},
  {id:'cowboy',name:'Cowboy hat',price:1200,hat:'cowboy',hatC:'#8a5a2e',brim:'#6e4522'},
- {id:'fireman',name:'Firefighter helmet',price:960,hat:'fireman',hatC:'#c8282b',brim:'#8f1c1e'},
- {id:'silverhood',name:'Heat-shield hood',price:1080,hat:'silver',hatC:'#c8ccd0',brim:'#8a9096',lvl:3},
- {id:'rodeo',name:'Bear-ear Stetson',price:1200,hat:'rodeo',hatC:'#7a4a22',brim:'#5a3418'},
- {id:'honeyhat',name:'Honey-drip bucket',price:840,hat:'honey',hatC:'#e8b23a',brim:'#c8901a'},
- {id:'salmonhat',name:'Salmon hat',price:720,hat:'salmon',hatC:'#e07a5a',brim:'#c05a3a'},
- {id:'bearears',name:'Bear hoodie',price:900,hat:'bearears',hatC:'#5b3a22',brim:'#8a6040'},
- {id:'arcadecap',name:'Arcade cap',price:660,hat:'cap',hatC:'#3a1e5a',brim:'#ffd84a',patch:'#ff6ab0'},
- {id:'visor',name:'Soccer-mom visor',price:540,hat:'visor',hatC:'#f4f4f0',brim:'#3a5a98'},
+ {need:'ff_inferno',id:'fireman',name:'Firefighter helmet',price:960,hat:'fireman',hatC:'#c8282b',brim:'#8f1c1e'},
+ {need:'ff_raft',id:'silverhood',name:'Heat-shield hood',price:1080,hat:'silver',hatC:'#c8ccd0',brim:'#8a9096',lvl:3},
+ {need:'ff_chain',id:'rodeo',name:'Bear-ear Stetson',price:1200,hat:'rodeo',hatC:'#7a4a22',brim:'#5a3418'},
+ {need:'bear_double',id:'honeyhat',name:'Honey-drip bucket',price:840,hat:'honey',hatC:'#e8b23a',brim:'#c8901a'},
+ {need:'bear_snack',id:'salmonhat',name:'Salmon hat',price:720,hat:'salmon',hatC:'#e07a5a',brim:'#c05a3a'},
+ {need:'eaten',id:'bearears',name:'Bear hoodie',price:900,hat:'bearears',hatC:'#5b3a22',brim:'#8a6040'},
+ {need:'ar_all',id:'arcadecap',name:'Arcade cap',price:660,hat:'cap',hatC:'#3a1e5a',brim:'#ffd84a',patch:'#ff6ab0'},
+ {need:'ar_combo',id:'visor',name:'Soccer-mom visor',price:540,hat:'visor',hatC:'#f4f4f0',brim:'#3a5a98'},
  {id:'goosehat',name:'Goose hat',price:0,hat:'goose',hatC:'#ffffff',brim:'#f2a030',badge:'ar_cross100'}
 ];
 const PACKS=[
@@ -816,14 +832,14 @@ const PACKS=[
  {id:'purple',name:'Grape',price:420,color:'#6d4bb0'},
  {id:'camopack',name:'Camo pack',price:540,color:'#5f6448',lvl:2},
  {id:'gold',name:'Solid gold',price:1500,color:'#d8b23a'},
- {id:'airtank',name:'Air tank',price:900,color:'#9a9ea4',deco:'tank'},
- {id:'fireproof',name:'Fireproof pack',price:840,color:'#c8ccd0',deco:'shine',lvl:3},
- {id:'mallowpack',name:"S'mores pack",price:660,color:'#3a6cc0',deco:'mallow'},
+ {need:'ff_burn',id:'airtank',name:'Air tank',price:900,color:'#9a9ea4',deco:'tank'},
+ {need:'ff_swing',id:'fireproof',name:'Fireproof pack',price:840,color:'#c8ccd0',deco:'shine',lvl:3},
+ {need:'ff_mallow',id:'mallowpack',name:"S'mores pack",price:660,color:'#3a6cc0',deco:'mallow'},
  {id:'banjo',name:"Henry's banjo",price:780,color:'#6f747a',deco:'banjo',who:'camo'},
  {id:'spikeball',name:'Spikeball set',price:720,color:'#3a6cc0',deco:'spike',who:'curly'},
  {id:'napillow',name:'Nap pillow',price:540,color:'#25282b',deco:'pillow',who:'patch'},
- {id:'gascan',name:'Gas can',price:780,color:'#c8262a',deco:'gascan'},
- {id:'cartpack',name:'Cartridge pack',price:720,color:'#4a4458',deco:'cart'},
+ {need:'ar_od1k',id:'gascan',name:'Gas can',price:780,color:'#c8262a',deco:'gascan'},
+ {need:'ar_all',id:'cartpack',name:'Cartridge pack',price:720,color:'#4a4458',deco:'cart'},
  {id:'hubshield',name:'Hubcap shield',price:0,color:'#25282b',deco:'hubcap',badge:'ar_flip'}
 ];
 const SHIRTS=[
@@ -833,38 +849,38 @@ const SHIRTS=[
  {id:'flannel',name:'Flannel',price:660,shirt:'#a8322d',plaid:'#5e1b18'},
  {id:'camotee',name:'Camo tee',price:720,shirt:'#5f6448',camo:true,lvl:3},
  {id:'jersey',name:'Crew jersey',price:1200,shirt:'#f2a541',num:true,lvl:5},
- {id:'turnout',name:'Turnout coat',price:1020,shirt:'#d8b82a',stripe:'#e8f0f0'},
- {id:'reflect',name:'Reflective jacket',price:1080,shirt:'#b8c0c8',shine:true,lvl:3},
- {id:'saddle',name:'Saddle blanket',price:900,shirt:'#b84a2a',zig:true},
+ {need:'ff_kaboom',id:'turnout',name:'Turnout coat',price:1020,shirt:'#d8b82a',stripe:'#e8f0f0'},
+ {need:'ff_climb',id:'reflect',name:'Reflective jacket',price:1080,shirt:'#b8c0c8',shine:true,lvl:3},
+ {need:'ff_lake',id:'saddle',name:'Saddle blanket',price:900,shirt:'#b84a2a',zig:true},
  {id:'scorched',name:'Scorched tee',price:0,shirt:'#4a3a32',scorch:true,fireRuns:10},
  {id:'pyrjersey',name:'Pyramid jersey',price:0,shirt:'#6a2ab0',num:true,badge:'ff_pyramid'},
- {id:'odytee',name:'Odyssey tee',price:600,shirt:'#f4f4f0',stripe:'#3a5a98'},
- {id:'snaketee',name:'Snake Trail tee',price:600,shirt:'#aad751',stripe:'#2f5a24'},
- {id:'arcadetee',name:'Arcade tee',price:720,shirt:'#2a1840',stripe:'#ffd84a'},
- {id:'tanktop',name:'Gym tank top',price:1500,shirt:'#f8f8f4',jacked:true,lvl:4}
+ {need:'ar_flip',id:'odytee',name:'Odyssey tee',price:600,shirt:'#f4f4f0',stripe:'#3a5a98'},
+ {need:'ar_snake30',id:'snaketee',name:'Snake Trail tee',price:600,shirt:'#aad751',stripe:'#2f5a24'},
+ {need:'ar_all',id:'arcadetee',name:'Arcade tee',price:720,shirt:'#2a1840',stripe:'#ffd84a'},
+ {need:'ar_risky',id:'tanktop',name:'Gym tank top',price:1500,shirt:'#f8f8f4',jacked:true,lvl:4}
 ];
 const FACES=[
  {id:'f0',name:'Original',price:0},
  {id:'clean',name:'Clean shave',price:180,face:'clean'},
  {id:'handlebar',name:'Handlebar stache',price:480,face:'handlebar'},
  {id:'beard',name:'Full beard',price:840,face:'beard',lvl:2},
- {id:'goggles',name:'Smokejumper goggles',price:540,goggles:true}
+ {need:'ff_combo9',id:'goggles',name:'Smokejumper goggles',price:540,goggles:true}
 ];
 const EXTRAS=[
  {id:'x0',name:'Nothing',price:0},
  {id:'bandana',name:'Red bandana',price:360,bandana:true},
  {id:'glasses',name:'Glasses',price:420,glasses:true},
  {id:'shades',name:'Shades',price:480,shades:true},
- {id:'tooth',name:'Bear-tooth necklace',price:1080,tooth:true,lvl:4},
- {id:'harness',name:'Zipline harness',price:660,harness:true},
- {id:'lasso',name:'Lasso',price:720,lasso:true},
+ {need:'bear_fear',id:'tooth',name:'Bear-tooth necklace',price:1080,tooth:true,lvl:4},
+ {need:'ff_climb',id:'harness',name:'Zipline harness',price:660,harness:true},
+ {need:'ff_chain',id:'lasso',name:'Lasso',price:720,lasso:true},
  {id:'flameshoes',name:'Flaming shoes',price:0,flames:true,badge:'ff_all'},
  {id:'clawneck',name:'Bear-claw necklace',price:0,claw:true,journal:'bear'},
  {id:'ashstick',name:'Ash hiking stick',price:0,stick:true,journal:'fire'},
- {id:'pixshades',name:'Pixel shades',price:900,pixshades:true},
- {id:'vankeys',name:'Odyssey keys',price:480,keys:true},
+ {need:'ar_rhythm',id:'pixshades',name:'Pixel shades',price:900,pixshades:true},
+ {need:'ar_combo',id:'vankeys',name:'Odyssey keys',price:480,keys:true},
  {id:'gemneck',name:'Cave gem necklace',price:0,gemneck:true,badge:'ar_gem'},
- {id:'eagle',name:'Shoulder eagle',price:1800,eagle:true,lvl:5}
+ {need:'ar_cross100',id:'eagle',name:'Shoulder eagle',price:1800,eagle:true,lvl:5}
 ];
 const SLOTS=['hat','pack','shirt','face','extra'];
 const CATALOG={hat:HATS,pack:PACKS,shirt:SHIRTS,face:FACES,extra:EXTRAS};
@@ -1320,6 +1336,7 @@ const MODES=[
 ];
 let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}catch(e){}
 if(!MODES.find(m=>m.id===runMode))runMode='classic';
+setTimeout(()=>{try{if(!MODES.find(m=>m.id===runMode).arcade&&!modeOk(runMode))runMode='classic'}catch(e){}},0);
 const pick=a=>a[Math.random()*a.length|0];
 const LOST_GEN=['Go on without me!',"I'm good here.",'Tell my mom I tried.','Just five minutes.'];
 const LOST_LINES={"patch": ["Don't push me. I'll tickle you.", "Wake me up when we get there."], "curly": ["No.", "Go on. I'll catch up. Probably."], "camo": ["BLEHHHH.", "*dying whale noises*"], "stache": ["I meant to do that.", "A philosophical setback."], "nathan": ["Pray for me, boys.", "This wasn't in the plan."]};
@@ -3196,6 +3213,37 @@ function drawPeeOdyssey(){
   const pv=.75+.15*Math.sin(t*3);SFX.peeSurface('far');SFX.setPee(pv);SFX.peeVoice(0,pv);
 }
 
+/* ---------- unlocks: modes by level or milestone, themed gear by badge, and a big reveal when something opens up ---------- */
+const MODE_REQ={night:{lvl:2},solo:{lvl:3},uphill:{lvl:4},bear:{fn:()=>(LIFE.eaten||0)>=5,txt:'Get eaten by the bear 5 times',prog:()=>Math.min(5,LIFE.eaten||0)+' / 5'},fire:{badge:'meters1500'},arcade:{badge:'meters500'},copter:{badge:'gut5'},odyssey:{badge:'up_camp'}};
+function modeOk(id){if(id==='arcade'){if(['cross','copter','odyssey','snake'].some(k=>modeBest[k]))return true}else if(modeBest[id]||(id==='fire'&&['fire_blaze','fire_lava','fire_ride'].some(k=>modeBest[k]))||(id==='bear'&&modeBest.bear_t))return true;
+  const r=MODE_REQ[id];if(!r)return true;if(r.lvl)return level()>=r.lvl;if(r.badge)return !!badges[r.badge];if(r.fn)return r.fn();return true}
+function modeReq(id){const r=MODE_REQ[id]||{};if(r.lvl)return 'Reach level '+r.lvl;if(r.badge){const b=BADGES.find(x=>x.id===r.badge);return (b?b.desc:'Earn a badge')+(b?'  ('+b.name+' badge)':'')}return r.txt||''}
+function modeProg(id){const r=MODE_REQ[id]||{};if(r.lvl)return 'Lv '+level()+' / '+r.lvl;if(r.prog)return r.prog();return ''}
+function gearNeedName(it){const b=BADGES.find(x=>x.id===it.need);return b?b.name:'a badge'}
+function unlockSet(){const out=[];for(const m of MODES)if(m.id!=='classic'&&m.id!=='snake'&&MODE_REQ[m.id]&&modeOk(m.id))out.push('mode:'+m.id);if(modeOk('arcade'))out.push('mode:arcade');
+  for(const sl of SLOTS)for(const it of CATALOG[sl])if(it.need&&badges[it.need])out.push('gear:'+sl+':'+it.id);return out}
+let UNQ=[];
+function checkUnlocks(delay){let seen=null;try{seen=JSON.parse(localStorage.getItem('rc_unl')||'null')}catch(e){}const cur=unlockSet();
+  if(!Array.isArray(seen)){save('rc_unl',JSON.stringify(cur));return}
+  const fresh=cur.filter(k=>!seen.includes(k));if(!fresh.length)return;save('rc_unl',JSON.stringify([...new Set([...seen,...cur])]));
+  fresh.sort((a,b)=>(a.startsWith('mode')?0:1)-(b.startsWith('mode')?0:1));UNQ.push(...fresh);setTimeout(()=>{if(!$('unlockScr')||$('unlockScr').hidden)nextUnlock()},delay||0)}
+function unlockArt(key){const cv=document.createElement('canvas');cv.width=240;cv.height=135;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;const [kind,a,b]=key.split(':');
+  if(kind==='mode'&&['cross','copter','odyssey','snake','arcade'].includes(a)){const q=g.createLinearGradient(0,0,0,135);q.addColorStop(0,'#2a1840');q.addColorStop(1,'#0c0714');g.fillStyle=q;g.fillRect(0,0,240,135);const art=arcArtCanvas(a==='arcade'?'cross':a),w=Math.round(135*116/104);g.drawImage(art,Math.round((240-w)/2),0,w,135);return cv}
+  if(kind==='mode'){const tmp=document.createElement('canvas');tmp.width=200;tmp.height=112;const sm=S&&S.mode;if(S)S.mode='classic';try{drawOverArt(tmp.getContext('2d'),{night:'eaten',solo:'solo',uphill:'bearlose',bear:'bearwin',fire:'lava'}[a]||'crew',1.2)}catch(e){}finally{if(S)S.mode=sm}g.drawImage(tmp,0,0,240,135);return cv}
+  const it=CATALOG[a].find(q=>q.id===b),L=S&&S.leader||byId(sel)||CHARS[0],old=equip[L.id];equip[L.id]=Object.assign({},old||{},{[a]:b});
+  const q=g.createRadialGradient(120,70,10,120,70,120);q.addColorStop(0,'#3a2a5a');q.addColorStop(1,'#140c20');g.fillStyle=q;g.fillRect(0,0,240,135);
+  g.save();g.translate(120,118);g.scale(4,4);try{outlined(g,()=>drawHiker(g,L,0,0,0,false))}catch(e){}g.restore();if(old)equip[L.id]=old;else delete equip[L.id];return cv}
+function nextUnlock(){const key=UNQ.shift();if(!key)return;let box=$('unlockScr');
+  if(!box){box=el('div','unlockscr');box.id='unlockScr';box.hidden=true;box.innerHTML='<div class="ulrays"></div><div class="ulcard"><p class="ulkick"></p><div class="ulart"></div><h2 class="ulname"></h2><p class="uldesc"></p><p class="ulhow"></p><div class="ulbtns"><button class="btn big" type="button" data-go>Play it now</button><button class="btn ghost" type="button" data-ok>Nice!</button></div></div>';document.body.appendChild(box);
+    box.querySelector('[data-ok]').addEventListener('click',()=>{box.hidden=true;SFX.tap();if(UNQ.length)setTimeout(nextUnlock,250)});}
+  const [kind,a,b]=key.split(':'),go=box.querySelector('[data-go]');let kick,name,desc,how;
+  if(kind==='mode'){const m=a==='arcade'?{name:'The Ridge Arcade',desc:'The old cabinet by the campfire works again. Tap it to play Ridge Cross and more.'}:MODES.find(q=>q.id===a);kick=a==='arcade'?'ARCADE UNLOCKED':(m.arcade?'NEW ARCADE GAME':'NEW MODE UNLOCKED');name=m.name;desc=m.desc;how=MODE_REQ[a]&&MODE_REQ[a].lvl?'Unlocked at level '+MODE_REQ[a].lvl:'Unlocked: '+modeReq(a).replace(/  \(.*\)$/,'');
+    go.textContent=a==='arcade'?'Open arcade':'Play now';go.hidden=false;go.onclick=()=>{box.hidden=true;UNQ.length=0;if(a==='arcade'){showHome();showArcade()}else if(m.arcade){runMode=a;save('rc_mode',a);start()}else{runMode=a;save('rc_mode',a);showHome()}}}
+  else{const it=CATALOG[a].find(q=>q.id===b);kick='NEW GEAR UNLOCKED';name=it.name;desc='Now in the Store for '+it.price.toLocaleString()+' pinecones'+(it.lvl?' (level '+it.lvl+')':'')+'.';how='Unlocked with the '+gearNeedName(it)+' badge';go.textContent='To the Store';go.hidden=false;go.onclick=()=>{box.hidden=true;UNQ.length=0;showShop('outfit')}}
+  box.querySelector('.ulkick').textContent=kick;box.querySelector('.ulname').textContent=name;box.querySelector('.uldesc').textContent=desc;box.querySelector('.ulhow').textContent=how;
+  const art=box.querySelector('.ulart');art.innerHTML='';art.appendChild(unlockArt(key));box.classList.toggle('gear',kind==='gear');
+  box.hidden=false;box.style.animation='none';void box.offsetWidth;box.style.animation='';SFX.jingle&&SFX.jingle();setTimeout(()=>SFX.badge&&SFX.badge(),650);buzz(40)}
+setTimeout(()=>{try{checkUnlocks(0)}catch(e){}},1500);
 /* ---------- arcade shop: prize counter (tickets) and garage (pinecones) ---------- */
 const OD_GARAGE=[{k:'od_eng',n:'Engine',d:'Acceleration. Climb hills you used to stall on'},{k:'od_top',n:'Transmission',d:'Higher top speed'},{k:'od_tire',n:'Tires',d:'Traction on steep hills, mud, ice and snow'},{k:'od_sus',n:'Handling',d:'Harder to flip, better control in the air'},{k:'od_dur',n:'Roof cage',d:'The roof survives hits so you can roll back over'},{k:'od_tank',n:'Gas tank',d:'Holds more gas'}],OD_COST=[30,60,100,160,240,340,460,600],OD_MAXLV=8;
 const XSKINS=[{id:'',n:'Your leader',price:0},
@@ -3227,7 +3275,7 @@ let arcV='games';
 function arcView(v){arcV=v;for(const [id,k] of [['arcList','games'],['arcBoard','board'],['arcPrize','prize'],['arcGarage','garage']])$(id).hidden=v!==k;
   document.querySelectorAll('#arcNav button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)));
   $('arcSub').textContent={games:'Insert pinecone to play',board:'Hall of fame',prize:'Tickets for Cross, Copter and Snake looks',garage:'Upgrade and customize the Odyssey'}[v];
-  if(v==='board'){renderArcBoard();refreshBoard().then(()=>{if(!$('arcBoard').hidden)renderArcBoard()})}if(v==='prize')renderPrize();if(v==='garage')renderGarage()}
+  if(v==='board'){renderArcBoard();(typeof refreshBoard==='function'?refreshBoard():Promise.resolve()).then(()=>{if(!$('arcBoard').hidden)renderArcBoard()})}if(v==='prize')renderPrize();if(v==='garage')renderGarage()}
 function showArcBoard(on){arcView(on?'board':'games')}
 function vanPrev(style){const cv=document.createElement('canvas');cv.width=128;cv.height=68;const g=cv.getContext('2d');g.setTransform(2,0,0,2,0,0);const q=g.createLinearGradient(0,0,0,34);q.addColorStop(0,'#5aaee6');q.addColorStop(1,'#cdeaf6');g.fillStyle=q;g.fillRect(0,0,64,34);g.fillStyle='#5a9a3a';g.fillRect(0,29,64,5);g.fillStyle='#8a6a44';g.fillRect(0,31,64,3);
   g.save();g.translate(32,25);g.scale(.62,.62);try{odVan(g,null,performance.now()/1000,{van:style,crew:[],empty:1})}catch(e){}g.restore();return cv}
@@ -5688,8 +5736,8 @@ function drawCamp(t){
 }
 
 /* ---------- the arcade cabinet in the woods ---------- */
-const ARCADE_LOCK=false,ARCADE_LV=3;let ARC_HIT=null;
-const arcadeOpen=()=>!ARCADE_LOCK||level()>=ARCADE_LV;
+const ARCADE_LOCK=true,ARCADE_LV=3;let ARC_HIT=null;
+const arcadeOpen=()=>!ARCADE_LOCK||modeOk('arcade');
 function arcHit(x,y,w,h){const mw=Math.max(w,46),mh=Math.max(h,46);ARC_HIT={x:x+w/2-mw/2,y:y+h/2-mh/2,w:mw,h:mh}}
 /* an old cabinet half swallowed by the woods behind the crew: firelit, mossy, the screen just barely glowing */
 function drawArcCab(t,X,BY,u){
@@ -5757,9 +5805,9 @@ function arcArt(id,cv){
 }
 function arcCart(id){const L=ARC_LBL[id]||['#3a2a50','#24183a'],sh=el('span','cshell');sh.style.setProperty('--c1',L[0]);sh.style.setProperty('--c2',L[1]);const cv=document.createElement('canvas');try{arcArt(id,cv)}catch(e){console.error(e)}sh.append(cv,el('i','gl'));return sh}
 function showArcade(){
-  if(!arcadeOpen()){toast('Out of order. Reach level '+ARCADE_LV+' to fix it.');return}
+  if(!arcadeOpen()){toast('Out of order. '+modeReq('arcade').replace(/  \(.*\)$/,'')+' to fix it.');return}
   SFX.tap();screen('arcScr');showArcBoard(false);const box=$('arcList');box.innerHTML='';box.scrollTop=0;
-  for(const m of MODES.filter(m=>m.arcade&&(m.id!=='snake'||snakeOK()))){const b=el('button','cart');b.type='button';
+  for(const m of MODES.filter(m=>m.arcade&&(m.id!=='snake'||snakeOK()))){if(!modeOk(m.id)){const lk=el('div','cart locked');const tx=el('div');tx.append(el('b',null,m.name),el('span',null,'Locked. '+modeReq(m.id)));const sh=arcCart(m.id);sh.style.filter='grayscale(1) brightness(.6)';lk.append(sh,tx);box.appendChild(lk);continue}const b=el('button','cart');b.type='button';
     const tx=el('div');tx.append(el('b',null,m.name),el('span',null,m.desc));if(modeBest[m.id])tx.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
     b.append(arcCart(m.id),tx);b.addEventListener('click',()=>{SFX.coin&&SFX.coin();runMode=m.id;save('rc_mode',m.id);save('rc_arclast',m.id);{let pl={};try{pl=JSON.parse(localStorage.getItem('rc_arcplayed')||'{}')||{}}catch(e){}pl[m.id]=1;save('rc_arcplayed',JSON.stringify(pl));if(['cross','odyssey','copter','snake'].every(k=>pl[k]))unlockBadge('ar_all')}start()});box.appendChild(b)}
   if(!snakeOK()){const lk=el('div','cart locked');const tx=el('div');tx.append(el('b',null,'???'),el('span',null,'The fire knows the way. Poke it.'));lk.append(arcCart('locked'),tx);box.appendChild(lk)}
@@ -6684,8 +6732,9 @@ function showModes(){
   screen('modeScr');const box=$('modeList');box.innerHTML='';
   let arcH=false;for(const m of MODES){
     if(m.arcade)continue;
-    const b=el('button','modebtn');b.type='button';b.setAttribute('aria-pressed',String(m.id===runMode));
-    const t=el('div');t.append(el('b',null,m.name),el('span',null,m.desc));b.appendChild(t);
+    const ok=modeOk(m.id),b=el('button','modebtn'+(ok?'':' locked'));b.type='button';b.setAttribute('aria-pressed',String(m.id===runMode));
+    const t=el('div');t.append(el('b',null,m.name),el('span',null,m.desc));if(!ok){const pg=modeProg(m.id);t.appendChild(el('i','req',modeReq(m.id)+(pg?'  ·  '+pg:'')))}b.appendChild(t);
+    if(!ok){b.addEventListener('click',()=>{SFX.hit();toast('Locked: '+modeReq(m.id))});box.appendChild(b);continue}
     if(m.id==='fire'){const fb=[['blaze','Torch'],['lava','Lava'],['ride','Ride']];if(fb.some(([k])=>modeBest['fire_'+k])){const st=el('i','fstack');for(const [k,nm2] of fb){const ln=el('span');ln.append(nm2+' ',el('b',null,modeBest['fire_'+k]?modeBest['fire_'+k].toLocaleString():'\u2014'));st.appendChild(ln)}b.appendChild(st)}}
     else if(m.id==='bear'){if(modeBest.bear_t)b.appendChild(el('i',null,'Fastest '+fmtB('bear_t',modeBest.bear_t)))}
     else if(modeBest[m.id])b.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
@@ -6870,6 +6919,7 @@ function showOver(){
   else{chip('jumps',S.stats.jumps);chip('no bears',S.saved);chip('close calls',S.stats.near);chip('top biome',top?top[0].split(' ')[0]:'Pine')}
   if(S.mode==='bear')$('bestLine').textContent=(S.win?(S.newBestT?'NEW FASTEST CATCH! '+S.winTime.toFixed(1)+'s':'Caught all five in '+S.winTime.toFixed(1)+'s \u00B7 fastest '+fmtB('bear_t',modeBest.bear_t)):'Catch all five to get a time'+(modeBest.bear_t?' \u00B7 fastest '+fmtB('bear_t',modeBest.bear_t):''))+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
   else $('bestLine').textContent=(isBest?'New '+(S.mode==='classic'?'':S.mode==='fire'?FF_INFO[S.ff].name+' ':MODES.find(m=>m.id===S.mode).name+' ')+'best!':'Best score: '+prevMode.toLocaleString())+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
+  checkUnlocks(1500);
   $('bankLine').textContent='+'+gained+' pinecones  ·  '+wallet.toLocaleString()+' in your pouch';
   {const oc=$('overCard'),ACC={eaten:'#ff7a5a',skunk:'#b8d860',fall:'#f2a541',crew:'#f2a541',solo:'#f2a541',lava:'#ff8a3a',fizzle:'#ff8a3a',ride:'#ff8a3a',creek:'#6ac0f0',lake:'#6ac0f0',odyssey:'#ffb03a',copter:'#c8a0f8',snake:'#aad751',squash:'#dfe6ee',eagle:'#f0c870',bearwin:'#9fd67a',bearlose:'#c8b0f0'};
     oc.style.setProperty('--acc',S.caught?'#ff7a5a':(ACC[S.dtype]||'#f2a541'));
@@ -6981,9 +7031,9 @@ function renderShop(){
     const box=$('items');box.innerHTML='';
     const cur=(equip[shopChar]||{})[cat]||CATALOG[cat][0].id;
     for(const it of CATALOG[cat].filter(it=>!it.who||it.who===shopChar)){
-      const ern=earned(it),has=ern?reqMet(it):(it.price===0||owned[it.id]),on=cur===it.id,locked=!has&&(ern||(it.lvl&&L<it.lvl)),b=el('button','item'+(on?' on':has?' own':''));b.type='button';
+      const ern=earned(it),has=ern?reqMet(it):(it.price===0||owned[it.id]),on=cur===it.id,needB=!!(it.need&&!badges[it.need]),locked=!has&&(ern||needB||(it.lvl&&L<it.lvl)),b=el('button','item'+(on?' on':has?' own':''));b.type='button';
       const n=el('span','nm');const col=it.color||it.shirt;if(col){const s=el('i','sw');s.style.background=col;n.appendChild(s)}n.appendChild(document.createTextNode(it.name));
-      b.append(n,on?priceTag('Wearing'):has?priceTag(ern?'Earned':'Owned'):locked?priceTag(ern?reqText(it):'Unlocks at Lv '+it.lvl):priceTag(String(it.price),true));
+      b.append(n,on?priceTag('Wearing'):has?priceTag(ern?'Earned':'Owned'):locked?priceTag(ern?reqText(it):needB?'Badge: '+gearNeedName(it):'Unlocks at Lv '+it.lvl):priceTag(String(it.price),true));
       if(!has&&(locked||wallet<it.price))b.disabled=true;
       b.addEventListener('click',()=>{
         if(!has){if(locked||wallet<it.price)return;wallet-=it.price;owned[it.id]=true;SFX.win();if(Object.keys(owned).length>=5)unlockBadge('drip')}
