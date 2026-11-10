@@ -803,7 +803,10 @@ const HATS=[
  {id:'rodeo',name:'Bear-ear Stetson',price:1200,hat:'rodeo',hatC:'#7a4a22',brim:'#5a3418'},
  {id:'honeyhat',name:'Honey-drip bucket',price:840,hat:'honey',hatC:'#e8b23a',brim:'#c8901a'},
  {id:'salmonhat',name:'Salmon hat',price:720,hat:'salmon',hatC:'#e07a5a',brim:'#c05a3a'},
- {id:'bearears',name:'Bear hoodie',price:900,hat:'bearears',hatC:'#5b3a22',brim:'#8a6040'}
+ {id:'bearears',name:'Bear hoodie',price:900,hat:'bearears',hatC:'#5b3a22',brim:'#8a6040'},
+ {id:'arcadecap',name:'Arcade cap',price:660,hat:'cap',hatC:'#3a1e5a',brim:'#ffd84a',patch:'#ff6ab0'},
+ {id:'visor',name:'Soccer-mom visor',price:540,hat:'visor',hatC:'#f4f4f0',brim:'#3a5a98'},
+ {id:'goosehat',name:'Goose hat',price:0,hat:'goose',hatC:'#ffffff',brim:'#f2a030',badge:'ar_cross100'}
 ];
 const PACKS=[
  {id:'p0',name:'Original',price:0},
@@ -818,7 +821,10 @@ const PACKS=[
  {id:'mallowpack',name:"S'mores pack",price:660,color:'#3a6cc0',deco:'mallow'},
  {id:'banjo',name:"Henry's banjo",price:780,color:'#6f747a',deco:'banjo',who:'camo'},
  {id:'spikeball',name:'Spikeball set',price:720,color:'#3a6cc0',deco:'spike',who:'curly'},
- {id:'napillow',name:'Nap pillow',price:540,color:'#25282b',deco:'pillow',who:'patch'}
+ {id:'napillow',name:'Nap pillow',price:540,color:'#25282b',deco:'pillow',who:'patch'},
+ {id:'gascan',name:'Gas can',price:780,color:'#c8262a',deco:'gascan'},
+ {id:'cartpack',name:'Cartridge pack',price:720,color:'#4a4458',deco:'cart'},
+ {id:'hubshield',name:'Hubcap shield',price:0,color:'#25282b',deco:'hubcap',badge:'ar_flip'}
 ];
 const SHIRTS=[
  {id:'s0',name:'Original',price:0},
@@ -831,7 +837,11 @@ const SHIRTS=[
  {id:'reflect',name:'Reflective jacket',price:1080,shirt:'#b8c0c8',shine:true,lvl:3},
  {id:'saddle',name:'Saddle blanket',price:900,shirt:'#b84a2a',zig:true},
  {id:'scorched',name:'Scorched tee',price:0,shirt:'#4a3a32',scorch:true,fireRuns:10},
- {id:'pyrjersey',name:'Pyramid jersey',price:0,shirt:'#6a2ab0',num:true,badge:'ff_pyramid'}
+ {id:'pyrjersey',name:'Pyramid jersey',price:0,shirt:'#6a2ab0',num:true,badge:'ff_pyramid'},
+ {id:'odytee',name:'Odyssey tee',price:600,shirt:'#f4f4f0',stripe:'#3a5a98'},
+ {id:'snaketee',name:'Snake Trail tee',price:600,shirt:'#aad751',stripe:'#2f5a24'},
+ {id:'arcadetee',name:'Arcade tee',price:720,shirt:'#2a1840',stripe:'#ffd84a'},
+ {id:'tanktop',name:'Gym tank top',price:1500,shirt:'#f8f8f4',jacked:true,lvl:4}
 ];
 const FACES=[
  {id:'f0',name:'Original',price:0},
@@ -850,7 +860,11 @@ const EXTRAS=[
  {id:'lasso',name:'Lasso',price:720,lasso:true},
  {id:'flameshoes',name:'Flaming shoes',price:0,flames:true,badge:'ff_all'},
  {id:'clawneck',name:'Bear-claw necklace',price:0,claw:true,journal:'bear'},
- {id:'ashstick',name:'Ash hiking stick',price:0,stick:true,journal:'fire'}
+ {id:'ashstick',name:'Ash hiking stick',price:0,stick:true,journal:'fire'},
+ {id:'pixshades',name:'Pixel shades',price:900,pixshades:true},
+ {id:'vankeys',name:'Odyssey keys',price:480,keys:true},
+ {id:'gemneck',name:'Cave gem necklace',price:0,gemneck:true,badge:'ar_gem'},
+ {id:'eagle',name:'Shoulder eagle',price:1800,eagle:true,lvl:5}
 ];
 const SLOTS=['hat','pack','shirt','face','extra'];
 const CATALOG={hat:HATS,pack:PACKS,shirt:SHIRTS,face:FACES,extra:EXTRAS};
@@ -862,7 +876,10 @@ const SETS=[
  {id:'bruin',name:'Bruin',items:{hat:'bcap',shirt:'belmont'},perk:'Trail mix gives two snacks'},
  {id:'firefighter',name:'Firefighter',items:{hat:'fireman',shirt:'turnout',pack:'airtank'},perk:'Human Torch: water hurts 40% less'},
  {id:'lavaproof',name:'Lava-proof',items:{hat:'silverhood',shirt:'reflect',pack:'fireproof'},perk:'Lava Floor: start with 4 hearts'},
- {id:'rodeo',name:'Bear Rodeo',items:{hat:'rodeo',shirt:'saddle',extra:'lasso'},perk:'Bear Ride: riders hold on longer'}
+ {id:'rodeo',name:'Bear Rodeo',items:{hat:'rodeo',shirt:'saddle',extra:'lasso'},perk:'Bear Ride: riders hold on longer'},
+ {id:'arcade',name:'Arcade Kid',items:{hat:'arcadecap',shirt:'arcadetee',extra:'pixshades'},perk:'Arcade games pay 50% more tickets'},
+ {id:'roadtrip',name:'Road Trip',items:{hat:'visor',shirt:'odytee',pack:'gascan'},perk:'Odyssey Climb: 30% bigger gas tank'},
+ {id:'gymbro',name:'Gym Bro',items:{shirt:'tanktop',extra:'vankeys',hat:'beanie'},perk:'Ridge Cross: shrug off one hit every run'}
 ];
 function setOf(id){const e=equip[id]||{};return SETS.find(st=>Object.entries(st.items).every(([k,v])=>e[k]===v))||null}
 function bestSet(id){const e=equip[id]||{};let b=null;for(const st of SETS){const have=Object.entries(st.items).filter(([k,v])=>e[k]===v).length;if(have&&(!b||have/Object.keys(st.items).length>b.have/b.need))b={st,have,need:Object.keys(st.items).length}}return b}
@@ -997,9 +1014,9 @@ function look(c){
   const h=e.hat&&item('hat',e.hat);
   if(h&&h.lamp)o.lamp=true;else if(h&&h.hat){o.hat=h.hat;o.hatC=h.hatC;o.brim=h.brim;o.patch=h.patch||null}
   const p=e.pack&&item('pack',e.pack);if(p&&p.color){o.pack=p.color;o.packDeco=p.deco||null}
-  const s=e.shirt&&item('shirt',e.shirt);if(s&&s.shirt){o.shirt=s.shirt;o.stripe=s.stripe;o.plaid=s.plaid;o.camoShirt=s.camo;o.num=s.num;o.shine=s.shine;o.zig=s.zig;o.scorch=s.scorch;o.shred=false}
+  const s=e.shirt&&item('shirt',e.shirt);if(s&&s.shirt){o.shirt=s.shirt;o.stripe=s.stripe;o.plaid=s.plaid;o.camoShirt=s.camo;o.num=s.num;o.shine=s.shine;o.zig=s.zig;o.scorch=s.scorch;o.shred=false;if(s.jacked)o.jacked=true}
   const f=e.face&&item('face',e.face);if(f&&f.goggles)o.goggles=true;else if(f&&f.face){o.face=f.face;if(f.face==='clean')o.stache=false}
-  const x=e.extra&&item('extra',e.extra);if(x){o.shades=!!x.shades;o.bandana=!!x.bandana;o.glasses=!!x.glasses;o.tooth=!!x.tooth;o.harness=!!x.harness;o.lasso=!!x.lasso;o.flames=!!x.flames;o.claw=!!x.claw;o.stick=!!x.stick}
+  const x=e.extra&&item('extra',e.extra);if(x){o.shades=!!x.shades;o.bandana=!!x.bandana;o.glasses=!!x.glasses;o.tooth=!!x.tooth;o.harness=!!x.harness;o.lasso=!!x.lasso;o.flames=!!x.flames;o.claw=!!x.claw;o.stick=!!x.stick;o.pixshades=!!x.pixshades;o.keys=!!x.keys;o.gemneck=!!x.gemneck;o.eagle=!!x.eagle}
   return o;
 }
 /* ---------- levels ---------- */
@@ -1031,6 +1048,8 @@ function drawHead(g,c,x,yb,eb){
     else if(c.hat==='salmon'){px(g,c.hatC,x-5,yb-10,10,3);px(g,'#f2a08a',x-4,yb-8,8,1);px(g,c.brim,x-7,yb-12,2,6);px(g,c.brim,x-6,yb-11,1,4);px(g,'#1a1210',x+3,yb-10,1,1);px(g,'#ffffff',x+4,yb-10,1,1);px(g,c.brim,x-1,yb-11,3,1)}
     else if(c.hat==='bearears'){px(g,c.hatC,x-4,yb-10,8,4);px(g,c.hatC,x-5,yb-8,2,7);px(g,c.hatC,x-4,yb-12,3,2);px(g,c.hatC,x+1,yb-12,3,2);px(g,c.brim,x-3,yb-12,1,1);px(g,c.brim,x+2,yb-12,1,1);px(g,c.brim,x-4,yb-7,8,1)}
     else if(c.hat==='phones'){px(g,c.hair,x-4,yb-9,8,2);px(g,c.hair,x+1,yb-10,4,1);px(g,c.hatC,x-3,yb-11,6,1);px(g,c.hatC,x-4,yb-10,1,4);px(g,c.hatC,x+3,yb-10,1,2);px(g,c.hatC,x-2,yb-6,3,4);px(g,c.brim,x-1,yb-5,1,2)}
+    else if(c.hat==='visor'){px(g,c.hair,x-4,yb-10,8,2);px(g,c.hair,x+1,yb-11,3,1);px(g,c.hatC,x-4,yb-8,8,2);px(g,c.brim,x+3,yb-8,5,1);px(g,c.brim,x+4,yb-7,4,1)}
+    else if(c.hat==='goose'){px(g,'#ffffff',x-4,yb-10,8,4);px(g,'#e8e8e8',x-6,yb-10,2,2);px(g,'#d8d8d8',x-3,yb-8,5,1);px(g,'#ffffff',x+1,yb-16,2,7);px(g,'#ffffff',x+1,yb-17,3,2);px(g,'#f2a030',x+4,yb-16,3,1);px(g,'#1a1a1a',x+2,yb-16,1,1)}
     else if(c.hat==='beanie'){px(g,c.hatC,x-4,yb-10,8,4);px(g,c.hatC,x-3,yb-11,6,1);px(g,c.brim,x-4,yb-7,8,1)}
     else if(c.hat==='bucket'){px(g,c.hatC,x-3,yb-10,7,3);px(g,c.brim,x-5,yb-7,11,1)}
     else if(c.hat==='cowboy'){px(g,c.hatC,x-3,yb-11,7,4);px(g,c.brim,x-3,yb-9,7,1);px(g,c.hatC,x-6,yb-7,13,1);px(g,c.hatC,x-6,yb-8,1,1);px(g,c.hatC,x+6,yb-8,1,1)}
@@ -1047,6 +1066,7 @@ function drawHead(g,c,x,yb,eb){
   if(c.lamp){px(g,'#2a2a2a',x-4,yb-7,8,1);px(g,'#fff3a8',x+3,yb-8,2,2)}
   if(c.shades){px(g,'#111',x,yb-5,4,1);px(g,'#111',x+1,yb-4,2,1)}
   else if(c.glasses){px(g,'#2a2a2a',x+1,yb-6,3,1);px(g,'#2a2a2a',x+1,yb-5,1,1);px(g,'#2a2a2a',x+3,yb-5,1,1)}
+  if(c.pixshades){px(g,'#111',x-1,yb-6,6,2);px(g,'#111',x-4,yb-6,3,1);px(g,'#ffffff',x,yb-6,1,1);px(g,'#ffffff',x+3,yb-6,1,1)}
   if(c.goggles){px(g,'#2a2a2a',x-4,yb-6,5,1);px(g,'#3a3a3a',x+1,yb-7,4,3);px(g,'#9fd8f2',x+2,yb-6,2,1);px(g,'#ffffff',x+2,yb-6,1,1)}
 }
 /* jersey letters (3x5 pixel font, N is 4 wide) */
@@ -1114,6 +1134,9 @@ function drawHiker(g,c,x,y,t,air,pose){
   if(c.packDeco==='tank'){px(g,'#c8ccd0',x-9,y-22,5,13);px(g,'#eef1f3',x-8,y-21,1,11);px(g,'#7a7e84',x-5,y-21,1,11);px(g,'#c8282b',x-8,y-24,3,2)}
   else if(c.packDeco==='shine'){px(g,'#ffffff',x-8,y-19,1,8);px(g,'#9aa0a6',x-9,y-14,6,1)}
   else if(c.packDeco==='mallow'){for(let k=0;k<8;k++)px(g,'#6b4423',x-7-Math.round(k*.5),y-21-k,1,1);px(g,'#f2ece0',x-13,y-32,3,3);px(g,'#c98b3a',x-13,y-32,3,1)}
+  else if(c.packDeco==='gascan'){px(g,'#c8262a',x-10,y-21,7,12);px(g,'#e84a3a',x-10,y-21,2,12);px(g,'#8a1a1a',x-4,y-21,1,12);px(g,'#2a2a2a',x-8,y-23,3,2);px(g,'#f2d23a',x-9,y-17,5,3)}
+  else if(c.packDeco==='cart'){px(g,'#5a5468',x-10,y-21,7,12);px(g,'#3a3446',x-9,y-20,5,1);px(g,'#3a3446',x-9,y-18,5,1);px(g,'#ffd84a',x-9,y-16,5,5);px(g,'#ff6ab0',x-8,y-15,3,3);px(g,'#d8b04a',x-9,y-10,5,1)}
+  else if(c.packDeco==='hubcap'){px(g,'#c4cad0',x-10,y-22,6,10);px(g,'#c4cad0',x-11,y-21,8,8);px(g,'#868c94',x-8,y-18,2,2);px(g,'#eef1f4',x-10,y-20,2,2);px(g,'#868c94',x-11,y-17,8,1)}
   else if(c.packDeco)sigBack(g,c.packDeco,x,y);
   if(air){
     px(g,c.pants,x-3,y-8,3,5);px(g,c.pants,x+1,y-9,3,4);
@@ -1127,6 +1150,8 @@ function drawHiker(g,c,x,y,t,air,pose){
   if(c.shred)px(g,'#b8262b',x,y-15,2,7);
   if(c.bandana)px(g,'#c0392b',x-3,y-16,7,2);
   if(c.tooth){px(g,'#3a2a1a',x-1,y-16,4,1);px(g,'#f2ead0',x+1,y-15,1,2)}
+  if(c.gemneck){px(g,'#3a2a1a',x-1,y-16,4,1);px(g,'#7af0e0',x+1,y-15,2,2);px(g,'#ffffff',x+1,y-15,1,1)}
+  if(c.keys){px(g,'#c8262a',x+1,y-16,1,5);px(g,'#c8ccd0',x+1,y-11,2,2)}
   if(c.harness){px(g,'#e0702b',x-3,y-16,1,9);px(g,'#e0702b',x+2,y-16,1,9);px(g,'#e0702b',x-3,y-9,6,1);px(g,'#c8ccd0',x,y-10,2,2)}
   if(c.lasso){px(g,'#c8a46a',x+1,y-12,4,1);px(g,'#c8a46a',x+1,y-9,4,1);px(g,'#c8a46a',x+1,y-12,1,4);px(g,'#c8a46a',x+4,y-12,1,4)}
   if(c.claw){px(g,'#3a2a1a',x-2,y-16,6,1);px(g,'#f2ead0',x-1,y-15,1,2);px(g,'#f2ead0',x+1,y-15,1,2);px(g,'#f2ead0',x+3,y-15,1,2)}
@@ -2374,7 +2399,7 @@ function crossInit(){
   const zm=xZoom(),Wv=W/zm;let nc=Math.floor((Wv-30)/CW);nc=Math.max(7,Math.min(11,nc));if(nc%2===0)nc--;
   S.crew=[];S.snacks=0;
   S.rx={nc,half:nc*CW/2,span:Math.max(W,300)/2+160,lanes:{},q:[],n:0,x:0,z:0,hop:null,queue:[],best:0,camZ:0,camX:0,face:'up',charge:0,landT:0,onLog:null,
-    started:0,startT:0,shield:S.leader.id==='camo'?1:0,inv:0,dbl:0,dead:null,bits:[],puffs:[],pops:[],splash:[],hat:null,card:null,bio:0,popT:0,bump:0,hitstop:0,hoofCd:0,bestFlash:0,lastSafe:{n:0,x:0},pb:modeBest.cross||0};
+    started:0,startT:0,shield:(S.leader.id==='camo'||(setOf(S.leader.id)||{}).id==='gymbro')?1:0,inv:0,dbl:0,dead:null,bits:[],puffs:[],pops:[],splash:[],hat:null,card:null,bio:0,popT:0,bump:0,hitstop:0,hoofCd:0,bestFlash:0,lastSafe:{n:0,x:0},pb:modeBest.cross||0};
   for(let n=-14;n<26;n++)xLane(n);
 }
 const xCellX=i=>(i-(S.rx.nc-1)/2)*CW,xIdx=x=>Math.round(x/CW+(S.rx.nc-1)/2),xIdxC=x=>Math.max(0,Math.min(S.rx.nc-1,xIdx(x)));
@@ -2749,7 +2774,7 @@ const OD_ZONES=[
 ];
 const odZone=m=>{let z=0;for(let i=0;i<OD_ZONES.length;i++)if(m>=OD_ZONES[i].m)z=i;return z};
 const OD_STATS={patch:{stab:.7,perk:'Sam: low center of gravity, harder to flip'},curly:{top:1.18,perk:'Josiah: floors it, higher top speed'},camo:{eng:1.25,perk:'Henry: jacked engine (careful, it wheelies)'},stache:{tank:1.5,perk:'Blake packed extra gas: bigger tank'},nathan:{head:150,perk:'Nathan knows a shortcut: 150 m head start'}};
-const odSt=id=>{const s=Object.assign({stab:1,top:1,eng:1,tank:1,head:0},OD_STATS[id]||{}),U=(typeof ups!=='undefined'&&ups)||{};s.eng*=1+.12*(U.od_eng||0);s.top*=1+.09*(U.od_top||0);s.stab*=1-.075*(U.od_sus||0);s.air=5+.55*(U.od_sus||0);s.g=U.od_tire||0;s.dur=U.od_dur||0;s.tank*=1+.15*(U.od_tank||0);return s};
+const odSt=id=>{const s=Object.assign({stab:1,top:1,eng:1,tank:1,head:0},OD_STATS[id]||{}),U=(typeof ups!=='undefined'&&ups)||{};s.eng*=1+.12*(U.od_eng||0);s.top*=1+.09*(U.od_top||0);s.stab*=1-.075*(U.od_sus||0);s.air=5+.55*(U.od_sus||0);s.g=U.od_tire||0;s.dur=U.od_dur||0;s.tank*=1+.15*(U.od_tank||0);if(typeof setOf==='function'&&(setOf(id)||{}).id==='roadtrip')s.tank*=1.3;return s};
 /* prize counter (tickets): paint jobs and silly add-ons for the van */
 const OD_PRIZES=[
  {id:'p_white',k:'paint',n:'Pearl White',c:['#ffffff','#e2e6e9','#c9cfd4'],price:0},
@@ -3180,15 +3205,15 @@ const XSKINS=[{id:'',n:'Your leader',price:0},
  {id:'goose',n:'The Goose',price:600,c:{id:'x_goose',def:'Goose',animal:'goose'}}];
 /* Tank-top Henry is JACKED: wrap the three hiker views and bolt on the guns */
 {const D0=drawHiker,B0=drawHikerBack,F0=drawHikerFront,sk=c=>c.skin||'#ebb38e',dk='rgba(0,0,0,.22)',hl='rgba(255,255,255,.28)';
- drawHiker=function(g,c,x,y,t,air,pose){D0(g,c,x,y,t,air,pose);if(!c||!c.jacked||pose==='sit')return;x=Math.round(x);y=Math.round(y);const S2=sk(c);
+ drawHiker=function(g,c,x,y,t,air,pose){D0(g,c,x,y,t,air,pose);if(!c||c.animal||pose==='sit')return;c=look(c);x=Math.round(x);y=Math.round(y);if(c.eagle){const fl=air&&Math.floor((t||0)*10)%2;px(g,'#5a3a1e',x-7,y-24,5,4);px(g,'#3a2614',x-8,y-22,2,3);px(g,'#ffffff',x-4,y-27,3,3);px(g,'#f2c020',x-1,y-26,2,1);px(g,'#1a1a1a',x-3,y-26,1,1);px(g,'#f2c020',x-6,y-20,2,1);if(fl){px(g,'#4a2e16',x-12,y-27,6,2)}}if(!c.jacked)return;const S2=sk(c);
    px(g,S2,x-7,y-16,3,7);px(g,dk,x-7,y-16,1,7);
    px(g,c.shirt,x-5,y-16,10,9);px(g,dk,x-4,y-12,7,1);px(g,dk,x,y-11,1,3);px(g,S2,x-1,y-16,3,2);
    if(air){px(g,S2,x+4,y-16,5,4);px(g,S2,x+5,y-24,4,8);px(g,S2,x+4,y-27,5,3);px(g,dk,x+8,y-24,1,8);px(g,hl,x+5,y-22,1,3)}
    else{px(g,S2,x+4,y-16,5,4);px(g,S2,x+5,y-13,5,5);px(g,S2,x+6,y-9,3,3);px(g,dk,x+9,y-13,1,5);px(g,hl,x+6,y-12,2,1);px(g,dk,x+5,y-9,4,1)}};
- drawHikerBack=function(g,c,x,y,wide){B0(g,c,x,y,wide);if(!c||!c.jacked)return;x=Math.round(x);y=Math.round(y);const S2=sk(c);
+ drawHikerBack=function(g,c,x,y,wide){B0(g,c,x,y,wide);if(!c||c.animal)return;c=look(c);x=Math.round(x);y=Math.round(y);if(c.eagle){px(g,'#5a3a1e',x+3,y-23,5,4);px(g,'#ffffff',x+4,y-26,3,3);px(g,'#3a2614',x+7,y-21,2,2)}if(!c.jacked)return;const S2=sk(c);
    for(const d of [-1,1]){const ax=d<0?x-10:x+5;px(g,S2,ax,y-18,5,4);px(g,S2,ax,y-14,5,5);px(g,S2,ax+(d<0?1:0),y-9,4,3);px(g,dk,d<0?ax:ax+4,y-17,1,10);px(g,hl,ax+(d<0?2:1),y-16,2,1)}
    px(g,c.shirt,x-6,y-18,2,3);px(g,c.shirt,x+4,y-18,2,3)};
- drawHikerFront=function(g,c,x,y,mouth){F0(g,c,x,y,mouth);if(!c||!c.jacked)return;x=Math.round(x);y=Math.round(y);const S2=sk(c);
+ drawHikerFront=function(g,c,x,y,mouth){F0(g,c,x,y,mouth);if(!c||c.animal)return;c=look(c);x=Math.round(x);y=Math.round(y);if(c.eagle){px(g,'#5a3a1e',x-9,y-22,5,4);px(g,'#ffffff',x-8,y-25,3,3);px(g,'#f2c020',x-6,y-24,1,1);px(g,'#1a1a1a',x-7,y-24,1,1)}if(!c.jacked)return;const S2=sk(c);
    for(const d of [-1,1]){const ax=d<0?x-10:x+5;px(g,S2,ax,y-16,5,4);px(g,S2,ax,y-12,5,5);px(g,S2,ax+(d<0?1:0),y-7,4,3);px(g,dk,d<0?ax:ax+4,y-15,1,10);px(g,hl,ax+(d<0?2:1),y-14,2,1)}
    px(g,S2,x-3,y-15,2,2);px(g,S2,x+1,y-15,2,2);px(g,dk,x-4,y-12,8,1);px(g,dk,x-1,y-11,1,4);px(g,dk,x-3,y-9,6,1)}}
 function xHero(L){const k=equip.xskin,sk=k&&XSKINS.find(q=>q.id===k);return sk&&sk.c?sk.c:L}
@@ -3822,11 +3847,16 @@ function drawHikerBack(g,c,x,y,wide){
   {
     if(c.packDeco==='pillow'){px(g,'#e8e4f0',x-4,y-23,8,4);px(g,'#c8c0d8',x-4,y-21,8,1)}
     else if(c.packDeco==='banjo'){px(g,'#6b4423',x+4,y-31,1,17);px(g,'#3a2a1a',x+4,y-33,2,3);px(g,'#8a6a3a',x-3,y-15,7,6);px(g,'#efe4c8',x-2,y-14,5,4)}
+    else if(c.packDeco==='gascan'){px(g,'#c8262a',x-4,y-19,8,11);px(g,'#e84a3a',x-4,y-19,2,11);px(g,'#2a2a2a',x-2,y-21,4,2);px(g,'#f2d23a',x-3,y-15,6,3)}
+    else if(c.packDeco==='cart'){px(g,'#5a5468',x-4,y-19,8,11);px(g,'#3a3446',x-3,y-18,6,1);px(g,'#ffd84a',x-3,y-16,6,5);px(g,'#ff6ab0',x-2,y-15,4,3);px(g,'#d8b04a',x-3,y-9,6,1)}
+    else if(c.packDeco==='hubcap'){px(g,'#c4cad0',x-4,y-20,8,10);px(g,'#c4cad0',x-5,y-19,10,8);px(g,'#868c94',x-1,y-16,2,2);px(g,'#eef1f4',x-3,y-18,2,2)}
     else if(c.packDeco==='spike'){px(g,'#1d1d1d',x-3,y-18,7,7);px(g,'#f2d22a',x-2,y-17,5,5);px(g,'#1d1d1d',x,y-15,1,1);px(g,'#1d1d1d',x-1,y-17,1,1);px(g,'#1d1d1d',x+1,y-14,1,1)}
   }
   const hy=y-18;
   px(g,c.skin,x-3,hy-6,7,6);px(g,c.skin,x-4,hy-4,1,2);px(g,c.skin,x+4,hy-4,1,2);
   if(c.hat==='phones'){px(g,c.hair,x-3,hy-7,7,5);px(g,c.hair,x-4,hy-6,1,3);px(g,c.hatC,x-4,hy-9,9,1);px(g,c.hatC,x-5,hy-8,1,2);px(g,c.hatC,x+4,hy-8,1,2);px(g,c.hatC,x-6,hy-6,2,4);px(g,c.hatC,x+4,hy-6,2,4);px(g,c.brim,x-6,hy-6,1,1);px(g,c.brim,x+5,hy-6,1,1)}
+  else if(c.hat==='visor'){px(g,c.hair,x-3,hy-7,7,5);px(g,c.hatC,x-4,hy-7,9,2)}
+  else if(c.hat==='goose'){px(g,'#ffffff',x-4,hy-9,9,5);px(g,'#ffffff',x-1,hy-15,2,7);px(g,'#ffffff',x-1,hy-16,3,2)}
   else if(c.hat==='beanie'){px(g,c.hatC,x-4,hy-9,9,5);px(g,c.brim,x-4,hy-5,9,1)}
   else if(c.hat==='bucket'){px(g,c.hair,x-3,hy-4,7,1);px(g,c.hatC,x-3,hy-9,7,3);px(g,c.brim,x-5,hy-6,11,1)}
   else if(c.hat==='cowboy'){px(g,c.hair,x-3,hy-4,7,1);px(g,c.hatC,x-3,hy-11,7,4);px(g,c.brim,x-3,hy-8,7,1);px(g,c.hatC,x-6,hy-7,13,1)}
@@ -5379,6 +5409,9 @@ function drawHikerFront(g,c,x,y,mouth){
   else if(c.packDeco==='tank'){px(g,'#c8ccd0',x+4,y-24,3,7);px(g,'#eef1f3',x+4,y-24,1,7);px(g,'#c8282b',x+4,y-25,3,1)}
   else if(c.packDeco==='shine'){px(g,'#ffffff',x-4,y-18,1,1);px(g,'#ffffff',x+3,y-17,1,1)}
   else if(c.packDeco==='mallow'){px(g,'#6b4423',x-6,y-29,1,11);px(g,'#f2ece0',x-7,y-32,3,3);px(g,'#c98b3a',x-7,y-32,3,1)}
+  else if(c.packDeco==='gascan'){px(g,'#c8262a',x+4,y-22,4,5);px(g,'#2a2a2a',x+5,y-24,2,2)}
+  else if(c.packDeco==='cart'){px(g,'#5a5468',x+4,y-22,4,5);px(g,'#ffd84a',x+5,y-21,2,2)}
+  else if(c.packDeco==='hubcap'){px(g,'#c4cad0',x+4,y-24,5,6);px(g,'#868c94',x+6,y-22,1,1)}
   else if(c.packDeco==='spike'){px(g,'#1d1d1d',x+5,y-22,5,5);px(g,'#f2d22a',x+6,y-21,3,3);px(g,'#1d1d1d',x+7,y-20,1,1)}
   px(g,c.pants,x-4,y-7,8,3);px(g,c.pants,x-4,y-4,3,4);px(g,c.pants,x+1,y-4,3,4);
   px(g,DARK,x-4,y-1,3,1);px(g,DARK,x+1,y-1,3,1);
@@ -5396,6 +5429,8 @@ function drawHikerFront(g,c,x,y,mouth){
   if(c.hat){
     if(c.curly){px(g,c.hair,x-5,hy-6,1,4);px(g,c.hair,x+4,hy-6,1,4)}
     if(c.hat==='phones'){px(g,c.hair,x-4,hy-9,9,3);px(g,c.hair,x-4,hy-7,1,2);px(g,c.hair,x+4,hy-7,1,2);px(g,c.hatC,x-4,hy-11,9,1);px(g,c.hatC,x-5,hy-10,1,4);px(g,c.hatC,x+4,hy-10,1,4);px(g,c.hatC,x-6,hy-6,2,4);px(g,c.hatC,x+5,hy-6,2,4);px(g,c.brim,x-6,hy-6,1,1);px(g,c.brim,x+6,hy-6,1,1)}
+    else if(c.hat==='visor'){px(g,c.hair,x-4,hy-10,9,2);px(g,c.hatC,x-4,hy-8,9,2);px(g,c.brim,x-5,hy-7,11,1)}
+    else if(c.hat==='goose'){px(g,'#ffffff',x-4,hy-10,9,4);px(g,'#ffffff',x,hy-16,2,7);px(g,'#ffffff',x-1,hy-17,4,3);px(g,'#f2a030',x,hy-15,2,1);px(g,'#1a1a1a',x-1,hy-16,1,1);px(g,'#1a1a1a',x+2,hy-16,1,1)}
     else if(c.hat==='beanie'){px(g,c.hatC,x-4,hy-10,9,4);px(g,c.hatC,x-3,hy-11,7,1);px(g,c.brim,x-4,hy-7,9,1)}
     else if(c.hat==='bucket'){px(g,c.hatC,x-3,hy-10,7,3);px(g,c.brim,x-5,hy-7,11,1)}
     else if(c.hat==='cowboy'){px(g,c.hatC,x-3,hy-12,7,4);px(g,c.brim,x-3,hy-9,7,1);px(g,c.hatC,x-7,hy-8,15,1);px(g,c.hatC,x-7,hy-9,1,1);px(g,c.hatC,x+7,hy-9,1,1)}
@@ -5422,6 +5457,9 @@ function drawHikerFront(g,c,x,y,mouth){
   else if(c.glasses){px(g,'#2a2a2a',x-3,hy-6,7,1);px(g,'#2a2a2a',x-3,hy-5,1,1);px(g,'#2a2a2a',x,hy-5,1,1);px(g,'#2a2a2a',x+3,hy-5,1,1)}
   if(c.goggles){px(g,'#2a2a2a',x-4,hy-6,9,1);px(g,'#3a3a3a',x-3,hy-6,3,2);px(g,'#3a3a3a',x+1,hy-6,3,2);px(g,'#9fd8f2',x-2,hy-5,1,1);px(g,'#9fd8f2',x+2,hy-5,1,1)}
   if(c.tooth)px(g,'#f2ead0',x,hy+1,1,2);
+  if(c.gemneck){px(g,'#7af0e0',x,hy+1,2,2);px(g,'#ffffff',x,hy+1,1,1)}
+  if(c.keys){px(g,'#c8262a',x-2,hy+1,1,4);px(g,'#c8ccd0',x-2,hy+5,2,2)}
+  if(c.pixshades){px(g,'#111',x-3,hy-6,7,2);px(g,'#ffffff',x-2,hy-6,1,1);px(g,'#ffffff',x+2,hy-6,1,1)}
   if(c.harness){px(g,'#e0702b',x-3,y-15,1,9);px(g,'#e0702b',x+2,y-15,1,9);px(g,'#e0702b',x-4,y-8,8,1);px(g,'#c8ccd0',x,y-9,1,1)}
   if(c.claw){px(g,'#3a2a1a',x-2,y-15,5,1);px(g,'#f2ead0',x-2,y-14,1,2);px(g,'#f2ead0',x,y-14,1,2);px(g,'#f2ead0',x+2,y-14,1,2)}
   if(c.lasso){px(g,'#c8a46a',x+4,y-11,3,1);px(g,'#c8a46a',x+4,y-8,3,1);px(g,'#c8a46a',x+4,y-11,1,4);px(g,'#c8a46a',x+6,y-11,1,4)}
@@ -6803,7 +6841,7 @@ function showOver(){
   (S.dtype==='bearwin'||S.dtype==='lake')?SFX.win():SFX.lose();
   $('again').textContent='Play again';$('shareBtn').textContent='Share';
   const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode&&!S.daily;S.newBest=isBest;
-  if(['cross','odyssey','copter','snake'].includes(S.mode)&&!S.tixDone){S.tixDone=1;const tk=arcTix(S.mode,sc);if(tk>0){owned._tix=(owned._tix||0)+tk;persist();setTimeout(()=>toast('+'+tk+' arcade ticket'+(tk>1?'s':'')+' · trade them at the Prize counter'),1200)}if(S.mode==='odyssey'){const lv=['od_eng','od_top','od_tire','od_sus','od_dur','od_tank'].reduce((a,k)=>a+(ups[k]||0),0);if(lv<12)setTimeout(()=>toast('Tip: upgrade the van in the arcade Garage to get further'),3600)}}
+  if(['cross','odyssey','copter','snake'].includes(S.mode)&&!S.tixDone){S.tixDone=1;const tk=Math.floor(arcTix(S.mode,sc)*((setOf(S.leader.id)||{}).id==='arcade'?1.5:1));if(tk>0){owned._tix=(owned._tix||0)+tk;persist();setTimeout(()=>toast('+'+tk+' arcade ticket'+(tk>1?'s':'')+' · trade them at the Prize counter'),1200)}if(S.mode==='odyssey'){const lv=['od_eng','od_top','od_tire','od_sus','od_dur','od_tank'].reduce((a,k)=>a+(ups[k]||0),0);if(lv<12)setTimeout(()=>toast('Tip: upgrade the van in the arcade Garage to get further'),3600)}}
   {const md=Math.floor(S.dist/12),bk=pbKey();if(S.mode!=='bear'&&!S.daily&&md>(bestDist[bk]||0)){bestDist[bk]=md;save('rc_bestdist',JSON.stringify(bestDist))}}
   S.newBestT=false;if(S.mode==='bear'&&S.win&&S.winTime&&!S.demo){const tv=bearTV(S.winTime);if(tv>(modeBest.bear_t||0)){modeBest.bear_t=tv;S.newBestT=true;save('rc_modebest',JSON.stringify(modeBest))}}
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
