@@ -3897,7 +3897,8 @@ function drawHud(){
   /* row 1: distance (or altitude) */
   const up=S.mode==='uphill'&&!S.demo&&S.upMax;
   if(up&&S.biome>=5&&!PXC){ctx.save();for(let i=0;i<40;i++){const sp=12+(i%5)*7,xx=((hash(i*1.37)*cw+S.t*(-18-(i%3)*10))%cw+cw)%cw,yy=((hash(i*2.91)*ch+S.t*sp)%ch);ctx.globalAlpha=.55+(i%3)*.15;ctx.fillStyle='#ffffff';const z=i%4?2:3;ctx.fillRect(Math.round(xx),Math.round(yy),z,z)}ctx.restore()}
-  shadow(up?(Math.floor(S.upMax/10)*10).toLocaleString()+' ft':Math.floor(S.dist/12).toLocaleString()+' m',pad,row,'#fff3dc');
+  if(S.mode==='bear'&&!S.demo){const tt=S.win&&S.winTime?S.winTime:S.t,mm=Math.floor(tt/60),ss=tt-mm*60,pb=modeBest.bear_t?(100000-modeBest.bear_t)/10:0;shadow((mm?mm+':'+(ss<10?'0':''):'')+ss.toFixed(1)+(mm?'':'s'),pad,row,pb&&tt>pb?'#ff9a7a':'#fff3dc');if(pb){ctx.save();ctx.font=FONT(sm);shadow('FASTEST '+fmtB('bear_t',modeBest.bear_t),pad+ctx.measureText('00:00.0').width*1.55+12,row,'#f2a541');ctx.restore()}}
+  else shadow(up?(Math.floor(S.upMax/10)*10).toLocaleString()+' ft':Math.floor(S.dist/12).toLocaleString()+' m',pad,row,'#fff3dc');
   /* row 2: pinecones */
   step();{const cs=Math.max(2,Math.round(f/12));ctx.save();ctx.translate(Math.round(pad+cs*2.5),row);ctx.scale(cs,cs);drawCone(ctx,0,0);ctx.restore();shadow('x '+S.cones.toLocaleString(),pad+cs*7+4,row,'#fff3dc')}
   /* row 3: status tag */
