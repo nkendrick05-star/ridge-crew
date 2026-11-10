@@ -2302,15 +2302,15 @@ function xLane(n){
     for(let i=-14;i<nc+14;i++){if(i>=0&&i<nc)continue;const r=hash(n*5.1+i*2.3);L.edge.push({i,k:(i===-1||i===nc)||r<.72?xBlockKind(b,n,i+40):r<.86?'bush':null})}
   }else if(type==='creek'){
     if(prev&&prev.type==='creek')L.dir=-prev.dir;
-    L.v=(13+d*18+Math.random()*9)*L.dir;let x=-sp+Math.random()*CW*2;
+    L.v=(17+d*22+Math.random()*11)*L.dir;let x=-sp+Math.random()*CW*2;
     while(x<sp){const len=Math.random()<.45-d*.3?4:Math.random()<.55?3:2;L.objs.push({x:x+len*CW/2,len,dip:0});x+=len*CW+CW*(1.4+Math.random()*1.5+d*.8)}
   }else if(type==='stones'){
     const cnt=3+Math.floor(Math.random()*2.5),cells=[];while(cells.length<cnt){const i=Math.floor(Math.random()*nc);if(!cells.includes(i))cells.push(i)}L.stones=cells;
   }else if(type==='herd'){
-    const tier=[.65,1,1.4][Math.floor(Math.random()*3)],moose=Math.random()<.3,gap=CW*(moose?8.5:6+Math.random()*3)*(.8+tier*.3);L.v=(36+d*30)*tier*L.dir;
+    const tier=[.65,1,1.4][Math.floor(Math.random()*3)],moose=Math.random()<.3,gap=CW*(moose?8.5:6+Math.random()*3)*(.8+tier*.3);L.v=(46+d*36)*tier*L.dir;
     for(let x=-sp+Math.random()*gap;x<sp;x+=gap+(Math.random()-.5)*CW)L.objs.push({x,k:moose?'moose':'elk',hw:moose?12:9,ph:Math.random()*4});
   }else if(type==='bikes'){
-    const cols=['#e85a3a','#3a8ae8','#e8c43a','#7ae85a','#c85ae8','#f0f0f0'];L.v=(92+d*44)*(.85+Math.random()*.35)*L.dir;
+    const cols=['#e85a3a','#3a8ae8','#e8c43a','#7ae85a','#c85ae8','#f0f0f0'];L.v=(112+d*50)*(.85+Math.random()*.35)*L.dir;
     for(let x=-sp+Math.random()*CW*4;x<sp;x+=CW*(8+Math.random()*4)){const g=1+Math.floor(Math.random()*3);for(let j=0;j<g;j++)L.objs.push({x:x-j*15*L.dir,hw:6,c:cols[Math.floor(Math.random()*cols.length)],ph:Math.random()*4})}
   }else if(type==='truck'){
     L.tk={st:'idle',t:1.5+Math.random()*4,x:0,len:CW*6.5,warnD:0};
@@ -2338,7 +2338,7 @@ function xHop(dx,dn){
   else{const i=xIdx(R.x)+dx;if(i<0||i>=R.nc||L.block[i]||L.rocks.some(r=>r.st===1&&Math.abs(r.x-xCellX(i))<CW*.6)){R.bump=.16;SFX.thud();return}x1=xCellX(i)}
   if(Math.abs(x1)>R.half+CW*.2&&L.type!=='creek'){R.bump=.16;return}
   const carry=R.onLog&&dn===0?xLane(R.n).v:0;
-  R.hop={x0:R.x,n0:R.n,x1,n1,dn,t:0,dur:S.leader.id==='patch'?.1:.115,carry};R.onLog=null;R.charge=0;SFX.hopb();
+  R.hop={x0:R.x,n0:R.n,x1,n1,dn,t:0,dur:S.leader.id==='patch'?.085:.1,carry};R.onLog=null;R.charge=0;SFX.hopb();
 }
 function xPop(s,x,z,c){S.rx.pops.push({s,x,z,c,t:0})}
 function xPuff(x,z,y,c,n){for(let i=0;i<(n||6);i++)S.rx.puffs.push({x,z,y,vx:(Math.random()-.5)*40,vz:(Math.random()-.5)*.8,vy:10+Math.random()*16,c,t:0})}
@@ -2366,9 +2366,9 @@ function crossUpdate(dt){
     if(L.type==='herd'&&Math.abs(n-R.n)<=1&&R.hoofCd<=0&&L.objs.some(o=>Math.abs(o.x-R.x)<30)){R.hoofCd=.5;SFX.hooves()}
     if(L.type==='bikes'&&Math.abs(n-R.n)<=1&&L.objs.some(o=>!o.rang&&Math.abs(o.x-R.x)<60&&(R.x-o.x)*L.dir>0)){const o=L.objs.find(o=>!o.rang&&Math.abs(o.x-R.x)<60&&(R.x-o.x)*L.dir>0);o.rang=1;SFX.bell()}
     if(L.tk){const k=L.tk;k.t-=dt;
-      if(k.st==='idle'&&k.t<=0){k.st='warn';k.t=1.4;k.ding=0}
+      if(k.st==='idle'&&k.t<=0){k.st='warn';k.t=1.2;k.ding=0}
       else if(k.st==='warn'){k.ding-=dt;if(k.ding<=0&&Math.abs(n-R.n)<6){k.ding=.32;SFX.warn()}if(k.t<=0){k.st='go';k.x=-L.dir*(sp+k.len/2);if(Math.abs(n-R.n)<5)SFX.horn()}}
-      else if(k.st==='go'){k.x+=L.dir*400*dt;if(Math.abs(k.x)>sp+k.len){k.st='idle';k.t=2.5+Math.random()*4}}}
+      else if(k.st==='go'){k.x+=L.dir*470*dt;if(Math.abs(k.x)>sp+k.len){k.st='idle';k.t=2.5+Math.random()*4}}}
     if(L.type==='rocks'&&Math.abs(n-R.n)<5&&!S.dead){L.rockIn-=dt;if(L.rockIn<=0){L.rockIn=1.1+Math.random()*1.3;const near=Math.random()<.6,i=near?Math.max(0,Math.min(R.nc-1,xIdx(R.x)+Math.round((Math.random()-.5)*3))):Math.floor(Math.random()*R.nc);if(!L.rocks.some(r=>Math.abs(r.x-xCellX(i))<4))L.rocks.push({x:xCellX(i),t:0,st:0})}}
     for(const r of L.rocks){r.t+=dt;if(r.st===0&&r.t>1){r.st=1;r.t=0;if(Math.abs(n-R.n)<3)S.shake=Math.max(S.shake,3);SFX.thud();xPuff(r.x,n,1,'#c8c0b0',8);if(n===R.n&&!R.hop&&Math.abs(r.x-R.x)<CW*.7&&R.inv<=0)crossDie('Bonked by a falling rock.','rock')}else if(r.st===1&&r.t>1.1){r.st=2;r.t=0}}
     L.rocks=L.rocks.filter(r=>!(r.st===2&&r.t>.4))}
@@ -2390,7 +2390,7 @@ function crossUpdate(dt){
     if(cl.type==='herd'||cl.type==='bikes')for(const o of cl.objs)if(Math.abs(o.x-pxx)<o.hw+4){crossDie(cl.type==='bikes'?'Run over by a mountain biker.':o.k==='moose'?'Flattened by a moose.':'Trampled by an elk.','hit');return}
     if(cl.tk&&cl.tk.st==='go'&&Math.abs(cl.tk.x-pxx)<cl.tk.len/2+4){crossDie('Flattened by a logging truck.','hit');return}}
   /* camera: follows you up, and keeps creeping up the trail on its own */
-  if(R.started&&S.t-R.startT>(S.leader.id==='nathan'?3:0)){const creep=(.32+Math.min(.5,R.best/260))*(S.leader.id==='curly'?.75:1);R.camZ+=creep*dt}
+  if(R.started&&S.t-R.startT>(S.leader.id==='nathan'?3:0)){const creep=(.46+Math.min(.55,R.best/220))*(S.leader.id==='curly'?.75:1);R.camZ+=creep*dt}
   if(pz>R.camZ)R.camZ+=(pz-R.camZ)*Math.min(1,dt*4);
   R.camX+=(Math.max(-R.half*.35,Math.min(R.half*.35,pxx*.5))-R.camX)*Math.min(1,dt*3);
   if(pz<R.camZ-xLim()){crossDie('The bear caught up.','bear');return}
