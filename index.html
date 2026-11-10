@@ -3258,10 +3258,9 @@ function odysseyDraw(){
       if(br.dazed){for(let i=0;i<3;i++){const a=t*4+i*2.1;F('#f2d23a',X-18+Math.cos(a)*8,gy-40+Math.sin(a)*2,2,2)}ctx.globalAlpha=.4;ctx.fillStyle='#4a4a4a';ctx.beginPath();ctx.arc(X-14,gy-44-(t*8)%10,3,0,6.283);ctx.fill();ctx.globalAlpha=1}}}
   odDrawVan(o,SX(o.c.x),SY(o.c.y),t,!o.w[0].g&&!o.w[1].g);
   for(const p of o.bits)F(p.c,SX(p.x),SY(p.y),2,2);
-  /* foreground grass + fence posts sliding by a little faster than the road */
+  /* foreground fence posts sliding by a little faster than the road */
   for(let i=Math.floor(cx0*1.25/60)-1;i*60<cx0*1.25+VW+60;i++){const X=Math.round(i*60-cx0*1.25+hash(i)*20);if(X<-20||X>VW+20)continue;const wx=cx0+X,h0=odH(o,wx);if(h0==null)continue;const gy=Math.round(SY(h0))+14,r=hash(i*3.7);const fg=odMix(col('midD'),'#000000',.45);
-    if(r<.35){F(fg,X,gy-16,3,18);F(odMix(fg,'#ffffff',.15),X,gy-16,3,1);if(hash(i+1)<.6){ctx.strokeStyle=fg;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X+1,gy-12);ctx.lineTo(X+31,gy-12+Math.round((SY(odH(o,wx+30)||h0)-SY(h0))));ctx.stroke()}}
-    else for(let j=0;j<8;j++){const hh=5+hash(i*7+j)*9;F(fg,X+j*2-8,Math.round(gy-hh),1,Math.round(hh)+3)}}
+    if(r<.35){F(fg,X,gy-16,3,18);F(odMix(fg,'#ffffff',.15),X,gy-16,3,1);if(hash(i+1)<.6){ctx.strokeStyle=fg;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X+1,gy-12);ctx.lineTo(X+31,gy-12+Math.round((SY(odH(o,wx+30)||h0)-SY(h0))));ctx.stroke()}}}
   for(const p of o.fire){const a=Math.max(0,1-p.t/p.life);ctx.globalAlpha=p.smoke?a*.55:a;ctx.fillStyle=p.smoke?'#3a3634':p.t<.15?'#fff4c0':p.t<.35?'#ffb03a':'#e85a1a';ctx.beginPath();ctx.arc(SX(p.x),SY(p.y),p.r,0,6.283);ctx.fill()}ctx.globalAlpha=1;
   if(Zc.snow){ctx.fillStyle='#ffffff';for(let i=0;i<50;i++){const x=((hash(i)*VW*1.2-t*(10+hash(i+3)*14)-cx0*.3)%VW+VW)%VW,y=((hash(i+7)*VH+t*(18+hash(i+1)*16))%VH);ctx.globalAlpha=kz*.8;ctx.fillRect(Math.round(x),Math.round(y),1,1)}ctx.globalAlpha=1}
   {const m=(cx0+VW*.3)/OD_M,cyc=m%1000,nk=Math.max(zi>=4?.55:0,cyc>620&&cyc<880?Math.min(1,(cyc-620)/60,(880-cyc)/60):0);o.nk=nk;
