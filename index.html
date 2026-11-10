@@ -2611,106 +2611,122 @@ function drawPeeCross(){
 }
 const PZX={c:-1};
 
-/* ---------- Snake Trail: the hidden arcade game. A Nokia-green screen, a hiking line that keeps getting longer ---------- */
-const SN_C={bg:'#9bbc0f',bg2:'#8bac0f',mid:'#306230',dk:'#0f380f'};
+/* ---------- Snake Trail: the hidden arcade game. Checkerboard meadow, a hiking line that slides along and keeps getting longer ---------- */
+const SN_C={g1:'#aad751',g2:'#a2d149',edge:'#578a34',bar:'#4a752c',woods:'#2f5a24',path:'#c9a46a',pathD:'#a8844e'};
 let SNAKE_ON=false;const snakeOK=()=>{if(SNAKE_ON)return true;try{return localStorage.getItem('rc_snake')==='1'}catch(e){return false}};
-const SN_G={
-  lead:['..##..','..##..','.####.','#.##.#','..##..','.#..#.'],
-  hat:['.####.','..##..','.####.','#.##.#','..##..','.#..#.'],
-  cap:['.###..','..##..','.####.','#.##.#','..##..','.#..#.'],
-  curl:['.#.##.','..##..','.####.','#.##.#','..##..','.#..#.'],
-  pack:['..##..','..##..','######','#.##.#','..##..','.#..#.'],
-  cone:['..#...','.###..','#.#.#.','.###..','#.#.#.','.###..'],
-  gold:['#.#.#.','.###..','#####.','.###..','#####.','.###..'],
-  tree:['..#...','.###..','#####.','.###..','#####.','..#...'],
-  rock:['......','.###..','#####.','##.##.','#####.','......'],
-  bear:['#....#','######','#.##.#','######','.#..#.','..##..'],
-  logL:['######','#....#','#....#','#....#','#....#','######']
-};
-const SN_CREW={patch:'hat',curly:'curl',camo:'cap',stache:'hat',nathan:'pack'};
-function snakeGeom(){const pad=Math.max(10,Math.round(Math.min(cw,ch)*.03)),top=Math.round(Math.max(54,ch*.13));const aw=cw-pad*2,ah=ch-top-pad,lg=Math.max(aw,ah),shv=Math.min(aw,ah);let cs=Math.floor(Math.min(lg/22,shv/12)/6)*6;cs=Math.max(12,cs);
-  const cols=Math.floor((cw-pad*2)/cs),rows=Math.floor((ch-top-pad)/cs);return{cs,cols,rows,x0:Math.round((cw-cols*cs)/2),y0:top}}
+const SN_IDS=['patch','curly','camo','stache','nathan'];
+function snakeGeom(){const top=Math.round(Math.max(58,ch*.12)),pad=Math.max(12,Math.round(Math.min(cw,ch)*.03)),aw=cw-pad*2,ah=ch-top-pad;
+  const land=aw>=ah,cols=land?19:11,rows=land?11:17,cs=Math.floor(Math.min(aw/cols,ah/rows));return{cs,cols,rows,x0:Math.round((cw-cols*cs)/2),y0:top+Math.round((ah-rows*cs)/2),top}}
 function snakeInit(){
-  const g=snakeGeom(),cx=Math.floor(g.cols/2),cy=Math.floor(g.rows/2),order=['patch','curly','camo','stache','nathan'].filter(id=>id!==S.leader.id);
+  const g=snakeGeom(),cx=Math.floor(g.cols/3),cy=Math.floor(g.rows/2),order=SN_IDS.filter(id=>id!==S.leader.id);
   S.crew=[];S.snacks=0;
-  const sn={g,body:[{x:cx,y:cy,k:'lead'},{x:cx-1,y:cy,k:SN_CREW[order[0]]},{x:cx-2,y:cy,k:SN_CREW[order[1]]}],order,nextCrew:2,dir:[1,0],q:[],grow:0,stepT:0,started:0,len:3,
-    blocks:{},cone:null,gold:null,goldIn:10+Math.random()*6,bear:null,bearT:0,dead:null,flash:0,tun:[Math.floor(g.rows*.3),Math.floor(g.rows*.7)],best:modeBest.snake||0};
+  const mk=(x,id)=>({x,y:cy,px:x,py:cy,id,f:[1,0]});
+  const sn={g,body:[mk(cx,S.leader.id),mk(cx-1,order[0]),mk(cx-2,order[1])],order,nextCrew:2,dir:[1,0],q:[],grow:0,stepT:0,stepDur:.2,started:0,len:3,
+    blocks:{},cone:null,gold:null,goldIn:10+Math.random()*6,bear:null,bearT:0,bearDur:.6,dead:null,flash:0,shake:0,tun:[Math.floor(g.rows*.25),g.rows-1-Math.floor(g.rows*.25)],best:modeBest.snake||0,popT:0};
   S.sn=sn;
-  const area=g.cols*g.rows,nb=Math.floor(area*.035);
-  for(let i=0;i<nb;i++){const x=Math.floor(Math.random()*g.cols),y=Math.floor(Math.random()*g.rows);if(Math.abs(y-cy)<=1||sn.tun.includes(y)||Math.abs(x-cx)<4&&Math.abs(y-cy)<3)continue;sn.blocks[x+','+y]=Math.random()<.65?'tree':'rock'}
-  sn.bear=snFree(sn,6);snCone(sn);
+  const nb=Math.floor(g.cols*g.rows*.05);
+  for(let i=0;i<nb;i++){const x=Math.floor(Math.random()*g.cols),y=Math.floor(Math.random()*g.rows);if(Math.abs(y-cy)<=1||sn.tun.includes(y)||x===0||x===g.cols-1&&sn.tun.includes(y))continue;sn.blocks[x+','+y]=Math.random()<.65?'tree':'rock'}
+  const b=snFree(sn,6);sn.bear={x:b.x,y:b.y,px:b.x,py:b.y,f:1};snCone(sn);
 }
 function snOcc(sn,x,y){return sn.blocks[x+','+y]||sn.body.some(b=>b.x===x&&b.y===y)}
 function snFree(sn,away){const g=sn.g,h=sn.body[0];for(let n=0;n<400;n++){const x=Math.floor(Math.random()*g.cols),y=Math.floor(Math.random()*g.rows);if(snOcc(sn,x,y))continue;if(away&&Math.abs(x-h.x)+Math.abs(y-h.y)<away)continue;if(sn.cone&&sn.cone.x===x&&sn.cone.y===y)continue;if(sn.bear&&sn.bear.x===x&&sn.bear.y===y)continue;return{x,y}}return{x:0,y:0}}
 function snCone(sn){sn.cone=snFree(sn,3)}
-function snakeTurn(dx,dy){const sn=S.sn;if(!sn||S.dead)return;if(!sn.started){sn.started=1}
+function snakeTurn(dx,dy){const sn=S.sn;if(!sn||S.dead)return;if(!sn.started){sn.started=1;sn.stepT=0}
   const last=sn.q.length?sn.q[sn.q.length-1]:sn.dir;if(last[0]===-dx&&last[1]===-dy)return;if(last[0]===dx&&last[1]===dy)return;if(sn.q.length<2)sn.q.push([dx,dy])}
-function snakeDie(why,bear){const sn=S.sn;if(S.dead)return;die(why,bear?'eaten':'snake');sn.dead={t:0};SFX.hit();buzz(60)}
+function snakeDie(why,bear){const sn=S.sn;if(S.dead)return;die(why,bear?'eaten':'snake');sn.dead={t:0};sn.shake=8;SFX.hit();buzz(60);if(bear)SFX.roar()}
 function snakeUpdate(dt){
-  const sn=S.sn,g=sn.g;
-  if(sn.dead){sn.dead.t+=dt;S.deadT+=dt;if(sn.dead.t>1.6&&mode==='play')showOver();return}
+  const sn=S.sn,g=sn.g;sn.shake=Math.max(0,sn.shake-dt*30);sn.popT=Math.max(0,sn.popT-dt);
+  if(sn.dead){sn.dead.t+=dt;S.deadT+=dt;if(sn.dead.t>1.5&&mode==='play')showOver();return}
   sn.flash=Math.max(0,sn.flash-dt);
   if(!sn.started)return;
-  /* golden pinecone comes and goes */
   if(sn.gold){sn.gold.t-=dt;if(sn.gold.t<=0)sn.gold=null}else{sn.goldIn-=dt;if(sn.goldIn<=0){sn.goldIn=12+Math.random()*8;const p=snFree(sn,4);sn.gold={x:p.x,y:p.y,t:6}}}
   /* the bear wanders, a little quicker as the line grows */
-  sn.bearT-=dt;if(sn.bearT<=0&&sn.bear){sn.bearT=Math.max(.24,.55-sn.len*.006);const ds=[[1,0],[-1,0],[0,1],[0,-1]].sort(()=>Math.random()-.5);const h=sn.body[0];
-    if(Math.random()<.35)ds.sort((a,b)=>(Math.abs(sn.bear.x+a[0]-h.x)+Math.abs(sn.bear.y+a[1]-h.y))-(Math.abs(sn.bear.x+b[0]-h.x)+Math.abs(sn.bear.y+b[1]-h.y)));
-    for(const d of ds){const x=sn.bear.x+d[0],y=sn.bear.y+d[1];if(x<0||y<0||x>=g.cols||y>=g.rows)continue;if(sn.blocks[x+','+y]||sn.body.slice(1).some(b=>b.x===x&&b.y===y))continue;sn.bear={x,y,f:d[0]||sn.bear.f||1};break}
-    if(sn.bear.x===h.x&&sn.bear.y===h.y){snakeDie('Ran right into the bear.',1);return}}
-  sn.stepT-=dt;if(sn.stepT>0)return;sn.stepT=Math.max(.075,.17-Math.floor(sn.len/3)*.006);
+  sn.bearT-=dt;if(sn.bearT<=0&&sn.bear){sn.bearDur=Math.max(.32,.7-sn.len*.007);sn.bearT=sn.bearDur;const B=sn.bear,h=sn.body[0];B.px=B.x;B.py=B.y;
+    const ds=[[1,0],[-1,0],[0,1],[0,-1]].sort(()=>Math.random()-.5);if(Math.random()<.3)ds.sort((a,b)=>(Math.abs(B.x+a[0]-h.x)+Math.abs(B.y+a[1]-h.y))-(Math.abs(B.x+b[0]-h.x)+Math.abs(B.y+b[1]-h.y)));
+    for(const d of ds){const x=B.x+d[0],y=B.y+d[1];if(x<0||y<0||x>=g.cols||y>=g.rows)continue;if(sn.blocks[x+','+y]||sn.body.slice(1).some(b=>b.x===x&&b.y===y))continue;B.x=x;B.y=y;if(d[0])B.f=d[0];break}
+    if(B.x===h.x&&B.y===h.y){snakeDie('Ran right into the bear.',1);return}}
+  sn.stepT-=dt;if(sn.stepT>0)return;sn.stepDur=Math.max(.12,.21-Math.floor(sn.len/3)*.005);sn.stepT=sn.stepDur;
   if(sn.q.length)sn.dir=sn.q.shift();
   const h=sn.body[0];let nx=h.x+sn.dir[0],ny=h.y+sn.dir[1];
-  if(nx<0||nx>=g.cols){if(sn.tun.includes(ny)){nx=nx<0?g.cols-1:0;SFX.thunk&&SFX.thunk()}else{snakeDie('Hiked right off the edge of the woods.');return}}
-  if(ny<0||ny>=g.rows){snakeDie('Hiked right off the edge of the woods.');return}
+  if(nx<0||nx>=g.cols){if(sn.tun.includes(ny)){nx=nx<0?g.cols-1:0;SFX.thunk&&SFX.thunk()}else{snakeDie('Hiked right off the edge of the meadow.');return}}
+  if(ny<0||ny>=g.rows){snakeDie('Hiked right off the edge of the meadow.');return}
   const blk=sn.blocks[nx+','+ny];if(blk){snakeDie(blk==='tree'?'Walked face-first into a tree.':'Tripped over a rock.');return}
   if(sn.body.slice(0,sn.grow>0?sn.body.length:sn.body.length-1).some(b=>b.x===nx&&b.y===ny)){snakeDie('Walked into your own hiking line.');return}
   if(sn.bear&&sn.bear.x===nx&&sn.bear.y===ny){snakeDie('Ran right into the bear.',1);return}
-  /* move: each hiker steps into the spot of the one ahead */
-  for(let i=sn.body.length-1;i>0;i--){sn.body[i].x=sn.body[i-1].x;sn.body[i].y=sn.body[i-1].y}
-  if(sn.grow>0){const tail=sn.body[sn.body.length-1];sn.grow--;const id=sn.order[sn.nextCrew];sn.nextCrew++;sn.body.push({x:tail.x,y:tail.y,k:id?SN_CREW[id]:['hat','cap','curl','pack'][Math.floor(Math.random()*4)]});sn.len=sn.body.length}
-  h.x=nx;h.y=ny;SFX.tap();
-  if(sn.cone&&sn.cone.x===nx&&sn.cone.y===ny){sn.grow+=1;S.cones++;SFX.cone();snCone(sn);sn.flash=.12}
-  if(sn.gold&&sn.gold.x===nx&&sn.gold.y===ny){sn.grow+=5;S.cones+=5;SFX.badge&&SFX.badge();sn.gold=null;sn.flash=.3}
+  const tail=sn.body[sn.body.length-1],tx=tail.x,ty=tail.y;
+  for(const b of sn.body){b.px=b.x;b.py=b.y}
+  for(let i=sn.body.length-1;i>0;i--){const b=sn.body[i],a=sn.body[i-1];b.f=[a.x-b.x,a.y-b.y];b.x=a.x;b.y=a.y}
+  h.x=nx;h.y=ny;h.f=sn.dir.slice();
+  if(sn.grow>0){sn.grow--;const id=sn.order[sn.nextCrew]||SN_IDS[Math.floor(Math.random()*5)];sn.nextCrew++;sn.body.push({x:tx,y:ty,px:tx,py:ty,id,f:tail.f.slice()});sn.len=sn.body.length;sn.popT=.25}
+  if(sn.cone&&sn.cone.x===nx&&sn.cone.y===ny){sn.grow+=1;S.cones++;SFX.cone();snCone(sn);sn.flash=.1}
+  if(sn.gold&&sn.gold.x===nx&&sn.gold.y===ny){sn.grow+=5;S.cones+=5;SFX.badge&&SFX.badge();sn.gold=null;sn.flash=.25}
   S.dist=sn.len*30;S.stats.clears=sn.len;
 }
-function snGlyph(rows,x,y,cs,col){const u=cs/6;ctx.fillStyle=col;for(let r=0;r<6;r++)for(let c=0;c<6;c++)if(rows[r][c]==='#')ctx.fillRect(x+Math.round(c*u),y+Math.round(r*u),Math.ceil(u),Math.ceil(u))}
-function snFrame(g,t){
+/* drawing */
+function snBoard(g,t,shake){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
-  ctx.fillStyle='#1a1e14';ctx.fillRect(0,0,cw,ch);
-  const bx=g.x0-6,by=g.y0-6,bw=g.cols*g.cs+12,bh=g.rows*g.cs+12;
-  ctx.fillStyle='#3a4030';ctx.fillRect(bx-6,by-46,bw+12,bh+52);ctx.fillStyle=SN_C.bg;ctx.fillRect(bx,by,bw,bh);
-  ctx.fillStyle=SN_C.bg2;for(let y=0;y<bh;y+=3)ctx.fillRect(bx,by+y,bw,1);
-  return{bx,by,bw,bh};
+  ctx.fillStyle=SN_C.woods;ctx.fillRect(0,0,cw,ch);
+  /* pixel pines all around the meadow */
+  const pine=(x,y,s,c1,c2)=>{for(let r=0;r<s;r++){const w=Math.round((r+1)*.55*s/4)+1;ctx.fillStyle=r%3===0?c2:c1;ctx.fillRect(Math.round(x-w),Math.round(y+r*s/6),w*2,Math.ceil(s/6))}};
+  for(let i=0;i<70;i++){const x=hash(i*3.1)*cw,y=hash(i*7.7)*ch,s=18+hash(i)*26;pine(x,y-s,s,i%2?'#24481c':'#2a5220','#1c3a16')}
+  ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+  const bw=g.cols*g.cs,bh=g.rows*g.cs;
+  ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(g.x0-8+4,g.y0-8+6,bw+16,bh+16);
+  ctx.fillStyle=SN_C.edge;ctx.fillRect(g.x0-8,g.y0-8,bw+16,bh+16);
+  for(let y=0;y<g.rows;y++)for(let x=0;x<g.cols;x++){ctx.fillStyle=(x+y)%2?SN_C.g2:SN_C.g1;ctx.fillRect(g.x0+x*g.cs,g.y0+y*g.cs,g.cs,g.cs)}
+  for(let i=0;i<g.cols*g.rows*.5;i++){const x=Math.floor(hash(i*1.7)*g.cols),y=Math.floor(hash(i*2.3)*g.rows),r=hash(i*5.1);ctx.fillStyle=r<.5?'#94c43e':'#b8e060';ctx.fillRect(g.x0+x*g.cs+Math.round(r*g.cs*.7),g.y0+y*g.cs+Math.round(hash(i*9)*g.cs*.7),2,3)}
+  return{bw,bh};
 }
+function snSprite(fn,x,y,k){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(k,k);fn();ctx.restore()}
+function snHiker(c,x,y,k,f,t,walk){
+  snSprite(()=>{if(f[1]<0)outlined(ctx,()=>drawHikerBack(ctx,c,0,0,false));else if(f[1]>0)outlined(ctx,()=>drawHikerFront(ctx,c,0,0,false));else{if(f[0]<0)ctx.scale(-1,1);outlined(ctx,()=>drawHiker(ctx,c,0,0,walk?t*1.6:0,false))}},x,y,k);
+}
+function snShadow(x,y,w){ctx.globalAlpha=.2;ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(x,y,w,w*.32,0,0,6.283);ctx.fill();ctx.globalAlpha=1}
 function snakeDraw(){
-  const sn=S.sn,g=sn.g,t=S.t,cs=g.cs,X=x=>g.x0+x*cs,Y=y=>g.y0+y*cs;
-  const fr=snFrame(g,t);const hide=sn.dead&&Math.floor(sn.dead.t*6)%2===1;
-  ctx.strokeStyle=SN_C.dk;ctx.lineWidth=2;ctx.strokeRect(g.x0-2,g.y0-2,g.cols*cs+4,g.rows*cs+4);
-  for(const ty of sn.tun)for(const ex of [g.x0-7,g.x0+g.cols*cs-1]){ctx.fillStyle=SN_C.mid;ctx.fillRect(ex,Y(ty)+1,8,cs-2);ctx.fillStyle=SN_C.bg;ctx.fillRect(ex+2,Y(ty)+4,4,cs-8)}
-  for(const k in sn.blocks){const [x,y]=k.split(',').map(Number);snGlyph(SN_G[sn.blocks[k]],X(x),Y(y),cs,SN_C.dk)}
-  if(sn.cone)snGlyph(SN_G.cone,X(sn.cone.x),Y(sn.cone.y),cs,SN_C.dk);
-  if(sn.gold&&(sn.gold.t>2||Math.floor(t*8)%2))snGlyph(SN_G.gold,X(sn.gold.x),Y(sn.gold.y),cs,Math.floor(t*4)%2?SN_C.dk:SN_C.mid);
-  if(sn.bear)snGlyph(SN_G.bear,X(sn.bear.x),Y(sn.bear.y),cs,SN_C.dk);
-  if(!hide)sn.body.forEach((b,i)=>snGlyph(SN_G[b.k]||SN_G.hat,X(b.x),Y(b.y),cs,i===0?SN_C.dk:SN_C.mid));
-  if(sn.flash>0){ctx.globalAlpha=sn.flash*1.5;ctx.fillStyle=SN_C.dk;ctx.fillRect(fr.bx,fr.by,fr.bw,fr.bh);ctx.globalAlpha=1}
-  /* top bar, Nokia style */
-  const f=Math.round(Math.max(16,Math.min(28,cs*1.3)));ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';ctx.textBaseline='middle';
-  ctx.fillStyle=SN_C.bg;ctx.textAlign='left';ctx.fillText('LINE '+String(sn.len).padStart(3,'0'),fr.bx,fr.by-22);
-  ctx.textAlign='right';ctx.fillText('BEST '+String(Math.max(sn.best,sn.len)).padStart(3,'0'),fr.bx+fr.bw,fr.by-22);
+  const sn=S.sn,g=sn.g,t=S.t,cs=g.cs,p=sn.started&&!sn.dead?Math.min(1,1-sn.stepT/sn.stepDur):1,k=cs/30;
+  const B=snBoard(g,t,sn.shake),CX=x=>g.x0+x*cs+cs/2,CY=y=>g.y0+y*cs+cs/2;
+  const lerp=(b,key)=>{const a=b['p'+key],c=b[key];return Math.abs(c-a)>1?c:a+(c-a)*p};
+  /* hollow-log tunnels through the side hedges */
+  for(const ty of sn.tun)for(const sx of [g.x0-8,g.x0+g.cols*cs]){ctx.fillStyle='#7a5232';ctx.fillRect(sx-2,g.y0+ty*cs+3,12,cs-6);ctx.fillStyle='#3a2414';ctx.fillRect(sx+1,g.y0+ty*cs+7,6,cs-14);ctx.fillStyle='#c9a46a';ctx.fillRect(sx-2,g.y0+ty*cs+3,12,2)}
+  /* the worn trail under the hiking line */
+  const pts=sn.body.map(b=>[CX(lerp(b,'x')),CY(lerp(b,'y'))+cs*.18]);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  for(const [w,c] of [[cs*.62,SN_C.pathD],[cs*.5,SN_C.path]]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();let pen=false;for(let i=0;i<pts.length;i++){const q=pts[i];if(i>0&&Math.hypot(q[0]-pts[i-1][0],q[1]-pts[i-1][1])>cs*1.5){ctx.stroke();ctx.beginPath();pen=false}if(!pen){ctx.moveTo(q[0],q[1]);pen=true}else ctx.lineTo(q[0],q[1])}if(pts.length===1)ctx.lineTo(pts[0][0]+.1,pts[0][1]);ctx.stroke()}
+  /* things on the board, drawn top to bottom so lower ones overlap */
+  const items=[];
+  for(const key in sn.blocks){const [x,y]=key.split(',').map(Number),kind=sn.blocks[key];items.push({y,f:()=>{const cx=CX(x),by=g.y0+y*cs+cs*.92;snShadow(cx,by,cs*.36);
+    if(kind==='tree'){ctx.fillStyle='#6a4428';ctx.fillRect(cx-cs*.06,by-cs*.2,cs*.12,cs*.2);for(let r=0;r<3;r++){const w=cs*(.42-r*.1),yy=by-cs*(.2+r*.26);ctx.fillStyle=r%2?'#3f8a42':'#2f6a34';ctx.beginPath();ctx.moveTo(cx-w,yy);ctx.lineTo(cx+w,yy);ctx.lineTo(cx,yy-cs*.4);ctx.closePath();ctx.fill()}ctx.fillStyle='#5aac52';ctx.fillRect(cx-cs*.12,by-cs*.86,cs*.06,cs*.1)}
+    else{ctx.fillStyle='#8a847c';ctx.beginPath();ctx.ellipse(cx,by-cs*.22,cs*.36,cs*.26,0,0,6.283);ctx.fill();ctx.fillStyle='#b0aaa2';ctx.beginPath();ctx.ellipse(cx-cs*.1,by-cs*.32,cs*.14,cs*.08,0,0,6.283);ctx.fill()}}})}
+  if(sn.cone){const c=sn.cone;items.push({y:c.y,f:()=>{const bob=Math.sin(t*4)*cs*.05;snShadow(CX(c.x),g.y0+c.y*cs+cs*.85,cs*.2);snSprite(()=>outlined(ctx,()=>drawCone(ctx,0,0)),CX(c.x),CY(c.y)+bob,k*2.2)}})}
+  if(sn.gold&&(sn.gold.t>2||Math.floor(t*8)%2)){const c=sn.gold;items.push({y:c.y,f:()=>{const gx=CX(c.x),gy=CY(c.y),r=cs*(.5+.08*Math.sin(t*6));const gr=ctx.createRadialGradient(gx,gy,2,gx,gy,r);gr.addColorStop(0,'rgba(255,216,74,.85)');gr.addColorStop(1,'rgba(255,216,74,0)');ctx.fillStyle=gr;ctx.fillRect(gx-r,gy-r,r*2,r*2);
+    snSprite(()=>outlined(ctx,()=>drawCone(ctx,0,0)),gx,gy,k*2.6);ctx.fillStyle='#fff6c0';const sp=Math.floor(t*6)%4;ctx.fillRect(gx+[-1,1,1,-1][sp]*cs*.3,gy+[-1,-1,1,1][sp]*cs*.3,3,3)}})}
+  if(sn.bear){const b=sn.bear,bp=Math.min(1,1-sn.bearT/sn.bearDur),bx=b.px+(b.x-b.px)*bp,by=b.py+(b.y-b.py)*bp;items.push({y:by,f:()=>{snShadow(CX(bx),g.y0+by*cs+cs*.9,cs*.45);snSprite(()=>{if(b.f<0)ctx.scale(-1,1);outlined(ctx,()=>drawBear(ctx,14,0,t*2,!!sn.dead,false))},CX(bx),g.y0+by*cs+cs*.92,k*.8)}})}
+  const hide=sn.dead&&Math.floor(sn.dead.t*6)%2===1&&sn.dead.t<1;
+  if(!hide)sn.body.forEach((b,i)=>{const x=lerp(b,'x'),y=lerp(b,'y');items.push({y:y+.01*i,f:()=>{snShadow(CX(x),g.y0+y*cs+cs*.9,cs*.22);snHiker(byId(b.id)||S.leader,CX(x),g.y0+y*cs+cs*.9,k*1.08,b.f,t+i*.3,sn.started&&!sn.dead)}})});
+  items.sort((a,b)=>a.y-b.y);for(const it of items)it.f();
+  if(sn.flash>0){ctx.globalAlpha=sn.flash*2.5;ctx.fillStyle='#fff6c0';ctx.fillRect(g.x0,g.y0,B.bw,B.bh);ctx.globalAlpha=1}
+  if(sn.dead&&sn.dead.t<.3){ctx.globalAlpha=.35*(1-sn.dead.t/.3);ctx.fillStyle='#ff3a2a';ctx.fillRect(g.x0,g.y0,B.bw,B.bh);ctx.globalAlpha=1}
+  ctx.restore();
+  /* header bar, like the Google one: pinecone count on the left, best on the right */
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const hb=Math.round(g.top*.78),f=Math.round(Math.max(18,Math.min(30,hb*.5)));ctx.fillStyle=SN_C.bar;ctx.fillRect(0,0,cw,hb);ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(0,hb,cw,3);
+  ctx.font='700 '+Math.round(f*(1+sn.popT))+'px "RCD","Pixelify Sans", monospace';ctx.textBaseline='middle';ctx.textAlign='left';
+  const lx=Math.max(16,g.x0);snSprite(()=>outlined(ctx,()=>drawCone(ctx,0,0)),lx+8,hb/2+4,2.4);ctx.fillStyle='#ffffff';ctx.fillText(String(sn.len),lx+28,hb/2);
+  ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';const best=String(Math.max(sn.best,sn.len)),rx=Math.min(cw-16,g.x0+B.bw);ctx.textAlign='right';ctx.fillStyle='#ffffff';ctx.fillText(best,rx,hb/2);
+  const tw=ctx.measureText(best).width,tx=rx-tw-26,ty=hb/2-9;ctx.fillStyle='#f2c94c';ctx.fillRect(tx,ty,16,8);ctx.fillRect(tx+4,ty+8,8,4);ctx.fillRect(tx+2,ty+12,12,3);ctx.fillRect(tx-3,ty+1,3,5);ctx.fillRect(tx+16,ty+1,3,5);
   ctx.textAlign='center';
-  if(!sn.started&&!S.dead&&Math.floor(t*2)%2===0){ctx.fillStyle=SN_C.dk;ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';ctx.fillText('SWIPE TO START',cw/2,g.y0+g.rows*cs*.75)}
-  if(sn.dead&&!hide){ctx.fillStyle=SN_C.dk;ctx.font='700 '+Math.round(f*1.4)+'px "RCD","Pixelify Sans", monospace';ctx.fillText('GAME OVER',cw/2,g.y0+g.rows*cs*.5)}
+  if(!sn.started&&!S.dead){ctx.globalAlpha=.6+.4*Math.sin(t*5);ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';ctx.fillStyle='rgba(20,40,10,.75)';ctx.fillText('SWIPE TO START',cw/2+2,g.y0+B.bh*.78+2);ctx.fillStyle='#ffffff';ctx.fillText('SWIPE TO START',cw/2,g.y0+B.bh*.78);ctx.globalAlpha=1}
 }
 /* pee break: the whole line stops along the tree line, backs turned */
 function drawPeeSnake(){
-  const sn=S.sn,g=sn.g,cs=g.cs,t=pT;const fr=snFrame(g,t);
-  const n=Math.min(sn.body.length,g.cols-2),y0=g.y0+Math.floor(g.rows*.35)*cs;
-  for(let x=0;x<g.cols;x++)snGlyph(SN_G.tree,g.x0+x*cs,y0-cs,cs,SN_C.dk);
-  const back=['..##..','..##..','.####.','.####.','..##..','.#..#.'];
-  for(let i=0;i<n;i++){const x=g.x0+(1+i)*cs,ph=(t*1.3+i*.37)%3;snGlyph(back,x,y0,cs,i===0?SN_C.dk:SN_C.mid);if(ph<2.2)for(let d=0;d<3;d++){const dy=((t*6+d*.33+i*.2)%1)*cs*.8;ctx.fillStyle=SN_C.mid;ctx.fillRect(x+cs*.45,y0-cs*.15-dy,Math.max(2,cs/6),Math.max(2,cs/6))}}
-  const f=Math.round(Math.max(16,Math.min(28,cs*1.3)));ctx.fillStyle=SN_C.dk;ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-  if(Math.floor(t*1.5)%2)ctx.fillText('PSSSSSS...',cw/2,y0+cs*3);
+  const sn=S.sn,g=sn.g,cs=g.cs,t=pT,k=cs/30;const B=snBoard(g,t,0);
+  const ty=Math.max(1,Math.floor(g.rows*.38)),n=Math.min(sn.body.length,g.cols-2);
+  for(let x=0;x<g.cols;x++){const cx=g.x0+x*cs+cs/2,by=g.y0+ty*cs+cs*.3;ctx.fillStyle='#6a4428';ctx.fillRect(cx-cs*.06,by-cs*.2,cs*.12,cs*.2);for(let r=0;r<3;r++){const w=cs*(.44-r*.1),yy=by-cs*(.2+r*.26);ctx.fillStyle=r%2?'#3f8a42':'#2f6a34';ctx.beginPath();ctx.moveTo(cx-w,yy);ctx.lineTo(cx+w,yy);ctx.lineTo(cx,yy-cs*.42);ctx.closePath();ctx.fill()}}
+  for(let i=0;i<n;i++){const b=sn.body[i],cx=g.x0+(1+i)*cs+cs/2,fy=g.y0+(ty+1)*cs+cs*.6,ph=(t*1.3+i*.37)%3;
+    if(ph<2.3){ctx.fillStyle='#e8d84a';for(let d=0;d<3;d++){const dy=((t*5+d*.33+i*.2)%1)*cs*.5;ctx.fillRect(cx-1,fy-cs*.7-dy,2,3)}}
+    snShadow(cx,fy,cs*.22);snHiker(byId(b.id)||S.leader,cx,fy,k*1.08,[0,-1],0,false)}
+  ctx.setTransform(dpr,0,0,dpr,0,0);const f=Math.round(Math.max(18,cs*.7));ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  if(Math.floor(t*1.5)%2){ctx.fillStyle='rgba(20,40,10,.7)';ctx.fillText('psssssss...',cw/2+2,g.y0+(ty+3)*cs+2);ctx.fillStyle='#ffffff';ctx.fillText('psssssss...',cw/2,g.y0+(ty+3)*cs)}
   const pv=.7+.12*Math.sin(t*3);SFX.peeSurface('ground');SFX.setPee(pv);SFX.peeVoice(0,pv);
 }
 /* secret: poke the campfire (or the apartment lamp) five times */
@@ -4936,7 +4952,7 @@ function drawArcHandheld(t,k,cx,gy){
   px(ctx,'#2a2a2a',x+6,y+2,1,1);px(ctx,'#8a2a6a',x+7,y+1,1,1);px(ctx,'#8a2a6a',x+7,y+3,1,1);
   arcHit(cx+(x-1)*k,gy+(y-2)*k,11*k,8*k);
 }
-const ARC_LBL={snake:['#9bbc0f','#0f380f','S'],copter:['#8ad04a','#1a3a10','💨'],cross:['#4ab0ff','#0a2a44','↑']};
+const ARC_LBL={snake:['#aad751','#2f5a24','S'],copter:['#8ad04a','#1a3a10','💨'],cross:['#4ab0ff','#0a2a44','↑']};
 function showArcade(){
   if(!arcadeOpen()){toast('Out of order. Reach level '+ARCADE_LV+' to fix it.');return}
   SFX.tap();screen('arcScr');const box=$('arcList');box.innerHTML='';
