@@ -1175,7 +1175,7 @@ const MODES=[
  {id:'solo',name:'Solo Hike',desc:'No crew behind you. One hit ends it, but pinecones count double.'},
  {id:'bear',name:'Bear Mode',desc:'You are the bear. Catch all five as fast as you can. Fastest time wins.'},
  {id:'fire',name:'Forest Fire',desc:'Be the fire, swing over lava, or ride the bear.'},
- {id:'copter',name:'Fart Copter',arcade:true,desc:'The bear chased you into a cave. Hold to fart and fly through the stalactites. Beans refill your gas.'}
+ {id:'copter',name:'Fart Copter',arcade:true,desc:'The bear chased you into a cave. Hold to fart and fly through as many spires as you can. Beans refill your gas.'}
 ];
 let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}catch(e){}
 if(!MODES.find(m=>m.id===runMode))runMode='classic';
@@ -2255,17 +2255,19 @@ function copterInit(){
   S.texts.push({s:'The bear chased you into a cave!',x:LX+60,y:GY-120,t:-.4,color:'#fff3dc'});
   S.crew=[];S.snacks=0;
   S.cp={y:GY-80,vy:0,fuel:100,spd:120,cols:[],items:[],hawks:[],nextX:S.dist+W+40,hawkIn:6,shield:S.leader.id==='camo'?1:0,st,puffs:[],tootCd:0,tilt:0,
-    lag:.35,bsx:CAVE_IN-110,bvy:0,by:0,roarIn:3.5,swipeT:0,swipeCd:0,rocks:[],dust:[],zone:-1,zCard:null,pounce:-1,fallRocks:[],flutter:{}};
+    lag:.35,bsx:CAVE_IN-110,bvy:0,by:0,roarIn:3.5,swipeT:0,swipeCd:0,rocks:[],dust:[],bits:[],zone:-1,zCard:null,fallRocks:[],flutter:{}};
 }
 function copterUpdate(dt){
   const c=S.cp,st=c.st,top=-oy+15;
   for(const r of c.rocks){r.vy+=420*dt;r.y+=r.vy*dt}c.rocks=c.rocks.filter(r=>r.y<GY+4);
   for(const p of c.dust){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt}c.dust=c.dust.filter(p=>p.t<.6);
   for(const p of c.puffs){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.r+=dt*6}c.puffs=c.puffs.filter(p=>p.t<.9);
-  if(S.dead){S.deadT+=dt;
-    if(c.pounce>=0){c.pounce+=dt;const k=Math.min(1,c.pounce/.5);c.bsx=c.bsx0+(LX-6-c.bsx0)*k;c.by=-Math.sin(k*Math.PI)*26}
-    else{c.vy+=st.gr*dt;c.y=Math.min(GY-1,c.y+c.vy*dt)}
-    if(S.deadT>1.3&&mode==='play')showOver();return}
+  if(S.dead){S.deadT+=dt;c.swipeT=0;c.roarT=0;c.bits=c.bits||[];for(const b of c.bits){b.x+=b.vx*dt;b.y+=b.vy*dt;b.vy+=520*dt}
+    /* crash: fall to the floor, then the bear runs up and CHOMP */
+    if(!c.landed){c.vy=Math.max(c.vy,0)+st.gr*1.2*dt;c.y+=c.vy*dt;c.tilt+=dt*9;if(c.y>=GY-1){c.y=GY-1;c.landed=S.deadT;c.tilt=1.4;S.shake=4;SFX.thud();for(let i=0;i<8;i++)c.dust.push({x:S.dist+LX+(Math.random()-.5)*14,y:GY-1,vx:(Math.random()-.5)*80,vy:-20-Math.random()*30,t:0})}}
+    else if(!c.chompT&&S.deadT-c.landed>.35){if(!c.charged){c.charged=1;SFX.growl();c.bsx=Math.min(c.bsx,LX-60)}const sp=c.bsx<LX-70?320:200;c.bsx+=sp*dt;c.by=-Math.abs(Math.sin(S.deadT*14))*3;if(c.bsx>=LX-6){c.bsx=LX-6;c.by=0;c.chompT=S.deadT;S.shake=7;SFX.chomp();buzz(40);say('CHOMP',LX,GY-36,'#ff6b5a');
+      const lk=look(S.leader),cols=[lk.shirt,lk.pack,lk.skin,lk.pants,lk.hatC||lk.hair,'#b8262b'];for(let n=0;n<26;n++)c.bits.push({x:S.dist+LX+(Math.random()-.5)*8,y:GY-6-Math.random()*16,vx:(Math.random()-.3)*170,vy:-130-Math.random()*170,c:cols[n%cols.length]})}}
+    if(c.chompT&&S.deadT-c.chompT>1.1&&mode==='play')showOver();return}
   c.spd=110+Math.min(90,S.dist/80);const mv=c.spd*dt;S.dist+=mv;
   const thrust=S.hold&&c.fuel>0,inCave=S.dist+LX>CAVE_IN+20;
   if(thrust){c.vy-=st.th*dt;c.fuel=Math.max(0,c.fuel-st.burn*dt);c.tootCd-=dt;if(c.tootCd<=0){c.tootCd=.7;SFX.fart(S.leader.id,.3,.45);if(inCave)setTimeout(()=>{if(S&&S.mode==='copter')SFX.fart(S.leader.id,.1,.45)},170)}
@@ -2302,12 +2304,12 @@ function copterUpdate(dt){
   const hit=(why,colX)=>{if(c.shield){c.shield=0;S.shake=7;SFX.hit();say('JACKED! Smashed right through',LX,c.y-30,'#f2a541');S.invuln=1;c.lag=Math.max(0,c.lag-.3);return false}
     die(why,'copter');SFX.hit();S.shake=8;if(colX!=null)for(let i=0;i<8;i++)c.rocks.push({x:colX+(Math.random()-.5)*30,y:top-4-Math.random()*20,vy:Math.random()*60});return true};
   S.invuln=Math.max(0,(S.invuln||0)-dt);
-  if(c.y>=GY-2){c.y=GY-1;if(!inCave){die('Touched down. The bear was waiting.','copter');SFX.roar()}else{die('The bear caught up.','copter');SFX.roar();c.pounce=0;c.bsx0=c.bsx}return}
+  if(c.y>=GY-2){c.y=GY-1;if(!inCave){die('Touched down. The bear was waiting.','copter');SFX.roar()}else{die('The bear caught up.','copter');SFX.roar()}return}
   if(S.invuln<=0)for(const k of c.cols){if(k.hitDone)continue;const cx=k.x+k.w/2,tb=k.gy+k.gap/2,bb=k.gy-k.gap/2,flo=GY+6,cei=top-15;
     if(py1>tb){const hw=k.B/2*Math.min(1,(py1-tb)/(flo-tb));if(px1>cx-hw&&px0<cx+hw){k.hitDone=1;if(hit('Impaled on a stalagmite. Ouch.'))return}}
     if(py0<bb){const hw=k.B/2*Math.min(1,(bb-py0)/(bb-cei));if(px1>cx-hw&&px0<cx+hw){k.hitDone=1;if(hit('Bonked a stalactite.',cx))return}}}
   if(S.invuln<=0)for(const h of c.hawks){if(!h.hitDone&&Math.abs(h.x-lx)<9&&Math.abs(h.yy-(c.y-9))<9){h.hitDone=1;if(hit('A bat got tangled in your hair.'))return}}
-  for(const k of c.cols)if(!k.passed&&k.x+k.w<px0){k.passed=1;S.stats.clears++;c.lag=Math.min(1,c.lag+.07)}
+  for(const k of c.cols)if(!k.passed&&k.x+k.w<px0){k.passed=1;S.stats.clears++;c.lag=Math.min(1,c.lag+.07);c.spires=(c.spires||0)+1;c.popT=.35;SFX.tap()}
   for(const it of c.items){if(it.got)continue;if(S.leader.id==='stache'&&it.k==='cone'){const dx=lx-it.x,dy=c.y-9-it.y,d2=Math.hypot(dx,dy);if(d2<48){it.x+=dx/d2*160*dt;it.y+=dy/d2*160*dt}}
     if(Math.abs(it.x-lx)<10&&Math.abs(it.y-(c.y-9))<12){it.got=1;if(it.k==='cone'){S.cones++;SFX.cone()}else{c.fuel=Math.min(100,c.fuel+38);SFX.chomp();say('Beans! +gas',LX,c.y-30,'#c6e36a')}}}
   c.cols=c.cols.filter(k=>k.x>S.dist-60);c.items=c.items.filter(i=>!i.got&&i.x>S.dist-40);c.hawks=c.hawks.filter(h=>h.x>S.dist-40);
@@ -2404,7 +2406,8 @@ function copterDraw(){
   /* fart cloud */
   for(const p of c.puffs){const a=Math.max(0,.6*(1-p.t/.9));ctx.globalAlpha=a*.6;ctx.fillStyle='#6a7a4a';ctx.beginPath();ctx.arc(p.x+1,p.y+1,p.r+1,0,6.283);ctx.fill();ctx.globalAlpha=a;ctx.fillStyle=p.t<.25?'#d2ea7a':'#a8b878';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill()}ctx.globalAlpha=1;
   /* the pilot */
-  if(!(S.dead&&c.pounce>.45)){const y=Math.round(c.y);ctx.save();ctx.translate(LX,y-9);ctx.rotate(c.tilt);ctx.translate(-LX,-(y-9));
+  for(const b of (c.bits||[]))F(b.c,Math.round(b.x-d),Math.round(b.y),3,3);
+  if(!(S.dead&&c.chompT)){const y=Math.round(c.y);ctx.save();ctx.translate(LX,y-9);ctx.rotate(c.tilt);ctx.translate(-LX,-(y-9));
     if(S.invuln>0&&Math.floor(t*14)%2)ctx.globalAlpha=.5;
     outlined(ctx,()=>drawHiker(ctx,S.leader,LX,y,S.hold&&c.fuel>0?t*1.6:t*.4,true));ctx.globalAlpha=1;
     if(c.shield&&!PXC){ctx.globalAlpha=.35+.15*Math.sin(t*6);ctx.strokeStyle='#f2a541';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(LX,y-9,14,0,6.283);ctx.stroke();ctx.globalAlpha=1}
@@ -2418,7 +2421,7 @@ function copterDraw(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.textBaseline='middle';
   const f=Math.round(Math.max(20,Math.min(34,cw/22))),pad=Math.max(14,f*.6),FONT=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace';
   const sh=(s,x,y,col)=>{ctx.fillStyle='rgba(20,30,24,.8)';ctx.fillText(s,x+2,y+2);ctx.fillStyle=col;ctx.fillText(s,x,y)};
-  ctx.textAlign='left';ctx.font=FONT(f);sh(Math.floor(d/12).toLocaleString()+' m',pad,pad+f*.45,'#fff3dc');
+  c.popT=Math.max(0,(c.popT||0)-1/60);ctx.textAlign='left';{const n=String(c.spires||0),k=c.popT/.35;ctx.font=FONT(Math.round(f*(1+k*.35)));sh(n,pad,pad+f*.45,k>0?'#c6e36a':'#fff3dc');const nw=ctx.measureText(n).width;ctx.font=FONT(Math.round(f*.55));sh(n==='1'?'spire':'spires',pad+nw+8,pad+f*.55,'#c9bfae')}
   ctx.font=FONT(Math.round(f*.7));sh('x '+S.cones,pad+Math.round(f*.7),pad+f*1.5,'#f2a541');{const cx2=Math.round(pad+f*.25),cy2=Math.round(pad+f*1.5);ctx.fillStyle='#7a4a24';ctx.fillRect(cx2-4,cy2-6,9,12);ctx.fillStyle='#b0733a';ctx.fillRect(cx2-2,cy2-6,3,3)}
   {const bw=Math.round(f*4),bh=Math.max(8,Math.round(f*.34)),bx=pad,by=Math.round(pad+f*2.3),k=c.fuel/100,gx=bx+Math.round(f*.9);
     ctx.fillStyle='#b8bec4';ctx.fillRect(bx,by-4,Math.round(f*.5),bh+8);ctx.fillStyle='#c8462a';ctx.fillRect(bx,by,Math.round(f*.5),bh);
@@ -3526,7 +3529,7 @@ function stepKind(x){
   if(SEASON==='winter'||S.biome===2)return 'snow';
   return 'dirt';
 }
-const score=()=>S.mode==='bear'?(S.bearPts||0)+S.cones*5:Math.floor(S.dist/12)+Math.max(0,Math.round(S.cones-(S.natX||0)))*5+(S.burnPts||0)+(S.upBonus||0);
+const score=()=>S.mode==='copter'?(S.cp&&S.cp.spires||0):S.mode==='bear'?(S.bearPts||0)+S.cones*5:Math.floor(S.dist/12)+Math.max(0,Math.round(S.cones-(S.natX||0)))*5+(S.burnPts||0)+(S.upBonus||0);
 
 
 /* ---------- render ---------- */
@@ -4427,7 +4430,7 @@ function frame(now){
 }
 
 /* ---------- input ---------- */
-function press(e){if(mode!=='play')return;if(S.dead){if(S.deadT>.25)showOver();return}if(S.eat&&S.eat.t>.5){die(S.eat.reason,S.eatType);S.deadT=.9;return}
+function press(e){if(mode!=='play')return;if(S.dead){if(S.deadT>.25&&!(S.mode==='copter'&&S.cp&&!(S.cp.chompT&&S.deadT-S.cp.chompT>.3)))showOver();return}if(S.eat&&S.eat.t>.5){die(S.eat.reason,S.eatType);S.deadT=.9;return}
   if(S.mode==='copter'){S.hold=true;return}
   if(S.mode==='fire'&&S.ff==='ride'){rideTap(e&&e.clientX!=null?(e.clientX<innerWidth/2?-1:1):1);return}
   S.buf=.15;if(S.mode==='fire'&&S.ff==='lava')S.hold=true}
@@ -4916,6 +4919,7 @@ async function syncPull(code,force){
 const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}};
 let LIFE=Object.assign({farts:0,eaten:0,cones:0,runs:0,fartsBy:{}},ld('rc_life',{}));
 let modeBest=ld('rc_modebest',{});
+try{if(!localStorage.getItem('rc_cpreset1')){if(modeBest.copter!=null){delete modeBest.copter;save('rc_modebest',JSON.stringify(modeBest))}localStorage.setItem('rc_cpreset1','1')}}catch(e){}
 try{if(!localStorage.getItem('rc_upreset1')){if(modeBest.uphill!=null){delete modeBest.uphill;save('rc_modebest',JSON.stringify(modeBest))}localStorage.setItem('rc_upreset1','1')}}catch(e){}
 /* ---------- polish helpers ---------- */
 function buzz(ms){try{if(navigator.vibrate&&!(typeof SFX!=='undefined'&&SFX.isMuted&&SFX.isMuted()))navigator.vibrate(ms)}catch(e){}}
@@ -5441,7 +5445,7 @@ function showOver(){
   if(S.mode==='classic'&&!S.daily)submitScore(sc,Math.floor(S.dist/12),S.dtype==='eaten'||S.dtype==='skunk');
   $('overTitle').textContent=S.caught?'Caught!':(OVER_TITLE[S.dtype]||'Trip over');
   $('reason').textContent=S.reason+' '+pick(OVER_CAP[S.caught?'caught':S.dtype]||OVER_CAP.crew);
-  {const up=S.mode==='uphill'&&S.upMax;countUp($('sDist'),up?Math.floor(S.upMax/10)*10:Math.floor(S.dist/12),700);const lb=$('sDist').nextElementSibling;if(lb)lb.textContent=up?'ft peak':'meters'}countUp($('sCones'),S.cones,700);countUp($('sScore'),sc,1000);
+  {const up=S.mode==='uphill'&&S.upMax;countUp($('sDist'),up?Math.floor(S.upMax/10)*10:Math.floor(S.dist/12),700);const lb=$('sDist').nextElementSibling;if(lb)lb.textContent=up?'ft peak':'meters';if(S.mode==='copter'&&S.cp){countUp($('sDist'),S.cp.spires||0,700);if(lb)lb.textContent='spires'}}countUp($('sCones'),S.cones,700);countUp($('sScore'),sc,1000);
   const top=Object.entries(S.stats.biome).sort((a,b)=>b[1]-a[1])[0];
   const chips=$('chips');chips.innerHTML='';
   const chip=(l,v)=>{const c=el('span','chip2');c.append(el('b',null,String(v)),el('i',null,l));chips.appendChild(c)};
