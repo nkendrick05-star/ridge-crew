@@ -183,7 +183,7 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
 .przcard.cant{opacity:.55}.przcard.cant i{color:#a890c8}
 .garow{display:flex;align-items:center;gap:10px;background:#20152f;border:1px solid #4a3a6a;border-radius:10px;padding:8px 10px}
 .garow>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.garow b{font:700 .95rem "RCD","Pixelify Sans",monospace}.garow span{font-size:.75rem;color:#c8b8e0}
-.pips{display:flex;gap:3px;margin-top:3px}.pips i{width:16px;height:6px;border-radius:2px;background:#3a2a55}.pips i.f{background:#8ae86a;box-shadow:0 0 6px rgba(138,232,106,.5)}
+.pips{display:flex;gap:3px;margin-top:3px}.pips i{width:11px;height:6px;border-radius:2px;background:#3a2a55}.pips i.f{background:#8ae86a;box-shadow:0 0 6px rgba(138,232,106,.5)}
 .gabtn{flex:none;border:0;border-radius:9px;background:linear-gradient(#ffd84a,#e8a82a);color:#2a1408;font:700 .78rem "RCD","Pixelify Sans",monospace;padding:9px 10px;cursor:pointer;box-shadow:0 3px 0 #8a5a14}
 .gabtn.cant{background:#3a2a55;color:#8a7aa8;box-shadow:none}
 #arcScr .arcbdbtn{background:linear-gradient(#ffd84a,#e8a82a);color:#2a1408;border:0;border-radius:12px;padding:10px;font:700 1rem "RCD","Pixelify Sans",monospace;letter-spacing:.06em;box-shadow:0 4px 0 #8a5a14,0 0 18px rgba(255,200,80,.35);cursor:pointer}
@@ -2706,7 +2706,7 @@ const OD_ZONES=[
 ];
 const odZone=m=>{let z=0;for(let i=0;i<OD_ZONES.length;i++)if(m>=OD_ZONES[i].m)z=i;return z};
 const OD_STATS={patch:{stab:.7,perk:'Sam: low center of gravity, harder to flip'},curly:{top:1.18,perk:'Josiah: floors it, higher top speed'},camo:{eng:1.25,perk:'Henry: jacked engine (careful, it wheelies)'},stache:{tank:1.5,perk:'Blake packed extra gas: bigger tank'},nathan:{head:150,perk:'Nathan knows a shortcut: 150 m head start'}};
-const odSt=id=>{const s=Object.assign({stab:1,top:1,eng:1,tank:1,head:0},OD_STATS[id]||{}),U=(typeof ups!=='undefined'&&ups)||{};s.eng*=1+.07*(U.od_eng||0);s.top*=1+.04*(U.od_eng||0);s.stab*=1-.07*(U.od_sus||0);s.g=U.od_tire||0;s.tank*=1+.12*(U.od_tank||0);return s};
+const odSt=id=>{const s=Object.assign({stab:1,top:1,eng:1,tank:1,head:0},OD_STATS[id]||{}),U=(typeof ups!=='undefined'&&ups)||{};s.eng*=1+.12*(U.od_eng||0);s.top*=1+.09*(U.od_top||0);s.stab*=1-.075*(U.od_sus||0);s.air=5+.55*(U.od_sus||0);s.g=U.od_tire||0;s.dur=U.od_dur||0;s.tank*=1+.15*(U.od_tank||0);return s};
 /* prize counter (tickets): paint jobs and silly add-ons for the van */
 const OD_PRIZES=[
  {id:'p_white',k:'paint',n:'Pearl White',c:['#ffffff','#e2e6e9','#c9cfd4'],price:0},
@@ -2798,11 +2798,12 @@ function odStep(o,h){
   if(gr.length&&!dead){
     const sx=gr.reduce((s,w)=>s+w.x,0)/gr.length,s=odSlope(o,sx),L=Math.hypot(1,s),tx=1/L,ty=s/L,vt=C.vx*tx+C.vy*ty;let dv=0;
     const sf=odSurf(o,sx),mud=sf==='mud',ice=sf==='ice';o.surf=sf;
-    if(gas){const top=230*st.top*(mud?.55:1);if(vt<top)dv=Math.min(top-vt,270*st.eng*(gr.length>1?1:.8)*(o.snow?.85+.03*st.g:1)*(mud?.45+.07*st.g:ice?.35+.08*st.g:1)*(1+.03*st.g)*h);else if(mud)dv=-(vt-top)*2*h}
+    const slA=Math.atan(Math.abs(s)),trac=Math.max(.3,1-Math.max(0,slA-(.3+.055*st.g))*1.7);
+    if(gas){const top=165*st.top*(mud?.55:1);if(vt<top)dv=Math.min(top-vt,205*trac*st.eng*(gr.length>1?1:.8)*(o.snow?.85+.03*st.g:1)*(mud?.45+.07*st.g:ice?.35+.08*st.g:1)*(1+.03*st.g)*h);else if(mud)dv=-(vt-top)*2*h}
     else if(brake){if(vt>3)dv=-Math.min(vt,380*(ice?.25:1)*h);else if(vt>-60)dv=-Math.min(60+vt,150*(ice?.4:1)*h)}
     else dv=-vt*(mud?1.6:ice?.02:.12)*h;
-    if(dv){C.vx+=tx*dv;C.vy+=ty*dv;for(const w of o.w){w.vx+=tx*dv;w.vy+=ty*dv}if(gas||brake)C.w+=OD_REACT*st.stab*dv}
-  }else if(!dead){if(gas&&C.w<6)C.w+=7*h;if(brake&&C.w>-6)C.w-=7*h}
+    if(dv){C.vx+=tx*dv;C.vy+=ty*dv;for(const w of o.w){w.vx+=tx*dv;w.vy+=ty*dv}if(gas||brake)C.w+=OD_REACT*st.stab*dv/Math.sqrt(st.eng)}
+  }else if(!dead){if(gas&&C.w<6)C.w+=st.air*h;if(brake&&C.w>-6)C.w-=st.air*h}
   C.w*=1-.12*h;
   /* move */
   C.x+=C.vx*h;C.y+=C.vy*h;C.a+=C.w*h;for(const w of o.w){w.x+=w.vx*h;w.y+=w.vy*h}
@@ -2819,13 +2820,13 @@ function odStep(o,h){
     w.rot+=w.spin/OD_R*h;
   }
   /* the body scraping the ground (and the roof, once it's over) */
-  const pts=dead?OD_BODY.concat(OD_ROOF):OD_BODY;
+  const pts=dead||st.dur>0?OD_BODY.concat(OD_ROOF):OD_BODY;
   for(const p of pts){const rx=ca*p[0]-sa*p[1],ry=sa*p[0]+ca*p[1],px2=C.x+rx,py2=C.y+ry,gh=odH(o,px2);if(py2>=gh)continue;
     const s=odSlope(o,px2),L=Math.hypot(1,s),nx=-s/L,ny=1/L,pen=(gh-py2)*ny;C.x+=nx*pen*.8;C.y+=ny*pen*.8;
     const vpx=C.vx-C.w*ry,vpy=C.vy+C.w*rx,vn=vpx*nx+vpy*ny;
     if(vn<0){const rn=rx*ny-ry*nx,k=1+rn*rn/OD_I,j=-1.15*vn/k;C.vx+=nx*j;C.vy+=ny*j;C.w+=rn*j/OD_I;imp=Math.max(imp,-vn*.7);
       const tx=ny,ty=-nx,vt=vpx*tx+vpy*ty,rt=rx*ty-ry*tx,kt=1+rt*rt/OD_I;let jt=-vt/kt;jt=Math.max(-.5*j,Math.min(.5*j,jt));C.vx+=tx*jt;C.vy+=ty*jt;C.w+=rt*jt/OD_I;o.scrape=.15}}
-  if(!dead&&Math.cos(C.a)<.5)for(const p of OD_ROOF){const q=odPt(C,p[0],p[1]);if(odH(o,q[0])>q[1]-.5){o.roofHit=1;break}}
+  if(!dead){let rt=0;if(Math.cos(C.a)<.5)for(const p of OD_ROOF){const q=odPt(C,p[0],p[1]);if(odH(o,q[0])>q[1]-.5){rt=1;break}}if(rt){if(!o.roofT&&st.dur>0)o.dent=1;o.roofT=(o.roofT||0)+h;if(o.roofT>st.dur*.3)o.roofHit=1}else o.roofT=Math.max(0,(o.roofT||0)-h*.4)}
   return imp;
 }
 function odCrash(kind){
@@ -2866,6 +2867,7 @@ function odysseyUpdate(dt){
   if(!o.started&&(o.gas||o.brake)){o.started=1;SFX.chime&&SFX.chime();setTimeout(()=>{if(S&&S.mode==='odyssey'&&!S.dead)SFX.growl()},500);odChat('start',1)}
   const imp=odSim(o,dt),C=o.c,A=o.w[0],B=o.w[1],ca=Math.cos(C.a);
   if(o.roofHit){odCrash('flip');return}
+  if(o.dent){o.dent=0;if(S.t-(o.dentT||-9)>.8){o.dentT=S.t;SFX.thud&&SFX.thud();S.shake=Math.max(S.shake,5);o.crewBV-=60;odPop('DENT!','the roof held','#c8d0d8');odChat('hard',1)}}
   o.m=Math.max(o.m,Math.floor((C.x-80)/OD_M));S.dist=o.m*12;if(o.m>=1000)unlockBadge('ar_od1k');
   const z=odZone(o.m);o.snow=OD_ZONES[z].snow;if(z!==o.zone){if(o.zone>=0||z>0)o.zCard={n:OD_ZONES[z].n,c:OD_ZONES[z].c,t:0};o.zone=z}
   /* landings */
@@ -3127,7 +3129,7 @@ function drawPeeOdyssey(){
 }
 
 /* ---------- arcade shop: prize counter (tickets) and garage (pinecones) ---------- */
-const OD_GARAGE=[{k:'od_eng',n:'Engine',d:'More power and top speed'},{k:'od_sus',n:'Suspension',d:'Harder to flip on hills'},{k:'od_tire',n:'Tires',d:'Grip on mud, ice and snow'},{k:'od_tank',n:'Gas tank',d:'Holds more gas'}],OD_COST=[60,140,260,420,650];
+const OD_GARAGE=[{k:'od_eng',n:'Engine',d:'Acceleration. Climb hills you used to stall on'},{k:'od_top',n:'Transmission',d:'Higher top speed'},{k:'od_tire',n:'Tires',d:'Traction on steep hills, mud, ice and snow'},{k:'od_sus',n:'Handling',d:'Harder to flip, better control in the air'},{k:'od_dur',n:'Roof cage',d:'The roof survives hits so you can roll back over'},{k:'od_tank',n:'Gas tank',d:'Holds more gas'}],OD_COST=[30,60,100,160,240,340,460,600],OD_MAXLV=8;
 const XSKINS=[{id:'',n:'Your leader',price:0},
  {id:'ranger',n:'Park Ranger',price:300,c:{id:'x_ranger',def:'Ranger',hat:'tan',hatC:'#7a6a3a',brim:'#5a4a2a',hair:'#3a2a1e',shirt:'#7a7a4a',pants:'#4a4a32',pack:'#3a4a2e',skin:'#e8b890',stache:true}},
  {id:'tank',n:'Tank-top Henry',price:250,c:{id:'x_tank',def:'Henry',hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#f8f8f4',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'}},
@@ -3143,33 +3145,51 @@ function arcTix(m,sc){return m==='cross'?Math.floor(sc/4):m==='odyssey'?Math.flo
 let arcV='games';
 function arcView(v){arcV=v;for(const [id,k] of [['arcList','games'],['arcBoard','board'],['arcPrize','prize'],['arcGarage','garage']])$(id).hidden=v!==k;
   document.querySelectorAll('#arcNav button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)));
-  $('arcSub').textContent={games:'Insert pinecone to play',board:'Hall of fame',prize:'Trade tickets for prizes',garage:'Spend pinecones on upgrades'}[v];
+  $('arcSub').textContent={games:'Insert pinecone to play',board:'Hall of fame',prize:'Tickets for Cross, Copter and Snake looks',garage:'Upgrade and customize the Odyssey'}[v];
   if(v==='board'){renderArcBoard();refreshBoard().then(()=>{if(!$('arcBoard').hidden)renderArcBoard()})}if(v==='prize')renderPrize();if(v==='garage')renderGarage()}
 function showArcBoard(on){arcView(on?'board':'games')}
 function vanPrev(style){const cv=document.createElement('canvas');cv.width=128;cv.height=68;const g=cv.getContext('2d');g.setTransform(2,0,0,2,0,0);const q=g.createLinearGradient(0,0,0,34);q.addColorStop(0,'#5aaee6');q.addColorStop(1,'#cdeaf6');g.fillStyle=q;g.fillRect(0,0,64,34);g.fillStyle='#5a9a3a';g.fillRect(0,29,64,5);g.fillStyle='#8a6a44';g.fillRect(0,31,64,3);
   g.save();g.translate(32,25);g.scale(.62,.62);try{odVan(g,null,performance.now()/1000,{van:style,crew:[],empty:1})}catch(e){}g.restore();return cv}
-function renderPrize(){const box=$('arcPrize');box.innerHTML='';const V=Object.assign({paint:'p_white',acc:[]},equip.van||{});V.acc=(V.acc||[]).slice();
-  const bar=el('div','tixbar');bar.append(el('span','tixstub','TICKETS'),el('b',null,tixN().toLocaleString()));bar.appendChild(el('small',null,'Earn tickets by playing any arcade game'));box.appendChild(bar);
-  for(const [lab,k] of [['Paint jobs','paint'],['Add-ons','acc']]){box.appendChild(el('div','przh',lab));const gr=el('div','przgrid');
-    for(const p of OD_PRIZES.filter(q=>q.k===k)){const has=p.price===0||owned['prz_'+p.id],on=k==='paint'?V.paint===p.id:V.acc.includes(p.id),b=el('button','przcard'+(on?' on':''));b.type='button';
-      const st=Object.assign({},V,{acc:k==='acc'?[p.id]:[]});if(k==='paint')st.paint=p.id;b.append(vanPrev(st),el('span',null,p.n),el('i',null,on?'ON':has?(k==='acc'?'Tap to add':'Tap to paint'):p.price+' tickets'));
-      if(!has&&tixN()<p.price)b.classList.add('cant');
-      b.addEventListener('click',()=>{if(!has){if(tixN()<p.price){SFX.hit();toast('Need '+(p.price-tixN())+' more tickets');return}owned._tix=tixN()-p.price;owned['prz_'+p.id]=1;SFX.coin&&SFX.coin();toast('Prize won: '+p.n)}
-        const nv=Object.assign({paint:'p_white',acc:[]},equip.van||{});nv.acc=(nv.acc||[]).slice();if(k==='paint')nv.paint=p.id;else{const i=nv.acc.indexOf(p.id);if(i>=0&&has)nv.acc.splice(i,1);else if(i<0)nv.acc.push(p.id)}
-        equip.van=nv;delete ARC_ART.odyssey;persist();SFX.tap();renderPrize()});gr.appendChild(b)}
-    box.appendChild(gr)}}
-function renderGarage(){const box=$('arcGarage');box.innerHTML='';
-  const bar=el('div','tixbar cones');bar.append(el('span','tixstub','PINECONES'),el('b',null,wallet.toLocaleString()));bar.appendChild(el('small',null,'Upgrades last forever'));box.appendChild(bar);
-  box.appendChild(el('div','przh','Odyssey upgrades'));
-  for(const part of OD_GARAGE){const lv=ups[part.k]||0,row=el('div','garow'),pips=el('div','pips');for(let i=0;i<5;i++)pips.appendChild(el('i',i<lv?'f':null));const tx=el('div');tx.append(el('b',null,part.n),el('span',null,part.d),pips);
-    const cost=OD_COST[lv],btn=el('button','gabtn',lv>=5?'MAXED':'Lv '+(lv+1)+' · '+cost);btn.type='button';if(lv>=5||wallet<cost)btn.classList.add('cant');
-    btn.addEventListener('click',()=>{if(lv>=5)return;if(wallet<cost){SFX.hit();toast('Need '+(cost-wallet)+' more pinecones');return}wallet-=cost;ups[part.k]=lv+1;persist();SFX.win();renderGarage()});row.append(tx,btn);box.appendChild(row)}
-  box.appendChild(el('div','przh','Ridge Cross hikers'));const gr=el('div','przgrid');
-  for(const sk of XSKINS){const has=!sk.price||owned['xsk_'+sk.id],on=(equip.xskin||'')===sk.id,b=el('button','przcard'+(on?' on':''));b.type='button';const cv=document.createElement('canvas');cv.width=128;cv.height=68;const g=cv.getContext('2d');g.setTransform(2,0,0,2,0,0);g.fillStyle='#7cc04a';g.fillRect(0,0,64,34);g.fillStyle='#73b444';g.fillRect(0,20,64,14);
+const XSK_T={ranger:60,tank:50,coon:90,goose:120},OD_PC=5;
+const FARTS=[{id:'',n:'Classic green',c:['#d2ea7a','#a8b878','#6a7a4a'],price:0},{id:'purple',n:'Grape soda',c:['#e8b8ff','#a868d8','#5a2a7a'],price:25},{id:'blue',n:'Blue flame',c:['#b8f0ff','#3a9ae8','#1a3a7a'],price:40},{id:'glitter',n:'Glitter bomb',c:['#fff4a8','#ff8ae0','#7a4ac8'],price:70}];
+const SNPATH=[{id:'',n:'Dirt trail',c:['#c9a46a','#a8844e'],price:0},{id:'cobble',n:'Cobblestone',c:['#c4c0b4','#7e7a70'],price:25},{id:'snow',n:'Snowy path',c:['#f4f8fa','#b9c7d2'],price:35},{id:'gold',n:'Yellow brick road',c:['#f2d23a','#b8981a'],price:50}];
+const fartC=()=>(FARTS.find(q=>q.id===(equip.cpFart||''))||FARTS[0]).c,snPathC=()=>(SNPATH.find(q=>q.id===(equip.snPath||''))||SNPATH[0]).c;
+function prevCv(){const cv=document.createElement('canvas');cv.width=128;cv.height=68;const g=cv.getContext('2d');g.setTransform(2,0,0,2,0,0);g.imageSmoothingEnabled=false;return[cv,g]}
+function shopCard(art,name,status,on,cant,click){const b=el('button','przcard'+(on?' on':'')+(cant?' cant':''));b.type='button';b.append(art,el('span',null,name),el('i',null,status));b.addEventListener('click',click);return b}
+function shopBar(lbl,n,note,cones){const bar=el('div','tixbar'+(cones?' cones':''));bar.append(el('span','tixstub',lbl),el('b',null,n.toLocaleString()));bar.appendChild(el('small',null,note));return bar}
+/* Prizes: tickets buy looks for Ridge Cross, Fart Copter and Snake Trail */
+function renderPrize(){const box=$('arcPrize');box.innerHTML='';box.appendChild(shopBar('TICKETS',tixN(),'Earn tickets by playing any arcade game'));
+  const buy=(key,price,name,after)=>{if(!owned[key]){if(tixN()<price){SFX.hit();toast('Need '+(price-tixN())+' more tickets');return}owned._tix=tixN()-price;owned[key]=1;SFX.coin&&SFX.coin();toast('Prize won: '+name)}after();persist();SFX.tap();renderPrize()};
+  box.appendChild(el('div','przh','Ridge Cross hikers'));let gr=el('div','przgrid');
+  for(const sk of XSKINS){const price=sk.id?XSK_T[sk.id]:0,has=!price||owned['xsk_'+sk.id],on=(equip.xskin||'')===sk.id,[cv,g]=prevCv();g.fillStyle='#7cc04a';g.fillRect(0,0,64,34);g.fillStyle='#73b444';g.fillRect(0,20,64,14);
     try{const c=sk.c||byId(sel)||CHARS[0];if(c.animal)drawCritter(g,c.animal,32,28,0,false,1);else outlined(g,()=>drawHiker(g,c,32,28,0,false))}catch(e){}
-    b.append(cv,el('span',null,sk.n),el('i',null,on?'ON':has?'Tap to use':sk.price+' pinecones'));if(!has&&wallet<sk.price)b.classList.add('cant');
-    b.addEventListener('click',()=>{if(!has){if(wallet<sk.price){SFX.hit();toast('Need '+(sk.price-wallet)+' more pinecones');return}wallet-=sk.price;owned['xsk_'+sk.id]=1;SFX.win();toast('Unlocked: '+sk.n)}equip.xskin=sk.id;delete ARC_ART.cross;persist();SFX.tap();renderGarage()});gr.appendChild(b)}
+    gr.appendChild(shopCard(cv,sk.n,on?'ON':has?'Tap to use':price+' tickets',on,!has&&tixN()<price,()=>{if(has){equip.xskin=sk.id;delete ARC_ART.cross;persist();SFX.tap();renderPrize()}else buy('xsk_'+sk.id,price,sk.n,()=>{equip.xskin=sk.id;delete ARC_ART.cross})}))}
+  box.appendChild(gr);box.appendChild(el('div','przh','Fart Copter farts'));gr=el('div','przgrid');
+  for(const f of FARTS){const has=!f.price||owned['fart_'+f.id],on=(equip.cpFart||'')===f.id,[cv,g]=prevCv();g.fillStyle='#1e1826';g.fillRect(0,0,64,34);g.fillStyle='#4a4256';for(let i=0;i<5;i++){g.beginPath();g.moveTo(i*14,0);g.lineTo(i*14+9,0);g.lineTo(i*14+4,6+i%3*2);g.fill()}
+    for(const [x,y,r] of [[22,20,4],[15,23,3.2],[9,19,2.6],[4,24,2]]){g.fillStyle=f.c[2];g.beginPath();g.arc(x+.6,y+.6,r,0,6.283);g.fill();g.fillStyle=f.c[1];g.beginPath();g.arc(x,y,r,0,6.283);g.fill();g.fillStyle=f.c[0];g.beginPath();g.arc(x-.6,y-.6,r*.55,0,6.283);g.fill()}
+    if(f.id==='glitter')for(let i=0;i<6;i++){g.fillStyle='#ffffff';g.fillRect(4+hash(i)*24,14+hash(i+3)*14,1,1)}
+    try{g.save();g.translate(38,22);g.rotate(-.3);g.translate(-38,-22);outlined(g,()=>drawHiker(g,byId(sel)||CHARS[0],38,30,.2,true));g.restore()}catch(e){}
+    gr.appendChild(shopCard(cv,f.n,on?'ON':has?'Tap to use':f.price+' tickets',on,!has&&tixN()<f.price,()=>{if(has){equip.cpFart=f.id;persist();SFX.tap();renderPrize()}else buy('fart_'+f.id,f.price,f.n,()=>{equip.cpFart=f.id})}))}
+  box.appendChild(gr);box.appendChild(el('div','przh','Snake Trail paths'));gr=el('div','przgrid');
+  for(const p of SNPATH){const has=!p.price||owned['snp_'+p.id],on=(equip.snPath||'')===p.id,[cv,g]=prevCv();for(let y=0;y<5;y++)for(let x=0;x<9;x++){g.fillStyle=(x+y)%2?'#a2d149':'#aad751';g.fillRect(x*8-4,y*8-4,8,8)}
+    g.lineCap='round';g.lineJoin='round';for(const [w,c] of [[6,p.c[1]],[4.6,p.c[0]]]){g.strokeStyle=c;g.lineWidth=w;g.beginPath();g.moveTo(8,26);g.lineTo(8,12);g.lineTo(40,12);g.lineTo(40,22);g.stroke()}
+    try{[[8,26],[8,16],[22,12],[36,12]].forEach((q,i)=>drawHead(g,look(CHARS[i]),q[0],q[1]+2))}catch(e){}
+    gr.appendChild(shopCard(cv,p.n,on?'ON':has?'Tap to use':p.price+' tickets',on,!has&&tixN()<p.price,()=>{if(has){equip.snPath=p.id;persist();SFX.tap();renderPrize()}else buy('snp_'+p.id,p.price,p.n,()=>{equip.snPath=p.id})}))}
   box.appendChild(gr)}
+/* Garage: everything for the Odyssey, bought with pinecones */
+function renderGarage(){const box=$('arcGarage');box.innerHTML='';box.appendChild(shopBar('PINECONES',wallet,'Everything for the Odyssey. Upgrades last forever',1));
+  box.appendChild(el('div','przh','Upgrades'));
+  for(const part of OD_GARAGE){const lv=ups[part.k]||0,row=el('div','garow'),pips=el('div','pips');for(let i=0;i<OD_MAXLV;i++)pips.appendChild(el('i',i<lv?'f':null));const tx=el('div');tx.append(el('b',null,part.n),el('span',null,part.d),pips);
+    const cost=OD_COST[lv],btn=el('button','gabtn',lv>=OD_MAXLV?'MAXED':'Lv '+(lv+1)+' · '+cost);btn.type='button';if(lv>=OD_MAXLV||wallet<cost)btn.classList.add('cant');
+    btn.addEventListener('click',()=>{if(lv>=OD_MAXLV)return;if(wallet<cost){SFX.hit();toast('Need '+(cost-wallet)+' more pinecones');return}wallet-=cost;ups[part.k]=lv+1;persist();SFX.win();renderGarage()});row.append(tx,btn);box.appendChild(row)}
+  const V=Object.assign({paint:'p_white',acc:[]},equip.van||{});V.acc=(V.acc||[]).slice();
+  for(const [lab,k] of [['Paint jobs','paint'],['Add-ons','acc']]){box.appendChild(el('div','przh',lab));const gr=el('div','przgrid');
+    for(const p of OD_PRIZES.filter(q=>q.k===k)){const price=p.price*OD_PC,has=price===0||owned['prz_'+p.id],on=k==='paint'?V.paint===p.id:V.acc.includes(p.id);
+      const st=Object.assign({},V,{acc:k==='acc'?[p.id]:[]});if(k==='paint')st.paint=p.id;
+      gr.appendChild(shopCard(vanPrev(st),p.n,on?'ON':has?(k==='acc'?'Tap to add':'Tap to paint'):price+' pinecones',on,!has&&wallet<price,()=>{if(!has){if(wallet<price){SFX.hit();toast('Need '+(price-wallet)+' more pinecones');return}wallet-=price;owned['prz_'+p.id]=1;SFX.win();toast('Bought: '+p.n)}
+        const nv=Object.assign({paint:'p_white',acc:[]},equip.van||{});nv.acc=(nv.acc||[]).slice();if(k==='paint')nv.paint=p.id;else{const i=nv.acc.indexOf(p.id);if(i>=0&&has)nv.acc.splice(i,1);else if(i<0)nv.acc.push(p.id)}
+        equip.van=nv;delete ARC_ART.odyssey;persist();SFX.tap();renderGarage()}))}
+    box.appendChild(gr)}}
 /* ---------- tutorial ghosts: the first time you play an arcade game, a faded ghost shows the move once ---------- */
 function arcHand(x,y,press,lbl){const r=Math.max(16,Math.min(cw,ch)*.04);ctx.save();ctx.translate(x,y+(press?3:0));
   if(press){ctx.globalAlpha=.5;ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-r*1.6,r*.9,0,6.283);ctx.stroke();ctx.globalAlpha=.95}
@@ -3332,7 +3352,7 @@ function snakeDraw(){
   /* the worn trail under the hiking line */
   const pts=sn.body.map(b=>[CX(lerp(b,'x')),CY(lerp(b,'y'))+cs*.18]);
   ctx.lineCap='round';ctx.lineJoin='round';
-  for(const [w,c] of [[cs*.62,SN_C.pathD],[cs*.5,SN_C.path]]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();let pen=false;for(let i=0;i<pts.length;i++){const q=pts[i];if(i>0&&Math.hypot(q[0]-pts[i-1][0],q[1]-pts[i-1][1])>cs*1.5){ctx.stroke();ctx.beginPath();pen=false}if(!pen){ctx.moveTo(q[0],q[1]);pen=true}else ctx.lineTo(q[0],q[1])}if(pts.length===1)ctx.lineTo(pts[0][0]+.1,pts[0][1]);ctx.stroke()}
+  for(const [w,c] of [[cs*.62,snPathC()[1]],[cs*.5,snPathC()[0]]]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();let pen=false;for(let i=0;i<pts.length;i++){const q=pts[i];if(i>0&&Math.hypot(q[0]-pts[i-1][0],q[1]-pts[i-1][1])>cs*1.5){ctx.stroke();ctx.beginPath();pen=false}if(!pen){ctx.moveTo(q[0],q[1]);pen=true}else ctx.lineTo(q[0],q[1])}if(pts.length===1)ctx.lineTo(pts[0][0]+.1,pts[0][1]);ctx.stroke()}
   /* things on the board, drawn top to bottom so lower ones overlap */
   const items=[];
   for(const key in sn.blocks){const [x,y]=key.split(',').map(Number),kind=sn.blocks[key];items.push({y,f:()=>{const cx=CX(x),by=g.y0+y*cs+cs*.92;snShadow(cx,by,cs*.36);
@@ -3545,7 +3565,7 @@ function copterDraw(){
       if(chasing&&zs(bx)===1&&Math.random()<.5)S.parts.push({x:d+bx-10+Math.random()*20,y:GY,vx:(Math.random()-.5)*60,vy:-60-Math.random()*60,life:.4,c:'#8ad0f0',s:1,g:1});
       if(c.swipeT>0&&!PXC){const k=1-c.swipeT/.45;ctx.strokeStyle='rgba(255,255,255,'+(1-k)+')';ctx.lineWidth=1.5;for(let q=0;q<3;q++){ctx.beginPath();ctx.moveTo(bx+8+q*4,GY-30+k*6);ctx.lineTo(bx+22+q*4,GY-14+k*6);ctx.stroke()}}}}
   /* fart cloud */
-  for(const p of c.puffs){const a=Math.max(0,.6*(1-p.t/.9));ctx.globalAlpha=a*.6;ctx.fillStyle='#6a7a4a';ctx.beginPath();ctx.arc(p.x+1,p.y+1,p.r+1,0,6.283);ctx.fill();ctx.globalAlpha=a;ctx.fillStyle=p.h!=null?'hsl('+p.h+',90%,'+(p.t<.25?72:60)+'%)':p.t<.25?'#d2ea7a':'#a8b878';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill()}ctx.globalAlpha=1;
+  for(const p of c.puffs){const a=Math.max(0,.6*(1-p.t/.9));ctx.globalAlpha=a*.6;ctx.fillStyle=fartC()[2];ctx.beginPath();ctx.arc(p.x+1,p.y+1,p.r+1,0,6.283);ctx.fill();ctx.globalAlpha=a;ctx.fillStyle=p.h!=null?'hsl('+p.h+',90%,'+(p.t<.25?72:60)+'%)':p.t<.25?fartC()[0]:fartC()[1];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill();if(equip.cpFart==='glitter'&&Math.random()<.3)px(ctx,'#ffffff',Math.round(p.x+(Math.random()-.5)*p.r*2),Math.round(p.y+(Math.random()-.5)*p.r*2),1,1)}ctx.globalAlpha=1;
   /* the pilot */
   for(const b of (c.bits||[]))F(b.c,Math.round(b.x-d),Math.round(b.y),3,3);
   if(!(S.dead&&c.chompT)){const y=Math.round(c.y);ctx.save();ctx.translate(LX,y-9);ctx.rotate(c.tilt);ctx.translate(-LX,-(y-9));
@@ -6727,7 +6747,7 @@ function showOver(){
   (S.dtype==='bearwin'||S.dtype==='lake')?SFX.win():SFX.lose();
   $('again').textContent='Play again';$('shareBtn').textContent='Share';
   const sc=score(),mk=ffKey(),prevMode=modeBest[mk]||0,isBest=sc>prevMode&&!S.daily;S.newBest=isBest;
-  if(['cross','odyssey','copter','snake'].includes(S.mode)&&!S.tixDone){S.tixDone=1;const tk=arcTix(S.mode,sc);if(tk>0){owned._tix=(owned._tix||0)+tk;persist();setTimeout(()=>toast('+'+tk+' arcade ticket'+(tk>1?'s':'')+' · trade them at the Prize counter'),1200)}}
+  if(['cross','odyssey','copter','snake'].includes(S.mode)&&!S.tixDone){S.tixDone=1;const tk=arcTix(S.mode,sc);if(tk>0){owned._tix=(owned._tix||0)+tk;persist();setTimeout(()=>toast('+'+tk+' arcade ticket'+(tk>1?'s':'')+' · trade them at the Prize counter'),1200)}if(S.mode==='odyssey'){const lv=['od_eng','od_top','od_tire','od_sus','od_dur','od_tank'].reduce((a,k)=>a+(ups[k]||0),0);if(lv<12)setTimeout(()=>toast('Tip: upgrade the van in the arcade Garage to get further'),3600)}}
   {const md=Math.floor(S.dist/12),bk=pbKey();if(S.mode!=='bear'&&!S.daily&&md>(bestDist[bk]||0)){bestDist[bk]=md;save('rc_bestdist',JSON.stringify(bestDist))}}
   S.newBestT=false;if(S.mode==='bear'&&S.win&&S.winTime&&!S.demo){const tv=bearTV(S.winTime);if(tv>(modeBest.bear_t||0)){modeBest.bear_t=tv;S.newBestT=true;save('rc_modebest',JSON.stringify(modeBest))}}
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
