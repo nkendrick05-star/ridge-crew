@@ -5786,10 +5786,9 @@ function drawCamp(t){
   drawHiker(ctx,C[3],-27,bob(3),0,false,'sit');
   drawHiker(ctx,C[4],-48,bob(4),0,false,'sit');
   ctx.restore();
-  // cooler + lantern, front right
-  px(ctx,'#1d1a17',31,6,17,11);px(ctx,'#2a7ab0',32,7,15,9);px(ctx,'#e8eef2',32,7,15,3);px(ctx,'#c8d0d6',37,5,5,2);px(ctx,'#1e5a86',32,14,15,2);
-  {const lf=.85+Math.sin(t*5)*.1,lg=ctx.createRadialGradient(40,-2,1,40,-2,24);lg.addColorStop(0,'rgba(255,220,140,'+(.45*lf)+')');lg.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=lg;ctx.fillRect(16,-26,48,48);
-   px(ctx,'#2a2a2a',37,-5,7,1);px(ctx,'#3a3a3a',38,-4,5,1);px(ctx,'#ffe8a8',38,-3,5,6);px(ctx,'#ffd060',39,-1,3,3);px(ctx,'#3a3a3a',37,3,7,2);px(ctx,'#2a2a2a',40,-8,1,3)}
+  // cooler, mid-right, in the fire's light with a soft shadow behind it
+  {ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(44,17,11,2,0,0,6.283);ctx.fill();
+   px(ctx,'#1d1a17',31,6,17,11);px(ctx,'#2a7ab0',32,7,15,9);px(ctx,'#e8eef2',32,7,15,3);px(ctx,'#ffffff',32,7,15,1);px(ctx,'#c8d0d6',37,5,5,2);px(ctx,'#1e5a86',32,14,15,2);px(ctx,'#5aa0d0',32,10,1,4);px(ctx,'rgba(255,150,70,.35)',32,7,4,9)}
   {const pt=equip.pet;if(pt&&pt!=='none'&&!STORY){outlined(ctx,()=>drawPet(ctx,pt,-24,9,0,false));ctx.font='700 5px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';for(let z=0;z<2;z++){const kk=(t*.4+z/2)%1;ctx.globalAlpha=Math.sin(kk*Math.PI)*.8;ctx.fillStyle='#fff3dc';ctx.fillText('z',-22+kk*6,-2-kk*10)}ctx.globalAlpha=1}}
   yawnNext-=dt;if(yawnNext<=0&&yawnT<=0){yawnI=pick([0,1,3,4]);yawnT=1.6;yawnNext=9+Math.random()*9}
   if(yawnT>0){yawnT-=dt;const yx=[-48,-27,0,27,48][yawnI],sk=look(C[yawnI]).skin,up=Math.min(1,(1.6-yawnT)*3,yawnT*3);px(ctx,sk,yx-6,Math.round(-14-6*up),2,Math.round(4+4*up));px(ctx,sk,yx+4,Math.round(-14-6*up),2,Math.round(4+4*up));
@@ -5804,6 +5803,17 @@ function drawCamp(t){
     ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#ffe9b8';
     ctx.globalAlpha=Math.min(1,laughT*2);ctx.fillText(STORY?'...':'haha',pos[0],pos[1]-Math.round((1.4-laughT)*4));ctx.globalAlpha=1;
   }
+  // lantern up front on a flat rock, closest thing to the viewer
+  {const lf=.88+Math.sin(t*5)*.06+Math.sin(t*13)*.03,LX2=-52,LY=22;
+   const pool=ctx.createRadialGradient(LX2,LY,1,LX2,LY,26);pool.addColorStop(0,'rgba(255,190,100,'+(.5*lf).toFixed(3)+')');pool.addColorStop(1,'rgba(255,200,120,0)');ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(LX2,LY);ctx.scale(1,.32);ctx.translate(-LX2,-LY);ctx.fillStyle=pool;ctx.fillRect(LX2-26,LY-26,52,52);ctx.restore();
+   const halo=ctx.createRadialGradient(LX2,LY-11,1,LX2,LY-11,20);halo.addColorStop(0,'rgba(255,200,110,'+(.55*lf).toFixed(3)+')');halo.addColorStop(1,'rgba(255,210,130,0)');ctx.globalCompositeOperation='lighter';ctx.fillStyle=halo;ctx.fillRect(LX2-20,LY-31,40,40);ctx.globalCompositeOperation='source-over';
+   px(ctx,'#2a2826',LX2-9,LY-1,18,4);px(ctx,'#4a4744',LX2-8,LY-2,16,2);px(ctx,'#6e6a64',LX2-7,LY-2,11,1);
+   const L=(x,y,w,h,c)=>px(ctx,c,LX2+x,LY-2+y,w,h);
+   L(-4,-2,9,2,'#2a2a2a');L(-3,-3,7,1,'#4a4a4a');
+   L(-3,-11,7,8,'#ffe9a8');L(-2,-10,5,6,'#fff6d8');L(-1,-8,3,3,'#ffd060');L(0,-7,1,2,'#ff9a3a');
+   L(-4,-11,1,8,'#3a3a3a');L(4,-11,1,8,'#3a3a3a');L(0,-11,1,8,'rgba(40,40,40,.55)');
+   L(-4,-13,9,2,'#2a2a2a');L(-2,-15,5,2,'#3a3a3a');L(-1,-16,3,1,'#2a2a2a');
+   for(let q=0;q<7;q++){const a=Math.PI*(q/6);L(Math.round(Math.cos(a)*-4),Math.round(-17-Math.sin(a)*3),1,1,'#4a4a4a')}}
   // crew chatter: a little bubble now and then
   if(!STORY){chatNext-=dt;if(chatNext<=0&&chatT<=0){chatI=pick([0,1,2,3,4]);chatLine=pick(CAMP_CHAT);chatT=2.8;chatNext=10+Math.random()*10}
     if(chatT>0){chatT-=dt;const pos=[[-48,-34],[-27,-34],[0,-55],[27,-34],[48,-34]][chatI],a=Math.min(1,(2.8-chatT)*5,chatT*3);ctx.globalAlpha=Math.max(0,a);ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -5839,6 +5849,11 @@ function drawCamp(t){
     if(SEASON==='winter')ctx.fillStyle='rgba(240,246,255,.8)',ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,k*.7),Math.max(1,k*.7));else{ctx.fillStyle=['#d9622b','#e8a03a','#b8322e'][i%3];ctx.fillRect(Math.round(x),Math.round(y),Math.round(2*k*.7),Math.max(1,Math.round(k*.6)))}}}
   // light falls off away from the fire
   {ctx.globalCompositeOperation='multiply';const fo=ctx.createRadialGradient(cx,gy-10*k,40*k,cx,gy-10*k,Math.max(cw,ch)*.75);fo.addColorStop(0,'rgb(255,255,255)');fo.addColorStop(1,'rgb(120,120,165)');ctx.fillStyle=fo;ctx.fillRect(0,0,cw,ch);ctx.globalCompositeOperation='source-over'}
+  // the lantern makes its own light, so it stays bright after the falloff
+  {ctx.setTransform(dpr*k,0,0,dpr*k,dpr*cx,dpr*gy);const lf=.88+Math.sin(t*5)*.06+Math.sin(t*13)*.03,LX2=-52,LY=20;
+   ctx.globalCompositeOperation='lighter';const h2=ctx.createRadialGradient(LX2,LY-9,1,LX2,LY-9,16);h2.addColorStop(0,'rgba(255,190,100,'+(.4*lf).toFixed(3)+')');h2.addColorStop(1,'rgba(255,170,80,0)');ctx.fillStyle=h2;ctx.fillRect(LX2-16,LY-25,32,32);ctx.globalCompositeOperation='source-over';
+   const L=(x,y,w,h,c)=>px(ctx,c,LX2+x,LY+y,w,h);L(-3,-11,7,8,'#ffe9a8');L(-2,-10,5,6,'#fff6d8');L(-1,-8,3,3,'#ffd060');L(0,-7,1,2,'#ff9a3a');L(-4,-11,1,8,'#3a3a3a');L(4,-11,1,8,'#3a3a3a');L(0,-11,1,8,'rgba(40,40,40,.4)');
+   ctx.setTransform(dpr,0,0,dpr,0,0)}
 }
 
 /* ---------- the arcade cabinet in the woods ---------- */
