@@ -148,6 +148,15 @@ button:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
 .swrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.swrow button span{display:block;width:24px;height:24px;border-radius:7px}
 canvas.wicon{image-rendering:pixelated;border-radius:6px}
 .onb .tips{margin:0}
+.mcard.arcard{background:linear-gradient(#1c1030,#120a20);border:3px solid #6a3ab8;box-shadow:0 0 0 3px #2a1840,0 0 34px rgba(170,90,255,.35),0 10px 0 rgba(0,0,0,.3)}
+.arcmarq{font-family:"RCD","Pixelify Sans",monospace;font-weight:700;font-size:clamp(1.5rem,7vw,2rem);letter-spacing:.08em;color:#ffd84a;text-shadow:0 0 6px #ff8a2a,0 0 16px rgba(255,120,40,.6);background:linear-gradient(#3a1e5a,#24123a);border:2px solid #8a5ad8;border-radius:10px;padding:8px 10px;animation:arcflk 4s infinite}
+@keyframes arcflk{0%,92%,100%{opacity:1}93%{opacity:.55}95%{opacity:1}96%{opacity:.7}}
+.arcsub{margin:-4px 0 0;color:#c8b0f0;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase}
+.cart{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:#2a1c3c;border:2px solid #4a3a6a;border-bottom-width:5px;border-radius:12px 12px 6px 6px;padding:10px;color:#f4ecff;font:inherit;cursor:pointer}
+.cart:active{transform:translateY(2px);border-bottom-width:3px}
+.cart .clbl{flex:none;width:54px;height:54px;border-radius:8px;display:grid;place-items:center;font:700 1.5rem "RCD","Pixelify Sans",monospace;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
+.cart div{min-width:0;display:flex;flex-direction:column;gap:2px}.cart b{font-size:1.1rem}.cart span{font-size:.8rem;color:#c8b8e0;line-height:1.25}.cart i{font-style:normal;font-size:.8rem;color:#ffd84a}
+.cart.locked{opacity:.55;border-style:dashed;cursor:default}
 .mcard{width:min(100%,400px);max-height:100%;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.3)}
 .mcard h2{margin:0;font:700 2.1rem var(--display);color:var(--amber);line-height:1}
 .mcard .reason{margin:0;color:var(--muted);font-size:.92rem}
@@ -605,6 +614,14 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
   </div>
 
   <!-- Modes -->
+  <div class="screen modal" id="arcScr" hidden>
+    <div class="mcard arcard">
+      <div class="arcmarq">RIDGE ARCADE</div>
+      <p class="arcsub">Insert pinecone to play</p>
+      <div class="modelist" id="arcList"></div>
+      <button class="btn ghost" data-home type="button">Back to camp</button>
+    </div>
+  </div>
   <div class="screen modal" id="modeScr" hidden>
     <div class="mcard">
       <h2>Pick a mode</h2>
@@ -4507,7 +4524,8 @@ function drawCamp(t){
   const r=campRect();
   const k=Math.max(1,Math.floor(Math.min(r.w/140,r.h/78)*2)/2);
   const cx=Math.round(r.x+r.w/2),gy=Math.round(r.y+r.h/2+26*k);
-  if(!STORY&&styleOf('home')==='apt'){drawApt(t,dt,r,k,cx,gy);return}
+  ARC_HIT=null;
+  if(!STORY&&styleOf('home')==='apt'){drawApt(t,dt,r,k,cx,gy);{const u=k*.8;drawArcCab(t,Math.min(cw-22*u-6,Math.round(cx+112*k)),Math.round(gy+2*k),u)}return}
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
   const hz=gy-24*k,flk=1+Math.sin(t*9)*.05+Math.sin(t*23)*.04;
   const sky=ctx.createLinearGradient(0,0,0,hz);sky.addColorStop(0,'#090f22');sky.addColorStop(1,'#182033');
@@ -4610,8 +4628,48 @@ function drawCamp(t){
     ctx.fillStyle='rgba(255,255,255,.03)';for(let j=0;j<7;j++)ctx.fillRect(x+Math.round(w*(.15+hash(j*3+sd)*.7)),Math.round(hash(j*5+sd)*gy),Math.max(1,k|0),Math.round(16*k));
     const lw=Math.round(w*.32),lg2=ctx.createLinearGradient(0,gy-110*k,0,gy);lg2.addColorStop(0,'rgba(255,125,45,0)');lg2.addColorStop(1,'rgba(255,125,45,'+(.3*fl).toFixed(3)+')');ctx.fillStyle=lg2;ctx.fillRect(sd<0?x+w-lw:x,Math.round(gy-110*k),lw,Math.round(112*k));
   }
+  if(!STORY){const u=k*.8,X=Math.max(6,Math.round(cx-128*k));drawArcCab(t,X,Math.round(gy-4*k),u)}
 }
 
+/* ---------- the arcade cabinet in the woods ---------- */
+const ARCADE_LOCK=false,ARCADE_LV=3;let ARC_HIT=null;
+const arcadeOpen=()=>!ARCADE_LOCK||level()>=ARCADE_LV;
+function drawArcCab(t,X,BY,u){
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
+  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(X+x*u),Math.round(BY+y*u),Math.max(1,Math.round(w*u)),Math.max(1,Math.round(h*u)))},on=arcadeOpen();
+  ARC_HIT={x:X-4*u,y:BY-44*u,w:28*u,h:48*u};
+  /* glow on the ground and around the cabinet */
+  if(on){const fl=.85+.15*Math.sin(t*3)+(Math.random()<.02?-.3:0);let g=ctx.createRadialGradient(X+10*u,BY-20*u,4*u,X+10*u,BY-20*u,46*u);g.addColorStop(0,'rgba(150,90,255,'+(.28*fl)+')');g.addColorStop(1,'rgba(150,90,255,0)');ctx.fillStyle=g;ctx.fillRect(X-40*u,BY-70*u,100*u,90*u);
+    g=ctx.createRadialGradient(X+10*u,BY,2*u,X+10*u,BY,26*u);g.addColorStop(0,'rgba(90,220,255,.25)');g.addColorStop(1,'rgba(90,220,255,0)');ctx.fillStyle=g;ctx.fillRect(X-20*u,BY-10*u,60*u,20*u)}
+  ctx.fillStyle='rgba(0,0,0,.45)';ctx.beginPath();ctx.ellipse(X+10*u,BY+u,14*u,2.5*u,0,0,6.283);ctx.fill();
+  /* cabinet body */
+  R(-1,-41,22,42,'#0a0612');R(0,-40,20,40,'#2a1840');R(2,-40,16,40,'#3a2058');R(0,-40,2,40,'#4a2a70');
+  /* marquee */
+  R(0,-40,20,7,'#1a0e28');R(1,-39,18,5,on?'#ffcf3a':'#5a4a2a');
+  if(on){ctx.fillStyle='#3a1a08';ctx.font='700 '+Math.round(3.6*u)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('ARCADE',X+10*u,BY-36.4*u)}
+  /* screen */
+  R(2,-32,16,13,'#06060c');R(3,-31,14,11,on?'#0c2434':'#101216');
+  if(on){const ph=Math.floor(t*6),path=[];for(let i=0;i<10;i++)path.push([i,0]);for(let i=0;i<7;i++)path.push([9,i]);for(let i=9;i>=0;i--)path.push([i,6]);for(let i=6;i>=0;i--)path.push([0,i]);
+    for(let s=0;s<6;s++){const p=path[(ph-s+path.length*9)%path.length];R(3.5+p[0]*1.3,-30.4+p[1]*1.4,1.1,1.1,s?'#5ae86a':'#c8ff8a')}
+    R(9,-26.5,1.4,1.4,Math.floor(t*4)%2?'#ff8a3a':'#c86a20');ctx.globalAlpha=.12+.05*Math.sin(t*20);R(3,-31,14,11,'#9ad8ff');ctx.globalAlpha=1;for(let y=0;y<11;y+=2){ctx.globalAlpha=.15;R(3,-31+y,14,.5,'#000');ctx.globalAlpha=1}}
+  /* control panel */
+  R(1,-19,18,5,'#5a2e8a');R(1,-19,18,1,'#7a4ab0');R(5,-21,1,3,'#c8c8d0');R(4.3,-22.3,2.4,2,'#e84a3a');R(10,-18,2,2,'#e84a3a');R(13,-17.4,2,2,'#ffd84a');R(16,-18,2,2,'#4ab0ff');
+  /* coin door */
+  R(6,-12,8,10,'#1a0e28');R(7,-11,6,8,'#24143a');R(9,-9,2,3,on&&Math.floor(t*2)%2?'#ff9a3a':'#5a3a1a');R(8,-5,4,1,'#3a2a50');
+  R(0,-1,20,1,'#140a20');
+  if(!on){ctx.save();ctx.translate(X+10*u,BY-25*u);ctx.rotate(-.12);ctx.fillStyle='#efe6d0';ctx.fillRect(-9*u,-4*u,18*u,8*u);ctx.fillStyle='#c83a2a';ctx.font='700 '+Math.round(2.6*u)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('OUT OF',0,-1.4*u);ctx.fillText('ORDER',0,1.8*u);ctx.fillStyle='#d8c8a0';ctx.fillRect(-2*u,-5*u,4*u,2*u);ctx.restore()}
+  else{ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(X+10*u,BY-25*u,2*u,X+10*u,BY-25*u,14*u);g.addColorStop(0,'rgba(90,200,255,.22)');g.addColorStop(1,'rgba(90,200,255,0)');ctx.fillStyle=g;ctx.fillRect(X-6*u,BY-40*u,32*u,30*u);ctx.globalCompositeOperation='source-over'}
+}
+const ARC_LBL={copter:['#8ad04a','#1a3a10','💨'],cross:['#4ab0ff','#0a2a44','↑']};
+function showArcade(){
+  if(!arcadeOpen()){toast('Out of order. Reach level '+ARCADE_LV+' to fix it.');return}
+  SFX.tap();screen('arcScr');const box=$('arcList');box.innerHTML='';
+  for(const m of MODES.filter(m=>m.arcade)){const b=el('button','cart');b.type='button';const L=ARC_LBL[m.id]||['#c8a8f0','#2a1840','?'];const lb=el('span','clbl',L[2]);lb.style.background=L[0];lb.style.color=L[1];
+    const tx=el('div');tx.append(el('b',null,m.name),el('span',null,m.desc));if(modeBest[m.id])tx.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
+    b.append(lb,tx);b.addEventListener('click',()=>{runMode=m.id;save('rc_mode',m.id);start()});box.appendChild(b)}
+  const lk=el('div','cart locked');const lb=el('span','clbl','???');lb.style.background='#3a2a50';lb.style.color='#8a7aa8';lb.style.fontSize='1rem';const tx=el('div');tx.append(el('b',null,'???'),el('span',null,'Something is hidden around camp...'));lk.append(lb,tx);box.appendChild(lk);
+}
+document.getElementById('home').addEventListener('click',e=>{if(!ARC_HIT||e.target.closest('button,a,input'))return;const b=cv.getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top,h=ARC_HIT;if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)showArcade()});
 /* ---------- loop ---------- */
 let last=performance.now(),snackShown=false;
 function frame(now){
@@ -5435,9 +5493,9 @@ function nextStory(){const st=STORIES[STORY.s];if(STORY.i<st.lines.length-1){STO
 /* ---------- screens ---------- */
 const $=id=>document.getElementById(id);
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
-const SCREENS=['home','onbScr','leaderScr','shopScr','howScr','pauseScr','over','whoScr','ranksScr','badgesScr','modeScr','cardScr','storyScr','setScr'];
+const SCREENS=['home','onbScr','leaderScr','shopScr','howScr','pauseScr','over','whoScr','ranksScr','badgesScr','modeScr','cardScr','storyScr','setScr','arcScr'];
 function screen(id){
-  homeScene=id==='home'||id==='storyScr'||((id==='howScr'||id==='modeScr'||id==='setScr')&&homeScene);
+  homeScene=id==='home'||id==='storyScr'||((id==='howScr'||id==='modeScr'||id==='setScr'||id==='arcScr')&&homeScene);
   SFX.scene(id===null?'run':id==='pauseScr'?'pause':'menu');
   for(const s of SCREENS)$(s).hidden=s!==id;
   $('pauseBtn').hidden=!(id===null&&mode==='play');
