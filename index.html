@@ -2632,7 +2632,7 @@ function snOcc(sn,x,y){return sn.blocks[x+','+y]||sn.body.some(b=>b.x===x&&b.y==
 function snFree(sn,away){const g=sn.g,h=sn.body[0];for(let n=0;n<400;n++){const x=Math.floor(Math.random()*g.cols),y=Math.floor(Math.random()*g.rows);if(snOcc(sn,x,y))continue;if(away&&Math.abs(x-h.x)+Math.abs(y-h.y)<away)continue;if(sn.cone&&sn.cone.x===x&&sn.cone.y===y)continue;if(sn.bear&&sn.bear.x===x&&sn.bear.y===y)continue;return{x,y}}return{x:0,y:0}}
 function snCone(sn){sn.cone=snFree(sn,3)}
 function snakeTurn(dx,dy){const sn=S.sn;if(!sn||S.dead)return;if(!sn.started){sn.started=1;sn.stepT=0}
-  const last=sn.q.length?sn.q[sn.q.length-1]:sn.dir;if(last[0]===-dx&&last[1]===-dy)return;if(last[0]===dx&&last[1]===dy)return;if(sn.q.length<2)sn.q.push([dx,dy])}
+  const last=sn.q.length?sn.q[sn.q.length-1]:sn.dir;if(last[0]===-dx&&last[1]===-dy)return;if(last[0]===dx&&last[1]===dy)return;if(sn.q.length<2)sn.q.push([dx,dy]);if(sn.q.length===1&&sn.stepDur-sn.stepT>=sn.stepDur*.35)sn.stepT=0}
 function snakeDie(why,bear){const sn=S.sn;if(S.dead)return;die(why,bear?'eaten':'snake');sn.dead={t:0};sn.shake=8;SFX.hit();buzz(60);if(bear)SFX.roar()}
 function snakeUpdate(dt){
   const sn=S.sn,g=sn.g;sn.shake=Math.max(0,sn.shake-dt*30);sn.popT=Math.max(0,sn.popT-dt);
@@ -4989,7 +4989,7 @@ function press(e){if(mode!=='play')return;if(S.dead){if(S.deadT>.25&&!(S.mode===
   if(S.mode==='fire'&&S.ff==='ride'){rideTap(e&&e.clientX!=null?(e.clientX<innerWidth/2?-1:1):1);return}
   S.buf=.15;if(S.mode==='fire'&&S.ff==='lava')S.hold=true}
 cv.addEventListener('pointerdown',e=>{e.preventDefault();press(e)});
-cv.addEventListener('pointermove',e=>{if(S&&S.ssw&&!S.ssw.done){const dx=e.clientX-S.ssw.x,dy=e.clientY-S.ssw.y;if(Math.hypot(dx,dy)>18){S.ssw.done=true;if(Math.abs(dx)>Math.abs(dy))snakeTurn(dx>0?1:-1,0);else snakeTurn(0,dy>0?1:-1)}}if(S&&S.xsw&&!S.xsw.done){const dx=e.clientX-S.xsw.x,dy=e.clientY-S.xsw.y;if(Math.hypot(dx,dy)>26){S.xsw.done=true;if(Math.abs(dx)>Math.abs(dy))crossMove(dx>0?1:-1,0);else crossMove(0,dy<0?1:-1)}}if(S&&S.swipe&&!S.swipe.done){if(e.clientY-S.swipe.y>22){S.swipe.done=true;rideSlide()}else if(e.clientY-S.swipe.y<-22){S.swipe.done=true;rideBalance()}}});
+cv.addEventListener('pointermove',e=>{if(S&&S.ssw&&!S.ssw.done){const dx=e.clientX-S.ssw.x,dy=e.clientY-S.ssw.y;if(Math.hypot(dx,dy)>11){S.ssw.done=true;if(Math.abs(dx)>Math.abs(dy))snakeTurn(dx>0?1:-1,0);else snakeTurn(0,dy>0?1:-1)}}if(S&&S.xsw&&!S.xsw.done){const dx=e.clientX-S.xsw.x,dy=e.clientY-S.xsw.y;if(Math.hypot(dx,dy)>26){S.xsw.done=true;if(Math.abs(dx)>Math.abs(dy))crossMove(dx>0?1:-1,0);else crossMove(0,dy<0?1:-1)}}if(S&&S.swipe&&!S.swipe.done){if(e.clientY-S.swipe.y>22){S.swipe.done=true;rideSlide()}else if(e.clientY-S.swipe.y<-22){S.swipe.done=true;rideBalance()}}});
 window.addEventListener('pointerup',()=>{if(S&&S.ssw)S.ssw=null;if(S&&S.xsw){if(!S.xsw.done&&mode==='play'&&!S.dead)crossMove(0,1);S.xsw=null;if(S.rx)S.rx.charge=0}if(S&&S.swipe){if(!S.swipe.done&&mode==='play'&&!S.dead)S.buf=.15;S.swipe=null}});
 const unhold=()=>{if(S)S.hold=false};window.addEventListener('pointerup',unhold);window.addEventListener('pointercancel',unhold);window.addEventListener('blur',unhold);
 window.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW')unhold()});
