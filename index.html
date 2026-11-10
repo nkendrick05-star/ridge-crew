@@ -5548,7 +5548,8 @@ function drawHikerFront(g,c,x,y,mouth){
   if(c.stick){px(g,'#5a5048',x+8,y-15,1,15);px(g,'#9a948c',x+8,y-16,1,2);px(g,'#2a2420',x+8,y-9,1,1)}
   if(c.flames&&!PXC){const ft=(typeof S!=='undefined'&&S?S.t:performance.now()/1000),fk=Math.floor(ft*12)%2;px(g,'#ff7a2a',x-4,y-2-fk,2,2);px(g,'#ffd166',x-4,y-1,1,1);px(g,'#ff7a2a',x+2,y-3+fk,2,2);px(g,'#ffd166',x+3,y-1,1,1)}
 }
-const sparks=[];let laughId=-1,laughT=0,bearEyes=0,bearEyesSide=1;
+const sparks=[],smokes=[],leaves=[];let laughId=-1,laughT=0,bearEyes=0,bearEyesSide=1,chatT=0,chatNext=6,chatI=0,chatLine='',owlBlink=0;
+const CAMP_CHAT=['anyone hear that?','pass the s\'mores','who\'s on breakfast?','one more story','the bear\'s not real','my legs are toast','same time tomorrow?','that one\'s burnt','who packed the bug spray?','look at the stars, man','is it my turn to tell one?','nobody fart near the fire'];
 function campRect(){
   const f=document.getElementById(STORY?'fireSpot2':'fireSpot');if(!f)return{x:0,y:0,w:cw,h:ch};
   const a=f.getBoundingClientRect(),b=cv.getBoundingClientRect();return{x:a.left-b.left,y:a.top-b.top,w:a.width,h:a.height};
@@ -5672,8 +5673,16 @@ function drawCamp(t){
     const x=Math.round(hash(i)*cw),y=Math.round(hash(i+40)*hz*.75),a=.2+.8*Math.abs(Math.sin(t*(.4+hash(i+9))+i));
     ctx.fillStyle='rgba(255,248,225,'+a.toFixed(2)+')';ctx.fillRect(x,y,2,2);
   }
+  // moon, snowy peaks and a pine ridge seen between the trunks
+  {
+   const tri=u=>{const q=u-Math.floor(u);return 1-2*Math.abs(q-.5)},base=hz-4*k,amp=58*k,H=x=>base-amp*(.6*tri(x/(170*k)+.3)+.3*tri(x/(70*k)+.8)+.1*tri(x/(26*k)));
+   const xs=[];for(let x=-4;x<=cw+8;x+=4)xs.push([x,H(x)]);const sl=base-amp*.62;
+   ctx.fillStyle='#1b2440';ctx.beginPath();ctx.moveTo(-4,hz+4);for(const [x,y] of xs)ctx.lineTo(x,y);ctx.lineTo(cw+8,hz+4);ctx.fill();
+   ctx.fillStyle='#4e5a78';ctx.beginPath();xs.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));for(let i=xs.length-1;i>=0;i--){const [x,y]=xs[i];ctx.lineTo(x,Math.max(y,sl+Math.sin(x*.05)*3*k))}ctx.fill();
+   const ms=ctx.createLinearGradient(0,hz-40*k,0,hz);ms.addColorStop(0,'rgba(36,46,74,0)');ms.addColorStop(1,'rgba(36,46,74,.85)');ctx.fillStyle=ms;ctx.fillRect(0,hz-40*k,cw,40*k);
+   ctx.fillStyle='#111a2a';for(let x=-10;x<cw+10;x+=Math.max(6,Math.round(8*k))){const h=(16+hash(x*.37)*22)*k;ctx.beginPath();ctx.moveTo(x,hz-h);ctx.lineTo(x-h*.3,hz+2);ctx.lineTo(x+h*.3,hz+2);ctx.fill()}}
   // far trunks
-  for(let i=0;i<46;i++){const x=Math.round(hash(i*3.7)*cw),w=Math.max(2,Math.round((3+hash(i+11)*5)*k*.55));ctx.fillStyle=i%2?'#131b22':'#10171d';ctx.fillRect(x,0,w,hz+2)}
+  for(let i=0;i<12;i++){const x=Math.round(hash(i*3.7)*cw),w=Math.max(2,Math.round((3+hash(i+11)*5)*k*.55));ctx.fillStyle=i%2?'#131b22':'#10171d';ctx.fillRect(x,0,w,hz+2)}
   // mid trunks, lit on the side facing the fire
   for(let i=0;i<16;i++){
     const w=Math.round((7+hash(i+21)*8)*k*.7),x=Math.round(hash(i*5.3+1)*(cw+40)-20);
@@ -5689,10 +5698,30 @@ function drawCamp(t){
     const x=hash(i*2.1+.3)*(cw+120)-60,y=hash(i*1.7+.9)*cTop-20,rr=(28+hash(i+5)*44)*Math.max(1,k*.6);
     ctx.fillStyle=i%3?'#07100d':'#0b1612';ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fill();
   }
+  {const mx=Math.round(cw*.8),my=Math.round(r.y+r.h*.3);
+   const mg=ctx.createRadialGradient(mx,my,2,mx,my,60*k);mg.addColorStop(0,'rgba(210,225,255,.35)');mg.addColorStop(1,'rgba(210,225,255,0)');ctx.fillStyle=mg;ctx.fillRect(mx-60*k,my-60*k,120*k,120*k);
+   const mr=Math.round(7*k);ctx.fillStyle='#f2eedc';ctx.beginPath();ctx.arc(mx,my,mr,0,6.283);ctx.fill();ctx.fillStyle='rgba(170,160,140,.45)';ctx.fillRect(mx-mr*.4,my-mr*.2,mr*.35,mr*.35);ctx.fillRect(mx+mr*.2,my+mr*.3,mr*.25,mr*.25);
+   ctx.strokeStyle='#07100d';ctx.lineWidth=Math.max(2,k*.8);ctx.beginPath();ctx.moveTo(mx-30*k,my-12*k);ctx.quadraticCurveTo(mx,my-2*k,mx+30*k,my+6*k);ctx.stroke()}
   ctx.strokeStyle='#07100d';ctx.lineWidth=Math.max(2,k);for(let i=0;i<8;i++){const x=hash(i*4.4+2)*cw,y=cTop*(.55+hash(i*2.9)*.3);ctx.beginPath();ctx.moveTo(x,y-20);ctx.quadraticCurveTo(x+(hash(i)-.5)*60,y+10,x+(hash(i+1)-.5)*90,y+18*Math.max(1,k*.6));ctx.stroke()}
+  // an owl on a branch, blinking now and then
+  {const u=Math.max(2,Math.round(k*1.1)),ox=Math.round(cx-58*k),oy2=Math.round(hz-62*k);owlBlink-=1/60;if(owlBlink<-3.5-hash(Math.floor(t))*3)owlBlink=.18;
+   const O=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(ox+x*u,oy2+y*u,w*u,h*u)};O(-8,4,20,2,'#1a120c');O(-1,-6,8,10,'#4a3624');O(0,-5,6,8,'#6a5034');O(1,-1,4,4,'#8a7050');O(-1,-8,2,2,'#4a3624');O(5,-8,2,2,'#4a3624');
+   if(owlBlink>0){O(1,-4,2,1,'#2a1a10');O(4,-4,2,1,'#2a1a10')}else{O(1,-5,2,2,'#f4d35e');O(4,-5,2,2,'#f4d35e');O(2,-4,1,1,'#000');O(4,-4,1,1,'#000')}O(3,-3,1,1,'#d8a040');O(1,4,1,1,'#d8a040');O(4,4,1,1,'#d8a040')}
   // forest floor
   const gg=ctx.createLinearGradient(0,hz,0,gy+20*k);gg.addColorStop(0,'#141b13');gg.addColorStop(1,'#120f0b');
   ctx.fillStyle=gg;ctx.fillRect(0,hz,cw,ch-hz);
+  // forest floor detail all the way down: needles, stones, roots, ferns
+  {const fy0=hz+6*k,fy1=Math.min(ch,r.y+r.h+40);for(let i=0;i<220;i++){const x=Math.round(hash(i*2.31)*cw),y=Math.round(fy0+hash(i*3.77)*(fy1-fy0)),d=(y-fy0)/(fy1-fy0+1),s2=Math.max(1,Math.round(k*(.5+d*.6)));
+     if(Math.abs(x-cx)<80*k&&y<gy+12*k)continue;const r2=hash(i*5.1);
+     if(r2<.55){ctx.fillStyle=i%2?'#2a1e12':'#33240f';ctx.fillRect(x,y,s2*2,s2)}
+     else if(r2<.72){ctx.fillStyle='#2a2824';ctx.fillRect(x,y,s2*4,s2*2);ctx.fillStyle='#3e3a34';ctx.fillRect(x,y,s2*3,s2)}
+     else if(r2<.84){ctx.fillStyle='#1a2a16';for(let j=-2;j<=2;j++)ctx.fillRect(x+j*s2,y-Math.round((3-Math.abs(j))*s2*1.4),s2,Math.round((3-Math.abs(j))*s2*1.4))}
+     else if(r2<.9){ctx.fillStyle='#4a3018';ctx.fillRect(x,y,s2*2,s2*2);ctx.fillStyle='#7a5228';ctx.fillRect(x,y,s2,s2)}
+     else{ctx.fillStyle='#24180c';let xx=x,yy=y;for(let j=0;j<10;j++){ctx.fillRect(xx,yy,s2,s2);xx+=s2;if(hash(i+j)<.4)yy+=s2}}}
+   // a fallen log in the foreground on the left, a fern clump on the right
+   const ly=Math.round(gy+30*k),lx=Math.round(cx-150*k),lw=Math.round(90*k),lh=Math.round(9*k);ctx.fillStyle='#1a120a';ctx.fillRect(lx,ly,lw,lh);ctx.fillStyle='#2e2012';ctx.fillRect(lx,ly,lw,Math.round(2*k));ctx.fillStyle='#4a3420';ctx.beginPath();ctx.ellipse(lx+lw,ly+lh/2,4*k,lh/2,0,0,6.283);ctx.fill();ctx.fillStyle='#6a4a2a';ctx.beginPath();ctx.ellipse(lx+lw,ly+lh/2,2*k,lh/4,0,0,6.283);ctx.fill();
+   ctx.fillStyle='#1e3a1a';for(let j=0;j<4;j++)ctx.fillRect(lx+Math.round((10+j*20)*k),ly-Math.round(1*k),Math.round(6*k),Math.round(1.5*k));
+   const fx=Math.round(cx+120*k),fy=Math.round(gy+40*k);ctx.fillStyle='#0f2010';for(let j=-4;j<=4;j++){const h=(14-Math.abs(j)*2.4)*k;ctx.save();ctx.translate(fx+j*3*k,fy);ctx.rotate(j*.18);ctx.fillRect(-k,-h,Math.max(2,2*k),h);ctx.restore()}}
   ctx.fillStyle='#0e160f';
   for(let i=0;i<26;i++){const x=Math.round(hash(i*6.1)*cw);if(Math.abs(x-cx)<70*k)continue;const h=(5+hash(i+3)*7)*k;
     for(let j=-2;j<=2;j++){ctx.beginPath();ctx.moveTo(x,hz+3*k);ctx.lineTo(x+j*3*k,hz+3*k-h*(1-Math.abs(j)*.25));ctx.lineTo(x+j*3*k+k,hz+3*k);ctx.fill()}}
@@ -5714,6 +5743,13 @@ function drawCamp(t){
   const ids=STORY?['patch','curly','nathan','camo','stache']:seatIds(),C=ids.map(byId);
   if(STORY){laughId=ids.indexOf(STORY.who);laughT=1}else{laughT-=dt;if(laughT<-2.5-Math.random()*3){laughId=Math.random()*5|0;laughT=1.4}}
   const bob=i=>(laughId===i&&laughT>0)?(Math.floor(t*10)%2?-1:0):(Math.sin(t*2.2+i*1.7)>.85?-1:0);
+  // trampled dirt around the fire, needles, pinecones
+  for(let yy=-6;yy<=8;yy++){const w=Math.round(78*Math.sqrt(Math.max(0,1-(yy-1)*(yy-1)/56)));px(ctx,yy<0?'#20180f':'#261c12',-w,yy,w*2,1)}
+  for(let i=0;i<70;i++){const x=Math.round((hash(i*1.3)-.5)*190),y=Math.round(-4+hash(i*2.9)*18);if(Math.abs(x)<14&&y<4)continue;px(ctx,i%3?'#3a2a18':'#4a3420',x,y,i%4?2:1,1)}
+  for(const [x,y] of [[-40,10],[44,12],[-74,4],[82,8]]){px(ctx,'#5a3a1e',x,y,3,3);px(ctx,'#8a5a2e',x,y,1,1)}
+  if(SEASON==='winter'){for(let i=0;i<40;i++){const x=Math.round((hash(i*3.3)-.5)*200),y=Math.round(-4+hash(i*1.9)*16);if(Math.abs(x)<30)continue;px(ctx,'#dfe8f0',x,y,3+(i%3),1)}}
+  else if(SEASON==='fall'){for(let i=0;i<26;i++){const x=Math.round((hash(i*4.1)-.5)*190),y=Math.round(-2+hash(i*2.2)*14);if(Math.abs(x)<16)continue;px(ctx,['#d9622b','#e8a03a','#b8322e'][i%3],x,y,2,1)}}
+  else if(SEASON==='spring'){for(let i=0;i<12;i++){const x=Math.round((hash(i*5.1)-.5)*190),y=Math.round(hash(i*2.7)*12);if(Math.abs(x)<30)continue;px(ctx,'#3f7a35',x,y-2,1,2);px(ctx,['#f29ac0','#f2d36a','#ffffff'][i%3],x-1,y-3,3,1)}}
   drawCampTent(styleOf('tent'));
   // back log + center guy
   px(ctx,'#4a2e17',-13,-22,26,4);px(ctx,'#6b4423',-13,-22,26,1);
@@ -5721,6 +5757,9 @@ function drawCamp(t){
   // side logs
   px(ctx,'#4a2e17',-62,-4,32,4);px(ctx,'#6b4423',-62,-4,32,1);px(ctx,'#c49a62',-31,-3,2,2);
   px(ctx,'#4a2e17',30,-4,32,4);px(ctx,'#6b4423',30,-4,32,1);px(ctx,'#c49a62',29,-3,2,2);
+  // stone ring (back half), crossed logs
+  for(let a=0;a<12;a++){const an=a/12*Math.PI*2,sx=Math.round(Math.cos(an)*13),sy=Math.round(Math.sin(an)*3)-1;if(sy>0)continue;px(ctx,'#4a4744',sx-2,sy-1,5,3);px(ctx,'#6a6662',sx-2,sy-1,4,1)}
+  px(ctx,'#4a2e17',-11,-4,10,2);px(ctx,'#4a2e17',2,-4,10,2);px(ctx,'#6b4423',-11,-4,10,1);px(ctx,'#6b4423',2,-4,10,1);
   // fire
   px(ctx,'#3a2414',-9,-3,18,3);px(ctx,'#5a3a1e',-7,-5,14,2);px(ctx,'#ff7a2a',-6,-2,2,1);px(ctx,'#ff7a2a',3,-1,2,1);
   for(let i=-3;i<=3;i++){
@@ -5734,14 +5773,25 @@ function drawCamp(t){
   for(const s of sparks){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;s.vx+=Math.sin(t*3+s.y)*.3}
   for(let i=sparks.length-1;i>=0;i--){const s=sparks[i];if(s.life<=0){sparks.splice(i,1);continue}ctx.globalAlpha=Math.min(1,s.life);px(ctx,s.life>.6?'#ffd27a':'#ff7a2a',Math.round(s.x),Math.round(s.y),1,1)}
   ctx.globalAlpha=1;
+  // cooler + lantern, front right
+  px(ctx,'#1d1a17',31,6,17,11);px(ctx,'#2a7ab0',32,7,15,9);px(ctx,'#e8eef2',32,7,15,3);px(ctx,'#c8d0d6',37,5,5,2);px(ctx,'#1e5a86',32,14,15,2);
+  {const lf=.85+Math.sin(t*5)*.1,lg=ctx.createRadialGradient(40,-2,1,40,-2,24);lg.addColorStop(0,'rgba(255,220,140,'+(.45*lf)+')');lg.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=lg;ctx.fillRect(16,-26,48,48);
+   px(ctx,'#2a2a2a',37,-5,7,1);px(ctx,'#3a3a3a',38,-4,5,1);px(ctx,'#ffe8a8',38,-3,5,6);px(ctx,'#ffd060',39,-1,3,3);px(ctx,'#3a3a3a',37,3,7,2);px(ctx,'#2a2a2a',40,-8,1,3)}
+  // front half of the stone ring, warm on top
+  for(let a=0;a<12;a++){const an=a/12*Math.PI*2,sx=Math.round(Math.cos(an)*13),sy=Math.round(Math.sin(an)*3)-1;if(sy<=0)continue;px(ctx,'#3a3734',sx-2,sy-1,5,3);px(ctx,'#a8704a',sx-2,sy-1,4,1)}
+  // smoke curling up into the trees
+  if(Math.random()<dt*3)smokes.push({x:(Math.random()-.5)*4,y:-22,life:0,sd:Math.random()*9});
+  for(let i=smokes.length-1;i>=0;i--){const m=smokes[i];m.life+=dt;m.y-=dt*14;m.x+=Math.sin(t*.8+m.sd+m.life)*dt*6+dt*3;if(m.life>5){smokes.splice(i,1);continue}
+    ctx.globalAlpha=Math.max(0,.22*Math.min(1,m.life)*(1-m.life/5));ctx.fillStyle='#8a8a92';ctx.beginPath();ctx.arc(m.x,m.y,2+m.life*2.4,0,6.283);ctx.fill()}
+  ctx.globalAlpha=1;
   // side guys (left face right, right mirrored)
   drawHiker(ctx,C[0],-48,bob(0),0,false,'sit');
   drawHiker(ctx,C[1],-27,bob(1),0,false,'sit');
   ctx.save();ctx.scale(-1,1);
   drawHiker(ctx,C[3],-27,bob(3),0,false,'sit');
   drawHiker(ctx,C[4],-48,bob(4),0,false,'sit');
-  {const pt=equip.pet;if(pt&&pt!=='none')outlined(ctx,()=>drawPet(ctx,pt,-60,2,0,false))}
   ctx.restore();
+  {const pt=equip.pet;if(pt&&pt!=='none'&&!STORY){outlined(ctx,()=>drawPet(ctx,pt,-24,9,0,false));ctx.font='700 5px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';for(let z=0;z<2;z++){const kk=(t*.4+z/2)%1;ctx.globalAlpha=Math.sin(kk*Math.PI)*.8;ctx.fillStyle='#fff3dc';ctx.fillText('z',-22+kk*6,-2-kk*10)}ctx.globalAlpha=1}}
   yawnNext-=dt;if(yawnNext<=0&&yawnT<=0){yawnI=pick([0,1,3,4]);yawnT=1.6;yawnNext=9+Math.random()*9}
   if(yawnT>0){yawnT-=dt;const yx=[-48,-27,0,27,48][yawnI],sk=look(C[yawnI]).skin,up=Math.min(1,(1.6-yawnT)*3,yawnT*3);px(ctx,sk,yx-6,Math.round(-14-6*up),2,Math.round(4+4*up));px(ctx,sk,yx+4,Math.round(-14-6*up),2,Math.round(4+4*up));
     ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.globalAlpha=up;ctx.fillStyle='#ffe9b8';ctx.fillText('*yawn*',yx,-34);ctx.globalAlpha=1}
@@ -5755,6 +5805,11 @@ function drawCamp(t){
     ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#ffe9b8';
     ctx.globalAlpha=Math.min(1,laughT*2);ctx.fillText(STORY?'...':'haha',pos[0],pos[1]-Math.round((1.4-laughT)*4));ctx.globalAlpha=1;
   }
+  // crew chatter: a little bubble now and then
+  if(!STORY){chatNext-=dt;if(chatNext<=0&&chatT<=0){chatI=pick([0,1,2,3,4]);chatLine=pick(CAMP_CHAT);chatT=2.8;chatNext=10+Math.random()*10}
+    if(chatT>0){chatT-=dt;const pos=[[-48,-34],[-27,-34],[0,-55],[27,-34],[48,-34]][chatI],a=Math.min(1,(2.8-chatT)*5,chatT*3);ctx.globalAlpha=Math.max(0,a);ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+      const w=Math.ceil(ctx.measureText(chatLine).width)+8,bx=Math.round(Math.max(-96+w/2,Math.min(96-w/2,pos[0]))-w/2),by=pos[1]-10;px(ctx,'#1d1a17',bx-1,by-1,w+2,11);px(ctx,'#fff8e8',bx,by,w,9);px(ctx,'#fff8e8',pos[0]-1,by+9,3,2);px(ctx,'#1d1a17',pos[0]-2,by+9,1,2);px(ctx,'#1d1a17',pos[0]+2,by+9,1,2);
+      ctx.fillStyle='#1d1a17';ctx.fillText(chatLine,bx+w/2,by+5);ctx.globalAlpha=1}}
   // warm light wash over the crew
   ctx.globalCompositeOperation='lighter';
   gl=ctx.createRadialGradient(0,-10,2,0,-10,58*fl);gl.addColorStop(0,'rgba(255,140,50,.28)');gl.addColorStop(1,'rgba(255,120,40,0)');
@@ -5767,6 +5822,11 @@ function drawCamp(t){
     ctx.fillStyle='rgba(255,255,255,.03)';for(let j=0;j<7;j++)ctx.fillRect(x+Math.round(w*(.15+hash(j*3+sd)*.7)),Math.round(hash(j*5+sd)*gy),Math.max(1,k|0),Math.round(16*k));
     const lw=Math.round(w*.32),lg2=ctx.createLinearGradient(0,gy-110*k,0,gy);lg2.addColorStop(0,'rgba(255,125,45,0)');lg2.addColorStop(1,'rgba(255,125,45,'+(.3*fl).toFixed(3)+')');ctx.fillStyle=lg2;ctx.fillRect(sd<0?x+w-lw:x,Math.round(gy-110*k),lw,Math.round(112*k));
   }
+  // falling leaves in fall, snow in winter
+  if(SEASON==='fall'||SEASON==='winter'){const n=SEASON==='winter'?50:14;for(let i=0;i<n;i++){const sp=SEASON==='winter'?18+hash(i+2)*16:12+hash(i+2)*10,x=((hash(i)*cw+Math.sin(t*.7+i)*20+t*6)%cw+cw)%cw,y=((hash(i+7)*ch+t*sp*k*.5)%ch);
+    if(SEASON==='winter')ctx.fillStyle='rgba(240,246,255,.8)',ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,k*.7),Math.max(1,k*.7));else{ctx.fillStyle=['#d9622b','#e8a03a','#b8322e'][i%3];ctx.fillRect(Math.round(x),Math.round(y),Math.round(2*k*.7),Math.max(1,Math.round(k*.6)))}}}
+  // light falls off away from the fire
+  {ctx.globalCompositeOperation='multiply';const fo=ctx.createRadialGradient(cx,gy-10*k,40*k,cx,gy-10*k,Math.max(cw,ch)*.75);fo.addColorStop(0,'rgb(255,255,255)');fo.addColorStop(1,'rgb(120,120,165)');ctx.fillStyle=fo;ctx.fillRect(0,0,cw,ch);ctx.globalCompositeOperation='source-over'}
 }
 
 /* ---------- the arcade cabinet in the woods ---------- */
