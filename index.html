@@ -2267,7 +2267,10 @@ function ffHud(cw,pad,f,shadow){
 /* ---------- Ridge Cross: a tilted, blocky, Crossy-style hop up the ridge ---------- */
 const XC=18,CW=16,RD=14,SK=5,XBIO=[{n:'Pine Woods',c:'#9fd67a'},{n:'Aspen Grove',c:'#f2c94c'},{n:'Alpine Meadow',c:'#bfe3a0'},{n:'Snowfield',c:'#e8f2f6'}];
 const xBio=n=>Math.floor(Math.max(0,n)/50)%4;
-const XLV={meadow:4,camp:4,herd:0,bikes:0,truck:0,rocks:1,creek:-5,stones:-5};
+const XLV={meadow:4,camp:4,herd:0,bikes:0,truck:0,rocks:1,creek:-5,stones:-5,rapids:-5,beavers:-5,lift:-10,ice:-2,boulders:0,geese:4,ranger:0};
+const XPLAT=new Set(['creek','rapids','beavers','lift']),XWET=new Set(['creek','rapids','beavers','stones']);
+const xPlatY=L=>L.lv+(L.type==='lift'?13:L.type==='beavers'?3:4),xSurf=L=>XPLAT.has(L.type)?xPlatY(L):L.type==='stones'?L.lv+1.5:L.lv;
+const xBvC=o=>((S.t+o.ph)%4.6),xBvUnder=o=>xBvC(o)>=3.5;
 const xZoom=()=>Math.max(1,Math.min(W/185,viewH/138));
 function crossInit(){
   const zm=xZoom(),Wv=W/zm;let nc=Math.floor((Wv-30)/CW);nc=Math.max(7,Math.min(11,nc));if(nc%2===0)nc--;
@@ -2282,15 +2285,15 @@ function xLane(n){
   const b=xBio(n),d=Math.min(1,Math.max(0,n)/260),nc=R.nc,mid=(nc-1)/2,prev=R.lanes[n-1];let type='meadow';
   if(n>=4){
     if(!R.q.length){
-      const opts=[['creek',.2],['herd',.22],['bikes',n>10?.15:0],['truck',n>18?.1:0],['rocks',n>26?.09:0],['camp',.06]];const tot=opts.reduce((a,o)=>a+o[1],0)+.2;let r=Math.random()*tot,pick='meadow';
+      const snow=b===3,opts=[['creek',snow?.08:.2],['herd',.2],['bikes',n>10?.14:0],['truck',n>18?.09:0],['rocks',n>26?.08:0],['camp',.06],['rapids',n>20&&!snow?.07:0],['beavers',n>12&&b<2?.07:0],['lift',snow?.12:0],['ice',snow?.12:0],['boulders',n>15?.08:0],['geese',n>6&&!snow?.07:0],['ranger',n>14?.06:0]];const tot=opts.reduce((a,o)=>a+o[1],0)+.2;let r=Math.random()*tot,pick='meadow';
       for(const [k,w] of opts){if(r<w){pick=k;break}r-=w}
       if(pick==='meadow'||pick==='camp')R.q.push(pick);
       else if(pick==='creek'&&prev&&XLV[prev.type]>0&&Math.random()<.3){R.q.push('stones','meadow')}
-      else{const len=pick==='truck'?1:1+Math.floor(Math.random()*(pick==='rocks'?2:2+d*2.2));for(let i=0;i<len;i++)R.q.push(pick);if(Math.random()<.75||pick==='creek')R.q.push('meadow')}
+      else{const one=['truck','ranger','geese','lift','ice'].includes(pick),len=one?1:1+Math.floor(Math.random()*(['rocks','rapids','beavers','boulders'].includes(pick)?2:2+d*2.2));for(let i=0;i<len;i++)R.q.push(pick);if(Math.random()<.75||XPLAT.has(pick)||pick==='ice')R.q.push('meadow')}
     }
     type=R.q.shift();
   }
-  const L={n,type,b,lv:XLV[type],block:[],cones:[],objs:[],dir:Math.random()<.5?-1:1,v:0,stones:[],rocks:[],rockIn:1+Math.random()*1.5,tk:null,edge:[]};
+  const L={n,type,b,lv:XLV[type],kay:[],geese:[],ice:{},block:[],cones:[],objs:[],dir:Math.random()<.5?-1:1,v:0,stones:[],rocks:[],rockIn:1+Math.random()*1.5,tk:null,edge:[]};
   const sp=R.span;
   if(type==='meadow'||type==='camp'){
     for(let i=0;i<nc;i++){const r=hash(n*7.31+i*1.7);let k=null;
@@ -2301,7 +2304,7 @@ function xLane(n){
     if(n>2&&Math.random()<.38){const i=Math.floor(Math.random()*nc);if(!L.block[i])L.cones.push(i)}
     for(let i=-14;i<nc+14;i++){if(i>=0&&i<nc)continue;const r=hash(n*5.1+i*2.3);L.edge.push({i,k:(i===-1||i===nc)||r<.72?xBlockKind(b,n,i+40):r<.86?'bush':null})}
   }else if(type==='creek'){
-    if(prev&&prev.type==='creek')L.dir=-prev.dir;
+    if(prev&&XPLAT.has(prev.type))L.dir=-prev.dir;
     L.v=(17+d*22+Math.random()*11)*L.dir;let x=-sp+Math.random()*CW*2;
     while(x<sp){const len=Math.random()<.45-d*.3?4:Math.random()<.55?3:2;L.objs.push({x:x+len*CW/2,len,dip:0});x+=len*CW+CW*(1.4+Math.random()*1.5+d*.8)}
   }else if(type==='stones'){
@@ -2314,6 +2317,22 @@ function xLane(n){
     for(let x=-sp+Math.random()*CW*4;x<sp;x+=CW*(8+Math.random()*4)){const g=1+Math.floor(Math.random()*3);for(let j=0;j<g;j++)L.objs.push({x:x-j*15*L.dir,hw:6,c:cols[Math.floor(Math.random()*cols.length)],ph:Math.random()*4})}
   }else if(type==='truck'){
     L.tk={st:'idle',t:1.5+Math.random()*4,x:0,len:CW*6.5,warnD:0};
+  }else if(type==='rapids'){
+    if(prev&&XPLAT.has(prev.type))L.dir=-prev.dir;L.v=(20+d*20+Math.random()*8)*L.dir;let x=-sp+Math.random()*CW*2;
+    while(x<sp){const len=Math.random()<.5?3:2;L.objs.push({x:x+len*CW/2,len,dip:0});x+=len*CW+CW*(1.6+Math.random()*1.6+d*.6)}
+    for(let x2=-sp+Math.random()*CW*6;x2<sp;x2+=CW*(10+Math.random()*5))L.kay.push({x:x2,c:['#e8c43a','#e85a3a','#3ab0a0'][Math.floor(Math.random()*3)],ph:Math.random()*6});
+  }else if(type==='beavers'){
+    if(prev&&XPLAT.has(prev.type))L.dir=-prev.dir;L.v=(9+d*10)*L.dir;let x=-sp+Math.random()*CW*2;
+    while(x<sp){const g=2+Math.floor(Math.random()*2),ph=Math.random()*4.6;for(let j=0;j<g;j++)L.objs.push({x:x+j*CW,len:1,bv:1,ph,dip:0});x+=g*CW+CW*(1.4+Math.random()*1.4)}
+  }else if(type==='lift'){
+    L.v=(15+d*10)*L.dir;for(let x=-sp;x<sp;x+=CW*2.4)L.objs.push({x,len:1,dip:0});
+  }else if(type==='boulders'){
+    L.v=(55+d*40)*(.8+Math.random()*.4)*L.dir;for(let x=-sp+Math.random()*CW*4;x<sp;x+=CW*(5.5+Math.random()*3))L.objs.push({x,hw:7,rot:Math.random()*6});
+  }else if(type==='geese'){
+    const cnt=2+Math.floor(Math.random()*2);for(let j=0;j<cnt;j++){const x=xCellX(Math.floor(Math.random()*nc));L.geese.push({x,home:x,dir:Math.random()<.5?-1:1,st:'walk',t:0})}
+  }else if(type==='ranger'){
+    L.tk={st:'idle',t:1+Math.random()*3,x:0,len:CW*2.7,ranger:1};
+    for(let i=-14;i<nc+14;i++){if(i>=0&&i<nc)continue;const r=hash(n*4.3+i*1.9);if(r<.3)L.edge.push({i,k:'tent'});else if(r<.4)L.edge.push({i,k:'fire'});else if(r<.6)L.edge.push({i,k:xBlockKind(b,n,i+40)})}
   }
   R.lanes[n]=L;return L;
 }
@@ -2333,10 +2352,10 @@ function xHop(dx,dn){
   const R=S.rx;if(!R.started){R.started=1;R.startT=S.t}
   R.face=dn>0?'up':dn<0?'down':dx<0?'left':'right';
   const n1=R.n+dn,L=xLane(n1);let x1=R.x;
-  if(L.type==='creek'){x1=R.x+dx*CW}
+  if(XPLAT.has(L.type)){x1=R.x+dx*CW}
   else if(L.type==='stones'){const i=xIdx(R.x)+dx;x1=xCellX(Math.max(-1,Math.min(R.nc,i)))}
   else{const i=xIdx(R.x)+dx;if(i<0||i>=R.nc||L.block[i]||L.rocks.some(r=>r.st===1&&Math.abs(r.x-xCellX(i))<CW*.6)){R.bump=.16;SFX.thud();return}x1=xCellX(i)}
-  if(Math.abs(x1)>R.half+CW*.2&&L.type!=='creek'){R.bump=.16;return}
+  if(Math.abs(x1)>R.half+CW*.2&&!XPLAT.has(L.type)){R.bump=.16;return}
   const carry=R.onLog&&dn===0?xLane(R.n).v:0;
   R.hop={x0:R.x,n0:R.n,x1,n1,dn,t:0,dur:S.leader.id==='patch'?.085:.1,carry};R.onLog=null;R.charge=0;SFX.hopb();
 }
@@ -2345,7 +2364,7 @@ function xPuff(x,z,y,c,n){for(let i=0;i<(n||6);i++)S.rx.puffs.push({x,z,y,vx:(Ma
 function crossDie(why,kind){
   const R=S.rx;if(S.dead)return;
   if(kind!=='bear'&&R.shield){R.shield=0;R.inv=1.4;S.shake=6;SFX.hit();xPop('JACKED! Shrugged it off',R.x,R.n,'#f2a541');if(kind==='water'){R.n=R.lastSafe.n;R.x=R.lastSafe.x;R.hop=null;R.onLog=null}return}
-  die(why,kind==='water'?'creek':'eaten');const lim=xLim();R.dead={kind,t:0,bz:R.camZ-lim-1.5,bx:R.x};R.queue=[];
+  die(why,kind==='water'?'creek':kind==='fall'?'fall':'eaten');const lim=xLim();R.dead={kind,t:0,bz:R.camZ-lim-1.5,bx:R.x};R.queue=[];
   if(kind==='water'){SFX.splash();S.shake=3;for(let i=0;i<16;i++)R.splash.push({x:R.x+(Math.random()-.5)*8,y:0,vx:(Math.random()-.5)*60,vy:40+Math.random()*60,t:0});R.hat={x:R.x,n:R.n,t:0}}
   else if(kind==='bear'){SFX.roar();S.shake=5}
   else{SFX.hit();S.shake=8;R.hitstop=.22;R.dead.bz=R.n-4}
@@ -2366,15 +2385,18 @@ function crossUpdate(dt){
     if(L.type==='herd'&&Math.abs(n-R.n)<=1&&R.hoofCd<=0&&L.objs.some(o=>Math.abs(o.x-R.x)<30)){R.hoofCd=.5;SFX.hooves()}
     if(L.type==='bikes'&&Math.abs(n-R.n)<=1&&L.objs.some(o=>!o.rang&&Math.abs(o.x-R.x)<60&&(R.x-o.x)*L.dir>0)){const o=L.objs.find(o=>!o.rang&&Math.abs(o.x-R.x)<60&&(R.x-o.x)*L.dir>0);o.rang=1;SFX.bell()}
     if(L.tk){const k=L.tk;k.t-=dt;
-      if(k.st==='idle'&&k.t<=0){k.st='warn';k.t=1.2;k.ding=0}
+      if(k.st==='idle'&&k.t<=0){if(k.ranger){k.st='go';k.x=-L.dir*(sp+k.len/2);if(Math.abs(n-R.n)<4)SFX.horn()}else{k.st='warn';k.t=1.2;k.ding=0}}
       else if(k.st==='warn'){k.ding-=dt;if(k.ding<=0&&Math.abs(n-R.n)<6){k.ding=.32;SFX.warn()}if(k.t<=0){k.st='go';k.x=-L.dir*(sp+k.len/2);if(Math.abs(n-R.n)<5)SFX.horn()}}
-      else if(k.st==='go'){k.x+=L.dir*470*dt;if(Math.abs(k.x)>sp+k.len){k.st='idle';k.t=2.5+Math.random()*4}}}
+      else if(k.st==='go'){k.x+=L.dir*(k.ranger?230:470)*dt;if(Math.abs(k.x)>sp+k.len){k.st='idle';k.t=(k.ranger?1.5:2.5)+Math.random()*4}}}
+    for(const k of L.kay){k.x+=L.v*1.7*dt;k.ph+=dt;if(k.x>sp)k.x-=2*sp;else if(k.x<-sp)k.x+=2*sp}
+    if(L.type==='boulders')for(const o of L.objs)o.rot+=L.v*dt/7;
+    for(const g of L.geese){if(g.st==='walk'){g.x+=g.dir*10*dt;if(Math.abs(g.x-g.home)>CW*1.5)g.dir=-Math.sign(g.x-g.home);if(!S.dead&&R.n===n&&!R.hop&&Math.abs(g.x-R.x)<CW*2.4){g.st='charge';g.t=0;SFX.honk();xPop('HONK!',g.x,n,'#ffffff')}}else{g.t+=dt;const s=Math.sign(R.x-g.x)||1;g.dir=s;g.x+=s*75*dt;if(g.t>1.6||R.n!==n){g.st='walk';g.home=g.x}}}
     if(L.type==='rocks'&&Math.abs(n-R.n)<5&&!S.dead){L.rockIn-=dt;if(L.rockIn<=0){L.rockIn=1.1+Math.random()*1.3;const near=Math.random()<.6,i=near?Math.max(0,Math.min(R.nc-1,xIdx(R.x)+Math.round((Math.random()-.5)*3))):Math.floor(Math.random()*R.nc);if(!L.rocks.some(r=>Math.abs(r.x-xCellX(i))<4))L.rocks.push({x:xCellX(i),t:0,st:0})}}
     for(const r of L.rocks){r.t+=dt;if(r.st===0&&r.t>1){r.st=1;r.t=0;if(Math.abs(n-R.n)<3)S.shake=Math.max(S.shake,3);SFX.thud();xPuff(r.x,n,1,'#c8c0b0',8);if(n===R.n&&!R.hop&&Math.abs(r.x-R.x)<CW*.7&&R.inv<=0)crossDie('Bonked by a falling rock.','rock')}else if(r.st===1&&r.t>1.1){r.st=2;r.t=0}}
     L.rocks=L.rocks.filter(r=>!(r.st===2&&r.t>.4))}
   if(R.hat){R.hat.t+=dt;R.hat.x+=xLane(R.hat.n).v*dt*.9}
   if(R.dead){const D=R.dead;D.t+=dt;S.deadT+=dt;
-    if(D.kind==='water'){if(D.t>1.6&&mode==='play')showOver();return}
+    if(D.kind==='water'||D.kind==='fall'){if(D.t>1.6&&mode==='play')showOver();return}
     if(!D.chompT){if(D.t>(D.kind==='bear'?.05:.35)){D.bz+=dt*14;D.bx+=(R.x-D.bx)*Math.min(1,dt*10);if(D.bz>=R.n-.35){D.bz=R.n-.35;D.chompT=D.t;S.shake=7;SFX.chomp();buzz(40);xPop('CHOMP',R.x,R.n,'#ff6b5a');
       const lk=look(S.leader),cols=[lk.shirt,lk.pack,lk.skin,lk.pants,lk.hatC||lk.hair,'#b8262b'];for(let k=0;k<28;k++)R.bits.push({x:R.x+(Math.random()-.5)*8,y:6+Math.random()*14,vx:(Math.random()-.5)*190,vy:130+Math.random()*170,c:cols[k%cols.length]})}}}
     else if(D.t-D.chompT>1.1&&mode==='play')showOver();
@@ -2383,12 +2405,16 @@ function crossUpdate(dt){
   /* hopping */
   if(R.hop){const h=R.hop;h.t+=dt;if(h.carry){h.x0+=h.carry*dt;h.x1+=h.carry*dt}if(h.t>=h.dur){R.x=h.x1;R.n=h.n1;R.hop=null;crossLand();if(S.dead)return;if(R.queue.length){const q=R.queue.shift();xHop(q[0],q[1])}}}
   const L=xLane(R.n);
-  if(!R.hop&&R.onLog){const o=R.onLog.o;R.x=xLogSlots(o)[R.onLog.j];if(Math.abs(R.x)>R.half+CW*.7){crossDie('Floated off into the wilderness.','water');return}}
-  if(!R.hop&&L.type==='creek'&&!R.onLog){crossDie('Fell in the creek and got swept downstream.','water');return}
+  if(!R.hop&&R.onLog){const o=R.onLog.o;R.x=xLogSlots(o)[R.onLog.j];if(Math.abs(R.x)>R.half+CW*.7){if(L.type==='lift')crossDie('Rode the ski lift off into the clouds.','fall');else crossDie('Floated off into the wilderness.','water');return}
+    if(o.bv&&xBvUnder(o)){crossDie('The beaver dove. You did not.','water');return}
+    if(L.type==='rapids'&&R.inv<=0&&L.kay.some(k=>Math.abs(k.x-R.x)<10)){crossDie('Knocked off the log by a kayaker.','water');return}}
+  if(!R.hop&&XPLAT.has(L.type)&&!R.onLog){crossDie(L.type==='lift'?'Fell into the ravine.':'Fell in the creek and got swept downstream.',L.type==='lift'?'fall':'water');return}
+  if(!R.hop&&L.type==='ice'){const i=xIdx(R.x),v=(L.ice[i]||0)+dt;L.ice[i]=v;if(v>.45&&v-dt<=.45){SFX.thud();xPop('crack',R.x,R.n,'#e8f6ff')}if(v>1){crossDie('Fell through the thin ice.','water');return}}
   const pz=R.hop?R.hop.n0+(R.hop.n1-R.hop.n0)*(R.hop.t/R.hop.dur):R.n,pxx=R.hop?R.hop.x0+(R.hop.x1-R.hop.x0)*(R.hop.t/R.hop.dur):R.x;
   if(R.inv<=0){const cl=xLane(Math.round(pz));
-    if(cl.type==='herd'||cl.type==='bikes')for(const o of cl.objs)if(Math.abs(o.x-pxx)<o.hw+4){crossDie(cl.type==='bikes'?'Run over by a mountain biker.':o.k==='moose'?'Flattened by a moose.':'Trampled by an elk.','hit');return}
-    if(cl.tk&&cl.tk.st==='go'&&Math.abs(cl.tk.x-pxx)<cl.tk.len/2+4){crossDie('Flattened by a logging truck.','hit');return}}
+    if(cl.type==='herd'||cl.type==='bikes'||cl.type==='boulders')for(const o of cl.objs)if(Math.abs(o.x-pxx)<o.hw+4){crossDie(cl.type==='bikes'?'Run over by a mountain biker.':cl.type==='boulders'?'Squashed by a rolling boulder.':o.k==='moose'?'Flattened by a moose.':'Trampled by an elk.','hit');return}
+    for(const g of cl.geese)if(Math.abs(g.x-pxx)<7){crossDie('Chased down by a goose.','hit');return}
+    if(cl.tk&&cl.tk.st==='go'&&Math.abs(cl.tk.x-pxx)<cl.tk.len/2+4){crossDie(cl.tk.ranger?'Run over by the park ranger.':'Flattened by a logging truck.','hit');return}}
   /* camera: follows you up, and keeps creeping up the trail on its own */
   if(R.started&&S.t-R.startT>(S.leader.id==='nathan'?3:0)){const creep=(.46+Math.min(.55,R.best/220))*(S.leader.id==='curly'?.75:1);R.camZ+=creep*dt}
   if(pz>R.camZ)R.camZ+=(pz-R.camZ)*Math.min(1,dt*4);
@@ -2401,8 +2427,9 @@ function crossUpdate(dt){
 }
 function crossLand(){
   const R=S.rx,L=xLane(R.n);R.landT=.1;
-  if(L.type==='creek'){let best=null,bd=CW*.62;for(const o of L.objs){xLogSlots(o).forEach((sx,j)=>{const dd=Math.abs(sx-R.x);if(dd<bd){bd=dd;best={o,j}}})}
-    if(best){R.onLog=best;R.x=xLogSlots(best.o)[best.j];best.o.dip=.25;SFX.thunk();xPuff(R.x,R.n,-3,'#cfe8f6',4)}else{crossDie('Fell in the creek and got swept downstream.','water');return}}
+  if(XPLAT.has(L.type)){let best=null,bd=CW*.62;for(const o of L.objs){if(o.bv&&xBvUnder(o))continue;xLogSlots(o).forEach((sx,j)=>{const dd=Math.abs(sx-R.x);if(dd<bd){bd=dd;best={o,j}}})}
+    if(best){R.onLog=best;R.x=xLogSlots(best.o)[best.j];best.o.dip=.25;SFX.thunk();xPuff(R.x,R.n,xPlatY(L)-1,L.type==='lift'?'#ffffff':'#cfe8f6',4)}else{crossDie(L.type==='lift'?'Missed the chair and fell into the ravine.':L.type==='beavers'?'Missed the beaver and fell in.':'Fell in the creek and got swept downstream.',L.type==='lift'?'fall':'water');return}}
+  else if(L.type==='ice'&&(L.ice[xIdx(R.x)]||0)>1){crossDie('Fell through the thin ice.','water');return}
   else if(L.type==='stones'){const i=xIdx(R.x);if(i>=0&&i<R.nc&&L.stones.includes(i)&&Math.abs(xCellX(i)-R.x)<CW*.5){R.x=xCellX(i);SFX.thunk();xPuff(R.x,R.n,-3,'#cfe8f6',4)}else{crossDie('Missed the rock and fell in the creek.','water');return}}
   else{const P2=XPAL[L.b];xPuff(R.x,R.n,L.lv,L.b===3?'#ffffff':XLV[L.type]>0?P2.tuft:'#c8b898',5);R.lastSafe={n:R.n,x:R.x}}
   if(R.n>R.best){const g=R.n-R.best;R.best=R.n;R.popT=.25;S.stats.clears+=g;if(R.pb>0&&R.best===R.pb+1){R.bestFlash=2;SFX.badge&&SFX.badge()}
@@ -2448,23 +2475,35 @@ function crossDraw(){
   for(let n=nHi;n>=nLo;n--){const L=xLane(n),P2=XPAL[L.b],lv=L.lv,z0=n-.5,z1=n+.5,xl=xsAt(-20,z1)-10,xr=xsAt(Wv+20,z0)+10;
     /* ground slab */
     let top=P2.g1,front=P2.fr;
-    if(lv===4){top=n&1?P2.g1:P2.g2}else if(L.type==='herd'){top=P2.dirt;front=P2.fd}else if(L.type==='bikes'){top=P2.bike;front=P2.fd}else if(L.type==='truck'){top=P2.road;front=P2.road2}else if(L.type==='rocks'){top='#a8a296';front='#7a746a'}else{top=P2.water;front=P2.wd}
+    if(lv===4){top=n&1?P2.g1:P2.g2}else if(L.type==='herd'){top=P2.dirt;front=P2.fd}else if(L.type==='bikes'){top=P2.bike;front=P2.fd}else if(L.type==='truck'){top=P2.road;front=P2.road2}else if(L.type==='rocks'){top='#a8a296';front='#7a746a'}else if(L.type==='boulders'){top='#9a948a';front='#6e685e'}else if(L.type==='ranger'){top=P2.dirt;front=P2.fd}else if(L.type==='lift'){top='#b8c8d4';front='#8a9cac'}else if(L.type==='ice'){top='#d4ecf6';front='#9ac4dc'}else if(L.type==='rapids'){top='#3a92cc';front='#2a6a9a'}else{top=P2.water;front=P2.wd}
     poly(front,[P(xl,z0,lv),P(xr,z0,lv),P(xr,z0,-9),P(xl,z0,-9)]);poly(top,[P(xl,z0,lv),P(xr,z0,lv),P(xr,z1,lv),P(xl,z1,lv)]);
     /* surface detail */
     if(lv===4){for(let i=-16;i<R.nc+16;i++){const r=hash(n*13.1+i*5.3);if(r<.3){const x=xCellX(i)+r*10-5,zz=n-.3+r*.6;F(P2.tuft,PX(x,zz),PY(zz,lv)-1,2,1);F(P2.tuft,PX(x,zz)+3,PY(zz,lv)-1,1,1)}if(L.b===2&&r>.88)F(['#f2e45a','#e86ac8','#ffffff'][Math.floor(r*30)%3],PX(xCellX(i),n),PY(n,lv),2,2)}}
     else if(L.type==='herd'){for(let i=-16;i<R.nc+16;i++){const r=hash(n*3.3+i);if(r<.45){const x=xCellX(i)+r*8,zz=n-.25+r*.5;F(P2.dirt2,PX(x,zz),PY(zz,lv),2,1);F(P2.dirt2,PX(x+3,zz+.1),PY(zz+.1,lv),2,1)}}}
     else if(L.type==='bikes'){for(const zz of [n-.2,n+.2])poly(P2.dirt2,[P(xl,zz-.03,lv),P(xr,zz-.03,lv),P(xr,zz+.03,lv),P(xl,zz+.03,lv)])}
     else if(L.type==='truck'){for(const zz of [n-.28,n+.22])poly(P2.road2,[P(xl,zz-.06,lv),P(xr,zz-.06,lv),P(xr,zz+.06,lv),P(xl,zz+.06,lv)]);for(let i=-16;i<R.nc+16;i++){const r=hash(n*9.1+i);if(r<.4)F('#8a867e',PX(xCellX(i)+r*9,n),PY(n,lv),1,1)}}
+    else if(L.type==='ranger'){for(const zz of [n-.2,n+.2])poly(P2.dirt2,[P(xl,zz-.05,lv),P(xr,zz-.05,lv),P(xr,zz+.05,lv),P(xl,zz+.05,lv)])}
+    else if(L.type==='lift'){for(let i=-16;i<R.nc+16;i++){const r=hash(n*6.1+i);if(r<.4)F(r<.2?'#ffffff':'#9aacbc',PX(xCellX(i)+r*9,n-.2+r*.4),PY(n-.2+r*.4,lv),3,1)}}
+    else if(L.type==='ice'){for(let i=-16;i<R.nc+16;i++){const r=hash(n*8.3+i);if(r<.5)F('#ffffff',PX(xCellX(i)+r*8,n-.3+r*.5),PY(n-.3+r*.5,lv),5,1)}for(const k in L.ice){const v=L.ice[k],x=xCellX(+k),cx=PX(x,n),cy=PY(n,lv);if(v>1){poly('#1a4a6a',[P(x-6,n-.3,lv),P(x+6,n-.3,lv),P(x+6,n+.3,lv),P(x-6,n+.3,lv)])}else if(v>.2){ctx.strokeStyle='#ffffff';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx-6,cy);ctx.lineTo(cx-1,cy-1);ctx.lineTo(cx+2,cy+2);ctx.lineTo(cx+7,cy);if(v>.55){ctx.moveTo(cx-1,cy-1);ctx.lineTo(cx-2,cy-4);ctx.moveTo(cx+2,cy+2);ctx.lineTo(cx+4,cy+4)}ctx.stroke()}}}
+    else if(L.type==='boulders'){for(let i=-16;i<R.nc+16;i++){const r=hash(n*2.9+i);if(r<.4)F(r<.2?'#7e786a':'#b0aa9e',PX(xCellX(i)+r*10,n-.2+r*.4),PY(n-.2+r*.4,lv)-1,2,1)}}
     else if(L.type==='rocks'){for(let i=-16;i<R.nc+16;i++){const r=hash(n*5.7+i);if(r<.55){const zz=n-.3+r*.6;F(r<.25?'#7e786a':'#c0bab0',PX(xCellX(i)+r*10,zz),PY(zz,lv)-1,r<.12?3:2,2)}}}
     else{for(let k=0;k<14;k++){const r=hash(n*7+k),span=xr-xl,x=xl+((r*span*1.7+t*L.v*.6)%span+span)%span,zz=n-.35+r*.7;F(P2.water2,PX(x,zz),PY(zz,lv),5+Math.round(r*6),1)}
-      if(L.type==='creek')for(const o of L.objs){const w=o.len*CW/2-1,dp=o.dip>0?-1.5:0;if(PX(o.x+w,n)<-20||PX(o.x-w,n)>Wv+20)continue;
+      if(L.type==='rapids')for(let k=0;k<10;k++){const r=hash(n*3+k),span=xr-xl,x=xl+((r*span*1.3+t*L.v*1.1)%span+span)%span,zz=n-.3+r*.6;F('#ffffff',PX(x,zz),PY(zz,lv),3+Math.round(r*4),1)}
+      if(L.type==='creek'||L.type==='rapids')for(const o of L.objs){const w=o.len*CW/2-1,dp=o.dip>0?-1.5:0;if(PX(o.x+w,n)<-20||PX(o.x-w,n)>Wv+20)continue;
         if(!PXC){ctx.globalAlpha=.3;poly('#ffffff',[P(o.x-w-2,z0+.12,lv),P(o.x+w+2,z0+.12,lv),P(o.x+w+2,z0+.2,lv),P(o.x-w-2,z0+.2,lv)]);ctx.globalAlpha=1}
         box(o.x-w,o.x+w,n-.3,n+.3,lv-1+dp,lv+4+dp,'#a8744a','#7a5232','#d8b47a');for(let q=-w+5;q<w-3;q+=8)F('#6a4428',PX(o.x+q,n-.3),PY(n-.3,lv+2+dp),4,1);F('#a8844e',PX(o.x+w,n-.05)+1,PY(n-.05,lv+2.5+dp),2,2)}
+      if(L.type==='rapids')for(const k of L.kay){const sx=PX(k.x,n);if(sx<-30||sx>Wv+30)continue;const dk=k.c==='#e8c43a'?'#b89a2a':k.c==='#e85a3a'?'#b8402a':'#2a8070';box(k.x-11,k.x+11,n-.13,n+.13,lv-1,lv+1.5,k.c,dk,dk);const sy=PY(n,lv+1.5);F('#2a2a3a',sx-2,sy-2,4,2);F('#3a6cc0',sx-2,sy-8,4,6);F('#e0b090',sx-1,sy-11,3,3);F(k.c,sx-1,sy-12,3,1);
+        const a=k.ph*5,cxa=Math.cos(a)*8,sya=Math.sin(a)*3;ctx.strokeStyle='#5a3a22';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(sx-cxa,sy-6-sya);ctx.lineTo(sx+cxa,sy-6+sya);ctx.stroke();F('#e8e8e8',sx+cxa-1,sy-6+sya-1,2,2);F('#e8e8e8',sx-cxa-1,sy-6-sya-1,2,2)}
+      if(L.type==='beavers')for(const o of L.objs){const sx=PX(o.x,n);if(sx<-30||sx>Wv+30)continue;const c2=xBvC(o),yo=c2<3?0:c2<3.5?-(c2-3)/.5*4:-7,d2=L.dir;
+        if(c2>=3.5){if(!PXC){ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(sx,PY(n,lv),5+(c2-3.5)*4,2+(c2-3.5)*1.4,0,0,6.283);ctx.stroke()}continue}
+        if(c2>2.3&&c2<3.5&&Math.floor(t*8)%2)F('#ffffff',sx+3,PY(n,lv)-2,1,1);
+        const tx=o.x-d2*7,hx=o.x+d2*6;box(tx-3.5,tx+3.5,n-.18,n+.18,lv-.5+yo,lv+.6+yo,'#4a3428','#3a2a20','#2a1e18');box(o.x-5,o.x+5,n-.24,n+.24,lv-1+yo,lv+3.5+yo,'#9a6a40','#7a4a2a','#5a3420');box(hx-2.5,hx+2.5,n-.16,n+.16,lv+yo,lv+4.5+yo,'#9a6a40','#7a4a2a','#5a3420');
+        const hsx=PX(hx,n-.16),hsy=PY(n-.16,lv+3+yo);F('#1a1a1a',hsx-1,hsy,1,1);F('#1a1a1a',hsx+1,hsy,1,1);F('#f4f0e0',hsx,hsy+2,1,1)}
       if(L.type==='stones')for(const i of L.stones){const x=xCellX(i);box(x-6.5,x+6.5,n-.33,n+.33,lv-1,lv+1.5,'#8aa070','#6a7e56','#4e5e40');F('#a8bc8a',PX(x-3,n),PY(n,lv+1.5)-1,4,1)}}
     /* the playfield edge reads as darker ground on both sides */
     if(!PXC){ctx.globalAlpha=.32;ctx.fillStyle='#0a140a';poly('#0a140a',[P(xl,z0,lv),P(-R.half,z0,lv),P(-R.half,z1,lv),P(xl,z1,lv)]);poly('#0a140a',[P(R.half,z0,lv),P(xr,z0,lv),P(xr,z1,lv),P(R.half,z1,lv)]);ctx.globalAlpha=1}
     /* truck lane signs */
-    if(L.tk){for(const sx of [-R.half-10,R.half+6]){const zz=n-.42,warn=L.tk.st==='warn'||L.tk.st==='go',on=Math.floor(t*6)%2;box(sx-1,sx+1,zz-.05,zz+.05,0,16,'#e8e8e8','#c8c8c8','#9a9a9a');
+    if(L.tk&&!L.tk.ranger){for(const sx of [-R.half-10,R.half+6]){const zz=n-.42,warn=L.tk.st==='warn'||L.tk.st==='go',on=Math.floor(t*6)%2;box(sx-1,sx+1,zz-.05,zz+.05,0,16,'#e8e8e8','#c8c8c8','#9a9a9a');
       const bx=PX(sx,zz),by=PY(zz,16);F('#f2f2f2',bx-6,by-2,13,3);F('#c83a2a',bx-6,by-2,13,1);F('#2a2a2a',bx-5,by+2,11,3);F(warn&&on?'#ff3a2a':'#5a1a14',bx-4,by+3,3,2);F(warn&&!on?'#ff3a2a':'#5a1a14',bx+2,by+3,3,2);
       if(warn&&!PXC){ctx.globalAlpha=.35;ctx.fillStyle='#ff4a2a';ctx.beginPath();ctx.arc(bx+(on?-3:3),by+4,6,0,6.283);ctx.fill();ctx.globalAlpha=1}}}
     /* things standing in this lane, left to right */
@@ -2474,7 +2513,18 @@ function crossDraw(){
     for(const i of L.cones){const x=xCellX(i);items.push({x,f:()=>{shadow(x,n,lv,3);outlined(ctx,()=>drawCone(ctx,PX(x,n),PY(n,lv+3)+Math.round(Math.sin(t*4+i)*1.5)))}})}
     if(L.type==='herd')for(const o of L.objs){const sx=PX(o.x,n);if(sx<-30||sx>Wv+30)continue;items.push({x:o.x,f:()=>{shadow(o.x,n,lv,o.hw);outlined(ctx,()=>beast(ctx,o.k,sx,PY(n,lv)+3,L.dir,{f:Math.floor(o.ph*10)%4,t}));if(Math.floor(o.ph*6)%3===0)xPuffDraw(F,PX(o.x-L.dir*11,n),PY(n,lv))}})}
     if(L.type==='bikes')for(const o of L.objs){const sx=PX(o.x,n);if(sx<-30||sx>Wv+30)continue;items.push({x:o.x,f:()=>{shadow(o.x,n,lv,7);outlined(ctx,()=>xBiker(F,sx,PY(n,lv)+3,L.dir,o.c,o.ph))}})}
-    if(L.tk&&L.tk.st==='go'){const k=L.tk,d=L.dir,cx=k.x,hl=k.len/2;items.push({x:cx,f:()=>{const cab=d>0?[cx+hl-18,cx+hl]:[cx-hl,cx-hl+18],bed=d>0?[cx-hl,cx+hl-19]:[cx-hl+19,cx+hl];
+    if(L.type==='lift'){const lc=lv+33,sy0=xPlatY(L);for(const tx of [-R.half-12,R.half+10])items.push({x:tx,f:()=>{box(tx-1.5,tx+1.5,n-.1,n+.1,lv,lc+3,'#9a9aa0','#7a7a80','#5a5a60');box(tx-6,tx+6,n-.08,n+.08,lc+2,lc+4,'#9a9aa0','#7a7a80','#5a5a60')}});
+      items.push({x:-9999,f:()=>{ctx.strokeStyle='#2a2a30';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PX(xl,n),PY(n,lc));ctx.lineTo(PX(xr,n),PY(n,lc));ctx.stroke()}});
+      for(const o of L.objs){const sx=PX(o.x,n);if(sx<-30||sx>Wv+30)continue;items.push({x:o.x,f:()=>{const dp=o.dip>0?-1.5:0;ctx.strokeStyle='#4a4a50';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(sx,PY(n,lc));ctx.lineTo(PX(o.x,n+.2),PY(n+.2,sy0+8+dp));ctx.stroke();box(o.x-6,o.x+6,n+.16,n+.24,sy0+dp,sy0+8+dp,'#c83a2a','#a82a1e','#7a1e14');box(o.x-6,o.x+6,n-.24,n+.24,sy0-1.5+dp,sy0+dp,'#e85a3a','#a82a1e','#7a1e14')}})}}
+    if(L.type==='boulders')for(const o of L.objs){const sx=PX(o.x,n);if(sx<-30||sx>Wv+30)continue;items.push({x:o.x,f:()=>{shadow(o.x,n,lv,7);const cx=sx,cy=PY(n,lv+7),pts=[];for(let q=0;q<8;q++){const a=q/8*6.283+.39;pts.push([cx+Math.cos(a)*7.5,cy+Math.sin(a)*7.5])}poly('#8a847a',pts);poly('#a8a296',[pts[4],pts[5],pts[6],[cx,cy]]);ctx.strokeStyle='#5e584e';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx+Math.cos(o.rot)*6,cy+Math.sin(o.rot)*6);ctx.lineTo(cx-Math.cos(o.rot)*3,cy-Math.sin(o.rot)*3);ctx.stroke();if(Math.floor(o.rot*3)%3===0)F('#c8c0b0',cx-L.dir*9,cy+6,2,1)}})}
+    for(const g of L.geese){const sx=Math.round(PX(g.x,n)),sy=Math.round(PY(n,lv)),d2=g.dir||1,ch=g.st==='charge';items.push({x:g.x,f:()=>{shadow(g.x,n,lv,4);const m=(xo,yo,w,h,c)=>F(c,d2>0?sx+xo:sx-xo-w,sy+yo,w,h),st=Math.floor(t*(ch?14:5))%2;
+      outlined(ctx,()=>{m(-1,-3,1,3,'#f2a030');m(1,-3+(st?1:0),1,3-(st?1:0),'#f2a030');m(-4,-8,8,5,'#ffffff');m(-6,-8,2,2,'#e8e8e8');m(-3,-7,5,2,'#d8d8d8');if(ch&&st)m(-4,-12,4,4,'#e8e8e8');
+        if(ch){m(3,-10,5,2,'#ffffff');m(7,-11,3,3,'#ffffff');m(10,-10,2,1,'#f2a030');m(8,-11,1,1,'#1a1a1a')}else{m(2,-13,2,6,'#ffffff');m(2,-15,3,2,'#ffffff');m(5,-14,2,1,'#f2a030');m(3,-15,1,1,'#1a1a1a')}})}})}
+    if(L.tk&&L.tk.st==='go'&&L.tk.ranger){const k=L.tk,d=L.dir,cx=k.x,hl=k.len/2;items.push({x:cx,f:()=>{const cab=d>0?[cx+hl-17,cx+hl]:[cx-hl,cx-hl+17],bed=d>0?[cx-hl,cx+hl-17]:[cx-hl+17,cx+hl];
+      box(bed[0],bed[1],n-.34,n+.34,2,9,'#3a7a3a','#2f6a2f','#245224');box(bed[0],bed[1],n-.35,n-.33,5,6,'#f2f2f2','#f2f2f2',null);box(cab[0],cab[1],n-.36,n+.36,2,15,'#3a7a3a','#2f6a2f','#245224');const wx=d>0?cab[1]-6:cab[0]+1;box(wx,wx+5,n-.36,n-.3,9,13,'#9ad0f0','#9ad0f0',null);
+      const on=Math.floor(t*8)%2;box(cab[0]+3,cab[0]+8,n-.2,n+.2,15,17,on?'#ff3a2a':'#5a1a14',on?'#ff3a2a':'#5a1a14',null);box(cab[1]-8,cab[1]-3,n-.2,n+.2,15,17,on?'#3a6aff':'#14205a',on?'#3a6aff':'#14205a',null);
+      for(const wx2 of [cab[0]+4,bed[0]+6])box(wx2-3,wx2+3,n-.38,n-.34,0,5,'#2a2a2a','#1a1a1a',null)}})}
+    if(L.tk&&L.tk.st==='go'&&!L.tk.ranger){const k=L.tk,d=L.dir,cx=k.x,hl=k.len/2;items.push({x:cx,f:()=>{const cab=d>0?[cx+hl-18,cx+hl]:[cx-hl,cx-hl+18],bed=d>0?[cx-hl,cx+hl-19]:[cx-hl+19,cx+hl];
       box(bed[0],bed[1],n-.34,n+.34,2,5,'#6a6a6a','#4a4a4a','#3a3a3a');for(let j=0;j<3;j++)box(bed[0]+2,bed[1]-2,n-.28+j*.0,n+.28,5+j*4,9+j*4,'#a8744a','#7a5232','#d8b47a');
       box(cab[0],cab[1],n-.36,n+.36,2,16,'#e84a3a','#c83a2a','#9a2a1e');const wx=d>0?cab[1]-6:cab[0]+1;box(wx,wx+5,n-.36,n-.3,9,14,'#9ad0f0','#9ad0f0',null);
       for(const wx2 of [cab[0]+4,bed[0]+6,bed[1]-6])box(wx2-3,wx2+3,n-.38,n-.34,0,5,'#2a2a2a','#1a1a1a',null)}})}
@@ -2486,9 +2536,9 @@ function crossDraw(){
     /* the hat floating away */
     if(R.hat&&R.hat.n===n){const hx=PX(R.hat.x,n),hy=PY(n,lv)+Math.round(Math.sin(R.hat.t*4))-1,lk=look(S.leader);F('#2a2a2a',hx-5,hy,11,1);F(lk.hatC||lk.hair||'#6c6a48',hx-4,hy-1,9,1);F(lk.hatC||lk.hair||'#6c6a48',hx-2,hy-4,5,3)}
     /* the player */
-    if(n===pRow&&!(dz&&dz.chompT)){const sfc=m=>{const Lm=xLane(m);return Lm.lv+(Lm.type==='creek'?4:Lm.type==='stones'?1.5:0)},lvP=R.hop?sfc(R.hop.n0)+(sfc(R.hop.n1)-sfc(R.hop.n0))*pv.k:lv+(R.onLog?4:L.type==='stones'?1.5:0)+(R.onLog&&R.onLog.o.dip>0?-1.5:0);
+    if(n===pRow&&!(dz&&dz.chompT)){const sfc=m=>xSurf(xLane(m)),bvo=R.onLog&&R.onLog.o.bv?xBvC(R.onLog.o):0,lvP=R.hop?sfc(R.hop.n0)+(sfc(R.hop.n1)-sfc(R.hop.n0))*pv.k:xSurf(L)+(R.onLog&&R.onLog.o.dip>0?-1.5:0)-(bvo>3?(Math.min(bvo,3.5)-3)/.5*4:0);
       const arc=R.hop?Math.sin(Math.PI*pv.k)*(R.hop.dn===2?12:7):0,sx=Math.round(PX(pv.x,pv.z)),gy=Math.round(PY(pv.z,lvP)),y=gy-Math.round(arc);
-      if(dz&&dz.kind==='water'){const k=Math.min(1,dz.t/.5);if(!PXC){ctx.strokeStyle='rgba(230,245,255,'+(1-k*.7)+')';ctx.lineWidth=1;for(const rr of [1,1.8])if(dz.t*rr<1.4){ctx.beginPath();ctx.ellipse(sx,gy,4+dz.t*rr*16,(4+dz.t*rr*16)*.35,0,0,6.283);ctx.stroke()}}
+      if(dz&&(dz.kind==='water'||dz.kind==='fall')){const k=Math.min(1,dz.t/.5);if(!PXC){ctx.strokeStyle='rgba(230,245,255,'+(1-k*.7)+')';ctx.lineWidth=1;for(const rr of [1,1.8])if(dz.t*rr<1.4){ctx.beginPath();ctx.ellipse(sx,gy,4+dz.t*rr*16,(4+dz.t*rr*16)*.35,0,0,6.283);ctx.stroke()}}
         if(k<1){ctx.save();ctx.beginPath();ctx.rect(sx-20,gy-40,40,40);ctx.clip();outlined(ctx,()=>drawHiker(ctx,S.leader,sx,gy+Math.round(k*22),0,false));ctx.restore()}}
       else if(dz&&(dz.kind==='hit'||dz.kind==='rock')){shadow(pv.x,pv.z,lvP,8);ctx.save();ctx.translate(sx,gy);ctx.scale(1.5,.22);ctx.translate(-sx,-gy);outlined(ctx,()=>drawHiker(ctx,S.leader,sx,gy,0,false));ctx.restore()}
       else{shadow(pv.x,pv.z,lvP,Math.max(3,6-arc*.3));
@@ -2527,6 +2577,38 @@ function crossDraw(){
   if(!R.started&&!S.dead){ctx.globalAlpha=.6+.4*Math.sin(t*5);ctx.font=FONT(Math.round(f*.7));sh('TAP to hop  ·  SWIPE to turn',cw/2,ch*.9,'#fff3dc');ctx.globalAlpha=1}
 }
 function xPuffDraw(F,x,y){F('#d8c8a8',x,y-1,2,1)}
+/* pee break in Ridge Cross: a blocky porta-potty parked right in the middle of the bike trail */
+function drawPeeCross(){
+  const t=pT,zm=xZoom(),Wv=W/zm,Vh=viewH/zm,baseY=Math.round(Vh*.66),ox=Math.round(Wv*.47),P2=XPAL[0];
+  ctx.setTransform(dpr*sc*zm,0,0,dpr*sc*zm,0,0);ctx.imageSmoothingEnabled=false;
+  const F=(col,x,y,w,h)=>{if(w>0&&h>0)px(ctx,col,Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+  const PX=(x,z)=>ox+x+z*SK,PY=(z,y)=>baseY-z*RD-y,P=(x,z,y)=>[PX(x,z),PY(z,y)];
+  const poly=(c,pts)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(Math.round(pts[0][0]),Math.round(pts[0][1]));for(let i=1;i<pts.length;i++)ctx.lineTo(Math.round(pts[i][0]),Math.round(pts[i][1]));ctx.closePath();ctx.fill()};
+  const box=(x0,x1,z0,z1,y0,y1,cT,cF,cS)=>{if(cS)poly(cS,[P(x1,z0,y1),P(x1,z1,y1),P(x1,z1,y0),P(x1,z0,y0)]);poly(cF,[P(x0,z0,y1),P(x1,z0,y1),P(x1,z0,y0),P(x0,z0,y0)]);poly(cT,[P(x0,z0,y1),P(x1,z0,y1),P(x1,z1,y1),P(x0,z1,y1)])};
+  const tree=(x,z,y)=>{box(x-2,x+2,z-.12,z+.12,y,y+7,'#7a5232','#6a4428','#4a2e1a');box(x-7,x+7,z-.36,z+.36,y+7,y+18,'#5aac52','#3f8a42','#2f6a34');box(x-5,x+5,z-.27,z+.27,y+18,y+27,'#5aac52','#3f8a42','#2f6a34');box(x-2.5,x+2.5,z-.15,z+.15,y+27,y+33,'#5aac52','#3f8a42','#2f6a34')};
+  ctx.fillStyle='#2a3a2a';ctx.fillRect(-4,-4,Wv+8,Vh+8);
+  const lanes={3:'creek',2:'grass',1:'herd',0:'bikes',[-1]:'grass',[-2]:'grass'},spn=Wv+120;
+  for(let n=Math.ceil(baseY/RD)+3;n>=-Math.ceil((Vh-baseY)/RD)-2;n--){const ty=lanes[n]||'grass',lv=ty==='grass'?4:ty==='creek'?-5:0,z0=n-.5,z1=n+.5,xl=-ox-n*SK-30,xr=Wv-ox-n*SK+30;
+    const top=ty==='grass'?(n&1?P2.g1:P2.g2):ty==='creek'?P2.water:ty==='herd'?P2.dirt:P2.bike,front=ty==='grass'?P2.fr:ty==='creek'?P2.wd:P2.fd;
+    poly(front,[P(xl,z0,lv),P(xr,z0,lv),P(xr,z0,-9),P(xl,z0,-9)]);poly(top,[P(xl,z0,lv),P(xr,z0,lv),P(xr,z1,lv),P(xl,z1,lv)]);
+    if(ty==='bikes')for(const zz of [n-.2,n+.2])poly(P2.dirt2,[P(xl,zz-.03,lv),P(xr,zz-.03,lv),P(xr,zz+.03,lv),P(xl,zz+.03,lv)]);
+    if(ty==='creek'){for(let k=0;k<10;k++){const r=hash(k*7+n),x=xl+((r*400+t*20)%(xr-xl));F(P2.water2,PX(x,n-.3+r*.6),PY(n-.3+r*.6,lv),6,1)}for(let k=0;k<3;k++){const x=((k*90+t*16)%spn)-spn/2;box(x-20,x+20,n-.3,n+.3,lv-1,lv+4,'#a8744a','#7a5232','#d8b47a')}}
+    if(ty==='grass'){for(let i=-12;i<13;i++){const r=hash(n*5.1+i*2.3),x=i*CW;if(Math.abs(i)>=3&&r<.6||Math.abs(i)<3&&n>=2&&r<.25)tree(x,n,lv);else if(r<.75)F(P2.tuft,PX(x,n),PY(n,lv)-1,2,1)}}
+    if(ty==='herd'){const ex=((t*9)%spn)-spn/2,stop=Math.sin(t*.7)>.6;outlined(ctx,()=>beast(ctx,'elk',PX(ex,n),PY(n,lv)+3,1,{f:stop?-1:Math.floor(t*8)%4,st:stop?3:0,t}))}
+    if(ty==='bikes'){
+      /* the potty, rocking a little now and then */
+      const rock=Math.sin(t*1.3)>.92?Math.sin(t*40)*.8:0;box(-7+rock,7+rock,-.38,.38,0,1,'#8a8a8a','#6a6a6a','#4a4a4a');box(-6.5+rock,6.5+rock,-.34,.34,1,24,'#3a7ad0','#2a62b0','#1e4a88');box(-7.5+rock,7.5+rock,-.4,.4,24,27,'#e8eef2','#c8d0d8','#9aa4ac');
+      const dx=PX(rock,-.34),dy=PY(-.34,24);F('#1e4a88',dx-5,dy+1,10,22);F('#2a62b0',dx-4,dy+2,8,20);F('#f2e45a',dx-1,dy+5,2,1);F('#f2e45a',dx-2,dy+6,1,2);F('#f2e45a',dx-1,dy+8,2,1);F('#c83a2a',dx+2,dy+12,3,2);F('#d8d8d8',dx+3,dy+12,1,2);
+      ctx.font='700 5px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.fillText('OCCUPIED',dx,dy-2);
+      /* bikers swerving around it both ways */
+      for(let k=0;k<3;k++){const d=k%2?-1:1,x=d*(((t*95+k*130)%spn)-spn/2),sw=Math.abs(x)<26?(1-Math.abs(x)/26):0,zz=n+(d>0?-.32:.32)*sw;
+        outlined(ctx,()=>xBiker(F,PX(x,zz),PY(zz,lv)+3,d,['#e85a3a','#3a8ae8','#e8c43a'][k],t+k));if(sw>.7&&Math.floor(t*6)%2)F('#ffffff',PX(x,zz)+4,PY(zz,lv)-22,3,1)}
+    }
+  }
+  const cyc=Math.floor(t/2.6);if(cyc!==PZX.c){PZX.c=cyc;if(cyc%2)SFX.bell()}
+  const pv=.7+.12*Math.sin(t*3);SFX.peeSurface('ground');SFX.setPee(pv);SFX.peeVoice(0,pv);
+}
+const PZX={c:-1};
 
 const CP_STATS={patch:{n:'floaty',th:800,gr:500,burn:8},curly:{n:'twitchy',th:1250,gr:860,burn:9},camo:{n:'rocket',th:1350,gr:800,burn:12},stache:{n:'steady',th:960,gr:680,burn:9},nathan:{n:'efficient',th:960,gr:680,burn:6.5}};
 /* Fart Copter: the bear chased you into a cave and he is still coming. */
@@ -3300,6 +3382,7 @@ function drawPeeCave(){
 }
 function drawPee(){
   if(S.mode==='copter'){drawPeeCave();return}
+  if(S.mode==='cross'){drawPeeCross();return}
   if(S.mode==='fire'&&S.ff){drawPeeFire();return}
   ctx.save();ctx.translate(0,oy);
   const ly=GY+4,v=PZ.v,t=pT,bot=viewH-oy+20,winter=pzWinter();
@@ -4991,6 +5074,7 @@ const SFX=(()=>{
     cone(k){const r=Math.pow(1.06,Math.min(k||0,10));tone(880*r,.05,'square',.05);tone(1320*r,.08,'square',.05,null,.05)},
     isMuted(){return muted},
     hit(){noise(.18,.3,300,1.2);tone(140,.16,'triangle',.14,70)},
+    honk(){tone(430,.12,'sawtooth',.05,360);tone(410,.16,'sawtooth',.05,320,.16)},
     hopb(){tone(460,.05,'square',.035,720)},
     thunk(){tone(170,.08,'triangle',.12,110);noise(.05,.08,600,1.5)},
     splash(){noise(.45,.28,1600,1.2,0,500);tone(300,.2,'sine',.05,120)},
@@ -5621,7 +5705,7 @@ function renderLeader(){
 function showModes(){
   screen('modeScr');const box=$('modeList');box.innerHTML='';
   let arcH=false;for(const m of MODES){
-    if(m.arcade&&!arcH){arcH=true;box.appendChild(el('div','shopsec','Arcade'))}
+    if(m.arcade)continue;
     const b=el('button','modebtn');b.type='button';b.setAttribute('aria-pressed',String(m.id===runMode));
     const t=el('div');t.append(el('b',null,m.name),el('span',null,m.desc));b.appendChild(t);
     if(m.id==='fire'){const fb=[['blaze','Torch'],['lava','Lava'],['ride','Ride']];if(fb.some(([k])=>modeBest['fire_'+k])){const st=el('i','fstack');for(const [k,nm2] of fb){const ln=el('span');ln.append(nm2+' ',el('b',null,modeBest['fire_'+k]?modeBest['fire_'+k].toLocaleString():'\u2014'));st.appendChild(ln)}b.appendChild(st)}}
