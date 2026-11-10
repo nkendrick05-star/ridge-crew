@@ -391,6 +391,42 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
 .playrow .btn.big{width:100%}
 .modepick{font-size:.95rem;padding:10px 12px;min-width:96px}
 .overcard{max-width:420px;width:min(100%,420px);gap:10px}
+.overcard{--acc:var(--amber);position:relative;overflow:hidden;background:radial-gradient(120% 60% at 50% 0%,color-mix(in srgb,var(--acc) 15%,transparent),transparent 62%),var(--panel);border-color:color-mix(in srgb,var(--acc) 40%,var(--line));animation:ovPop .45s cubic-bezier(.2,1.35,.4,1) both}
+.okick{align-self:center;font:700 .66rem var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 45%,transparent);border-radius:999px;padding:3px 11px;background:rgba(0,0,0,.22);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.overcard h2{color:var(--acc);text-shadow:0 3px 0 rgba(0,0,0,.35),0 0 20px color-mix(in srgb,var(--acc) 40%,transparent);animation:ovDrop .5s .08s cubic-bezier(.2,1.5,.4,1) both;text-wrap:balance}
+.overcard .media{border:3px solid #0a0f0c;box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 35%,var(--line)),0 10px 20px rgba(0,0,0,.35);animation:ovIn .45s .12s both}
+.overcard .media::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.38));box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.overcard .mediabtn{z-index:2}
+.overcard .reason{text-align:left;padding:7px 10px 7px 12px;border-left:3px solid var(--acc);background:rgba(0,0,0,.2);border-radius:0 10px 10px 0;font-style:italic;color:var(--cream);opacity:.88;animation:ovIn .45s .18s both}
+.overcard .stats{grid-template-columns:1fr 1fr}
+.overcard .stat{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.08)),var(--panel2);border:1px solid rgba(255,255,255,.06);animation:ovIn .4s both}
+.overcard .stat.hero{grid-column:1/-1;padding:10px 6px 8px;animation-delay:.16s;overflow:hidden}
+.overcard .stat.hero b{font-size:2.6rem;line-height:1.05;color:var(--cream);letter-spacing:.02em}
+.overcard .stat:nth-child(2){animation-delay:.23s}.overcard .stat:nth-child(3){animation-delay:.3s}
+.overcard .stat .nb{display:none;position:absolute;top:0;right:0;font:700 .62rem var(--display);letter-spacing:.12em;color:#2a1408;background:linear-gradient(90deg,#ffd84a,#fff6c0,#ffd84a);background-size:200% 100%;padding:4px 9px;border-radius:0 11px 0 10px;animation:ovShine 1.6s linear infinite}
+.overcard.best .stat.hero{border-color:#ffd84a;box-shadow:0 0 0 1px #ffd84a,0 0 24px rgba(255,216,74,.25)}
+.overcard.best .stat .nb{display:block}.overcard.best .stat.hero b{color:#ffe68a}
+.overcard .chip2{border:1px solid rgba(255,255,255,.05);animation:ovIn .35s .36s both}
+.oxp{display:flex;align-items:center;gap:8px;font:700 .78rem var(--display);animation:ovIn .35s .42s both}
+.oxp .lv{color:var(--amber);white-space:nowrap}.oxp .gain{color:#9fd67a;white-space:nowrap}
+.oxp .bar{flex:1;height:10px;border-radius:99px;background:rgba(0,0,0,.38);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.oxp .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#7ac84a,#c6e36a);box-shadow:0 0 8px rgba(198,227,106,.5);transition:width 1.1s cubic-bezier(.2,.8,.2,1) .55s}
+.overcard .mline.bank{font-size:.82rem;color:var(--muted)}
+.overcard #again{display:flex;align-items:center;justify-content:center;gap:8px}
+.overcard #again::before,#over .frow.small .btn::before{content:"";flex:none;display:inline-block;width:1em;height:1em;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+#over .frow.small .btn::before{width:.95em;height:.95em;margin-right:6px;vertical-align:-1px}
+.overcard #again{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2a6 6 0 1 1-6 6h2a4 4 0 1 0 1.2-2.8L7 7H1V1l2.3 2.3A6 6 0 0 1 8 2z'/%3E%3C/svg%3E")}#over [data-home]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 1 7h2v8h4v-5h2v5h4V7h2z'/%3E%3C/svg%3E")}#overRanks{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1h8v2h3v2a4 4 0 0 1-4 4 4 4 0 0 1-2 2v2h3v2H4v-2h3v-2a4 4 0 0 1-2-2 4 4 0 0 1-4-4V3h3zm-1 4a2 2 0 0 0 1 1.7V5zm10 0h-1v1.7A2 2 0 0 0 13 5z'/%3E%3C/svg%3E")}#overShop{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 5V4a3 3 0 0 1 6 0v1h3l-1 10H3L2 5zm2 0h2V4a1 1 0 0 0-2 0z'/%3E%3C/svg%3E")}#shareBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0l4 4-1.4 1.4L9 3.8V10H7V3.8L5.4 5.4 4 4zM2 8h3v2H4v4h8v-4h-1V8h3v8H2z'/%3E%3C/svg%3E")}
+.overcard .frow{animation:ovIn .35s .46s both}
+.overcard #again{white-space:nowrap;flex:1.5;font-size:clamp(1rem,4.6vw,1.3rem);padding-inline:8px}.overcard #secondBtn{font-size:.82rem;line-height:1.15}
+.cf{position:absolute;top:-12px;width:6px;height:10px;border-radius:1px;pointer-events:none;z-index:3;animation:cfFall 2.4s cubic-bezier(.3,.6,.6,1) forwards}
+@keyframes cfFall{to{transform:translateY(560px) rotate(760deg);opacity:0}}
+@keyframes ovPop{from{transform:translateY(26px) scale(.96);opacity:0}}
+@keyframes ovDrop{from{transform:translateY(-14px) scale(1.18);opacity:0}}
+@keyframes ovIn{from{transform:translateY(8px);opacity:0}}
+@keyframes ovShine{to{background-position:-200% 0}}
+@media (max-height:540px){.overcard .stat.hero b{font-size:1.8rem}.overcard .stat.hero{padding:6px 6px 4px}.okick{display:none}.oxp{font-size:.7rem}.oxp .bar{height:8px}.overcard .reason{padding:4px 8px;font-size:.8rem}}
+@media (prefers-reduced-motion:reduce){.overcard,.overcard *{animation:none!important;transition:none!important}.cf{display:none}}
+
 .ocol{display:flex;flex-direction:column;gap:8px;min-width:0}
 .media{position:relative;border-radius:12px;overflow:hidden;border:2px solid var(--line);background:#0d1611}
 .media canvas{display:block;width:100%;aspect-ratio:200/112;max-height:28vh;object-fit:contain;image-rendering:pixelated}
@@ -594,21 +630,23 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
 
   <!-- Game over -->
   <div class="screen modal" id="over" hidden>
-    <div class="mcard overcard">
+    <div class="mcard overcard" id="overCard">
       <div class="ocol">
+        <div class="okick" id="overKick"></div>
         <h2 id="overTitle">Trip over</h2>
         <div class="media"><canvas id="overArt" width="200" height="112" aria-label="Game over scene"></canvas><button class="mediabtn" id="replayBtn" type="button">Watch replay</button></div>
         <p class="reason" id="reason"></p>
       </div>
       <div class="ocol">
         <div class="stats">
+          <div class="stat hero"><span class="nb">NEW BEST</span><b id="sScore">0</b><span>score</span></div>
           <div class="stat"><b id="sDist">0</b><span>meters</span></div>
           <div class="stat"><b id="sCones">0</b><span>pinecones</span></div>
-          <div class="stat"><b id="sScore">0</b><span>score</span></div>
         </div>
         <div class="chips2" id="chips"></div>
+        <div class="oxp"><span class="lv" id="oxpLv">Lv 1</span><div class="bar"><i id="oxpFill"></i></div><span class="gain" id="oxpGain">+0 XP</span></div>
         <p class="mline amber" id="bestLine"></p>
-        <p class="mline" id="bankLine"></p>
+        <p class="mline bank" id="bankLine"></p>
         <div class="frow"><button class="btn big" id="again" type="button">Play again</button><button class="btn ghost" id="secondBtn" type="button" hidden>Second chance</button></div>
         <div class="frow small">
           <button class="btn ghost" data-home type="button">Home</button>
@@ -3332,7 +3370,7 @@ function snakeUpdate(dt){
   h.x=nx;h.y=ny;h.f=sn.dir.slice();
   if(sn.grow>0){sn.grow--;const id=sn.order[sn.nextCrew]||SN_IDS[Math.floor(Math.random()*5)];sn.nextCrew++;sn.body.push({x:tx,y:ty,px:tx,py:ty,id,f:tail.f.slice()});sn.len=sn.body.length;sn.popT=.25;if(sn.len>=30)unlockBadge('ar_snake30');{const c=byId(id);sn.tags=sn.tags||[];const lt=sn.tags.length?sn.tags[sn.tags.length-1].t0:-9;if(c&&sn.nextCrew<=6)sn.tags.push({s:nm(c)+' joined!',x:tx,y:ty,t0:Math.max(S.t,lt+.5)});if(sn.len%10===0){sn.tags.push({s:'SPEED UP!  '+sn.len+' hikers',x:h.x,y:h.y,t0:Math.max(S.t,lt+.5),c:'#ffd84a'});SFX.sting&&SFX.sting();buzz(20)}}}
   if(sn.cone&&sn.cone.x===nx&&sn.cone.y===ny){sn.grow+=1;S.cones++;SFX.cone();snCone(sn);sn.flash=.1}
-  if(sn.gold&&sn.gold.x===nx&&sn.gold.y===ny){sn.grow+=5;S.cones+=5;SFX.badge&&SFX.badge();sn.gold=null;sn.flash=.25}
+  if(sn.gold&&sn.gold.x===nx&&sn.gold.y===ny){sn.golds=(sn.golds||0)+1;sn.grow+=5;S.cones+=5;SFX.badge&&SFX.badge();sn.gold=null;sn.flash=.25}
   if(sn.rare&&sn.rare.x===nx&&sn.rare.y===ny){const k=sn.rare.k;sn.rare=null;SFX.badge&&SFX.badge();buzz(25);sn.tags=sn.tags||[];if(k==='statue'){sn.noBear=10;sn.tags.push({s:'BEAR GONE! 10s',x:nx,y:ny,t0:S.t,c:'#ffd84a'})}else{sn.rev=6;sn.tags.push({s:'WHOA... controls flipped!',x:nx,y:ny,t0:S.t,c:'#ff8ae0'})}}
   S.dist=sn.len*30;S.stats.clears=sn.len;
 }
@@ -3441,7 +3479,7 @@ function copterUpdate(dt){
   c.spd=118+Math.min(40,S.dist/200);const mv=c.spd*dt;S.dist+=mv;
   const inCave=S.dist+LX>CAVE_IN+20;c.flapT=Math.max(0,(c.flapT||0)-dt);
   if(c.flap&&(c.started||true)){c.flap=0;c.started=1;
-    if(c.fuel>0){{const iv=S.t-(c.lastFlap||-9);c.lastFlap=S.t;if(iv>.16&&iv<.6&&Math.abs(iv-(c.lastIv||0))<.13)c.rh=Math.min(40,(c.rh||0)+1);else c.rh=Math.max(0,(c.rh||0)-3);c.lastIv=iv;const nm2=1+Math.min(3,Math.floor((c.rh||0)/6));if(nm2>=4)unlockBadge('ar_rhythm');if(nm2>(c.mult||1)){say('RHYTHM x'+nm2+'!',LX,c.y-34,'#c8a8f0');SFX.sting&&SFX.sting()}c.mult=nm2}c.vy=-st.fl;c.fuel=Math.max(0,c.fuel-st.cost);c.flapT=.18;SFX.fart(S.leader.id,.3,.32);if(inCave)setTimeout(()=>{if(S&&S.mode==='copter')SFX.fart(S.leader.id,.1,.32)},170);
+    if(c.fuel>0){{const iv=S.t-(c.lastFlap||-9);c.lastFlap=S.t;if(iv>.16&&iv<.6&&Math.abs(iv-(c.lastIv||0))<.13)c.rh=Math.min(40,(c.rh||0)+1);else c.rh=Math.max(0,(c.rh||0)-3);c.lastIv=iv;const nm2=1+Math.min(3,Math.floor((c.rh||0)/6));if(nm2>=4)unlockBadge('ar_rhythm');c.maxMult=Math.max(c.maxMult||1,nm2);if(nm2>(c.mult||1)){say('RHYTHM x'+nm2+'!',LX,c.y-34,'#c8a8f0');SFX.sting&&SFX.sting()}c.mult=nm2}c.vy=-st.fl;c.fuel=Math.max(0,c.fuel-st.cost);c.flapT=.18;SFX.fart(S.leader.id,.3,.32);if(inCave)setTimeout(()=>{if(S&&S.mode==='copter')SFX.fart(S.leader.id,.1,.32)},170);
       for(let i=0;i<7;i++)c.puffs.push({x:LX-8,y:c.y-6,vx:-50-Math.random()*50-c.spd*.3,vy:40+Math.random()*50,r:2+Math.random()*2.5,t:0,h:(c.mult||1)>1?(S.t*300+i*45)%360:null})}
     else if(!c.emptyMsg){c.emptyMsg=1;say('Out of gas!',LX,c.y-30,'#ff8a5a')}}
   if(c.fuel>0)c.emptyMsg=0;
@@ -3484,7 +3522,7 @@ function copterUpdate(dt){
   if(S.invuln<=0)for(const h of c.hawks){if(!h.hitDone&&Math.abs(h.x-lx)<9&&Math.abs(h.yy-(c.y-9))<9){h.hitDone=1;if(hit('A bat got tangled in your hair.'))return}}
   for(const k of c.cols)if(!k.passed&&k.x+k.w<px0){k.passed=1;S.stats.clears++;c.lag=Math.min(1,c.lag+.07);c.spires=(c.spires||0)+1;c.popT=.35;SFX.tap();if(c.peeAt!=null&&c.spires>=c.peeAt+3)unlockBadge('ar_cavepee')}
   for(const it of c.items){if(it.got)continue;if(S.leader.id==='stache'&&it.k==='cone'){const dx=lx-it.x,dy=c.y-9-it.y,d2=Math.hypot(dx,dy);if(d2<48){it.x+=dx/d2*160*dt;it.y+=dy/d2*160*dt}}
-    if(Math.abs(it.x-lx)<10&&Math.abs(it.y-(c.y-9))<12){it.got=1;if(it.k==='gem'){unlockBadge('ar_gem');S.cones+=25;SFX.badge&&SFX.badge();say('CAVE GEM! +25',LX,c.y-34,'#7af0e0');buzz(30)}else if(it.k==='cone'){S.cones+=c.mult||1;SFX.cone()}else{c.fuel=Math.min(100,c.fuel+38);SFX.chomp();say('Beans! +gas',LX,c.y-30,'#c6e36a')}}}
+    if(Math.abs(it.x-lx)<10&&Math.abs(it.y-(c.y-9))<12){it.got=1;if(it.k==='gem'){unlockBadge('ar_gem');c.gems=(c.gems||0)+1;S.cones+=25;SFX.badge&&SFX.badge();say('CAVE GEM! +25',LX,c.y-34,'#7af0e0');buzz(30)}else if(it.k==='cone'){S.cones+=c.mult||1;SFX.cone()}else{c.fuel=Math.min(100,c.fuel+38);SFX.chomp();say('Beans! +gas',LX,c.y-30,'#c6e36a')}}}
   c.cols=c.cols.filter(k=>k.x>S.dist-60);c.items=c.items.filter(i=>!i.got&&i.x>S.dist-40);c.hawks=c.hawks.filter(h=>h.x>S.dist-40);
 }
 function caveRow(seed,f,sp,fn){const d=S.dist*f;for(let i=Math.floor(d/sp)-1;i*sp-d<W+sp;i++)fn(i,hash(i*1.37+seed),Math.round(i*sp-d))}
@@ -6782,10 +6820,23 @@ function showOver(){
   else if(S.mode==='fire'){chip('still holding on',1+S.crew.length+S.drag.length);chip('branches',S.ducked);chip('jumps',S.stats.jumps);chip('version','Bear ride')}
   else if(S.mode==='bear'){chip('chomped',S.chomps+'/5');chip('time',S.winTime?Math.round(S.winTime)+'s':Math.round(S.t)+'s');chip('double chomps',S.doubles||0);chip('snacks eaten',S.snacksEaten||0)}
   else if(S.mode==='uphill'&&S.upMax){const cs=(S.upNext||0)-(S.summited?1:0);chip('summit',S.summited?'yes!':'not yet');chip('camps',Math.max(0,Math.min(4,cs)));chip('distance',Math.floor(S.dist/12)+' m');chip('no bears',S.saved)}
+  else if(S.mode==='odyssey'&&S.od){const o=S.od;chip('stunts',o.stunts||0);chip('top zone',['Trailhead','Switchbacks','Bridge','Summit','Clouds'][Math.max(0,o.zone)]||'Trailhead');chip('van level',['od_eng','od_top','od_tire','od_sus','od_dur','od_tank'].reduce((a,k)=>a+(ups[k]||0),0));chip('tickets',arcTix('odyssey',o.m))}
+  else if(S.mode==='cross'&&S.rx){const R=S.rx;chip('all-time',Math.max(modeBest.cross||0,R.best));chip('risky grabs',R.risky||0);chip('hiker',(XSKINS.find(q=>q.id===(equip.xskin||''))||{}).id?XSKINS.find(q=>q.id===equip.xskin).n.split(' ').pop():nm(S.leader));chip('tickets',arcTix('cross',R.best))}
+  else if(S.mode==='copter'&&S.cp){const c=S.cp;chip('all-time',Math.max(modeBest.copter||0,c.spires||0));chip('best rhythm','x'+(c.maxMult||1));chip('gems',c.gems||0);chip('tickets',arcTix('copter',c.spires||0))}
+  else if(S.mode==='snake'&&S.sn){const sn=S.sn;chip('all-time',Math.max(modeBest.snake||0,sn.len));chip('golden',sn.golds||0);chip('time',Math.round(S.t)+'s');chip('tickets',arcTix('snake',sn.len))}
   else{chip('jumps',S.stats.jumps);chip('no bears',S.saved);chip('close calls',S.stats.near);chip('top biome',top?top[0].split(' ')[0]:'Pine')}
   if(S.mode==='bear')$('bestLine').textContent=(S.win?(S.newBestT?'NEW FASTEST CATCH! '+S.winTime.toFixed(1)+'s':'Caught all five in '+S.winTime.toFixed(1)+'s \u00B7 fastest '+fmtB('bear_t',modeBest.bear_t)):'Catch all five to get a time'+(modeBest.bear_t?' \u00B7 fastest '+fmtB('bear_t',modeBest.bear_t):''))+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
   else $('bestLine').textContent=(isBest?'New '+(S.mode==='classic'?'':S.mode==='fire'?FF_INFO[S.ff].name+' ':MODES.find(m=>m.id===S.mode).name+' ')+'best!':'Best score: '+prevMode.toLocaleString())+(res.levelUp?'   Level up! Lv '+res.levelUp:'');
-  $('bankLine').textContent='+'+gained+' pinecones, +'+res.gain+' XP. You have '+wallet+' pinecones.';
+  $('bankLine').textContent='+'+gained+' pinecones  ·  '+wallet.toLocaleString()+' in your pouch';
+  {const oc=$('overCard'),ACC={eaten:'#ff7a5a',skunk:'#b8d860',fall:'#f2a541',crew:'#f2a541',solo:'#f2a541',lava:'#ff8a3a',fizzle:'#ff8a3a',ride:'#ff8a3a',creek:'#6ac0f0',lake:'#6ac0f0',odyssey:'#ffb03a',copter:'#c8a0f8',snake:'#aad751',squash:'#dfe6ee',eagle:'#f0c870',bearwin:'#9fd67a',bearlose:'#c8b0f0'};
+    oc.style.setProperty('--acc',S.caught?'#ff7a5a':(ACC[S.dtype]||'#f2a541'));
+    const arc=['cross','odyssey','copter','snake'].includes(S.mode),md=S.daily?'Daily Ridge #'+S.daily.num:S.mode==='fire'?FF_INFO[S.ff].name:((MODES.find(m=>m.id===S.mode)||{}).name||'Classic');
+    $('overKick').textContent=(arc?'Arcade · ':'')+md+(S.leader&&S.mode!=='bear'?' · '+nm(S.leader)+(arc?'':' led'):'');
+    oc.classList.toggle('best',!!(isBest||S.newBestT));
+    for(const q of oc.querySelectorAll('.cf'))q.remove();
+    if(isBest||S.newBestT){const cols=['#ffd84a','#ff7a5a','#7ac84a','#6ac0f0','#c8a0f8','#fff6c0'];for(let i=0;i<26;i++){const c=el('i','cf');c.style.left=(Math.random()*100)+'%';c.style.background=cols[i%cols.length];c.style.animationDelay=(.3+Math.random()*.9)+'s';c.style.transform='rotate('+Math.round(Math.random()*180)+'deg)';oc.appendChild(c)}}
+    const L=lvlInfo(xp),k1=Math.min(1,L.into/L.need),k0=res.levelUp?0:Math.max(0,(L.into-res.gain)/L.need),fill=$('oxpFill');
+    $('oxpLv').textContent='Lv '+L.L;$('oxpGain').textContent='+'+res.gain+' XP';fill.style.transition='none';fill.style.width=(k0*100)+'%';void fill.offsetWidth;fill.style.transition='';requestAnimationFrame(()=>{fill.style.width=(k1*100)+'%'})}
   const cost=100,can=S.mode!=='bear'&&S.mode!=='fire'&&S.revives===0&&S.dtype!=='bearwin';
   $('secondBtn').hidden=!can;$('secondBtn').textContent='Second chance (100)';$('secondBtn').disabled=wallet<cost;
   overView='art';artT=0;repT=0;$('replayBtn').hidden=REP.n<10||S.mode==='copter'||S.mode==='cross'||S.mode==='snake'||S.mode==='odyssey';$('replayBtn').textContent='Watch replay';
