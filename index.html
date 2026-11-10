@@ -856,6 +856,7 @@ const PACKS=[
  {need:'ff_burn',id:'airtank',name:'Air tank',price:900,color:'#9a9ea4',deco:'tank'},
  {need:'ff_swing',id:'fireproof',name:'Fireproof pack',price:840,color:'#c8ccd0',deco:'shine',lvl:3},
  {need:'ff_mallow',id:'mallowpack',name:"S'mores pack",price:660,color:'#3a6cc0',deco:'mallow'},
+ {need:'cf_mallow',id:'goldmallow',name:"Golden s'more stick",price:400,color:'#c89a3a',deco:'mallow'},
  {id:'banjo',name:"Henry's banjo",price:780,color:'#6f747a',deco:'banjo',who:'camo'},
  {id:'spikeball',name:'Spikeball set',price:720,color:'#3a6cc0',deco:'spike',who:'curly'},
  {id:'napillow',name:'Nap pillow',price:540,color:'#25282b',deco:'pillow',who:'patch'},
@@ -971,7 +972,8 @@ const PETS=[
  {id:'squirrel',name:'Squirrel',price:900,desc:'Fast, twitchy, loyal-ish.'},
  {id:'duck',name:'Duckling',price:1200,desc:'Imprinted on the leader.'},
  {id:'coon',name:'Raccoon',price:1500,desc:'The hitchhiker stayed.'},
- {id:'cub',name:'Bear cub',price:2400,lvl:5,desc:'Its mom is the bear. Probably fine.'}
+ {id:'cub',name:'Bear cub',price:2400,lvl:5,desc:'Its mom is the bear. Probably fine.'},
+ {id:'owl',name:'Owl',price:0,badge:'cf_owl',secret:'cf_owl',desc:'Followed you home from camp.'}
 ];
 function drawCrown(g,x,y){x=Math.round(x);y=Math.round(y);px(g,'#f2c03a',x-3,y,7,2);px(g,'#f2c03a',x-3,y-2,1,2);px(g,'#f2c03a',x,y-3,1,3);px(g,'#f2c03a',x+3,y-2,1,2);px(g,'#fff1a8',x-2,y,1,1);px(g,'#c0392b',x,y,1,1)}
 function drawPet(g,id,x,y,t,air){
@@ -979,6 +981,8 @@ function drawPet(g,id,x,y,t,air){
   if(id==='squirrel'){px(g,'#8a5a2e',x-3,y-5,6,4);px(g,'#8a5a2e',x+2,y-7,3,3);px(g,'#1a1210',x+4,y-6,1,1);px(g,'#a8703a',x-6,y-10,3,6);px(g,'#a8703a',x-7,y-12,3,3);px(g,'#c89058',x-6,y-11,1,4);px(g,'#5a3a1e',x-2+ph,y-1,1,1);px(g,'#5a3a1e',x+1-ph,y-1,1,1);return}
   if(id==='duck'){px(g,'#f2d23a',x-3,y-5,6,4);px(g,'#f2d23a',x+1,y-8,3,3);px(g,'#ffe680',x-2,y-5,3,1);px(g,'#1a1210',x+3,y-7,1,1);px(g,'#f08a2a',x+4,y-6,2,1);px(g,'#f08a2a',x-1+ph,y-1,1,1);px(g,'#f08a2a',x+1-ph,y-1,1,1);return}
   if(id==='coon'){px(g,'#7d7a73',x-4,y-6,8,4);px(g,'#8f8a80',x+2,y-8,4,4);px(g,'#1d1d1d',x+3,y-7,3,1);px(g,'#e8e2d0',x+5,y-6,1,1);px(g,'#7d7a73',x-8,y-6,4,2);px(g,'#3a3a3a',x-7,y-6,1,2);px(g,'#3a3a3a',x-5,y-6,1,2);px(g,'#4a4844',x-3+ph,y-2,1,2);px(g,'#4a4844',x+2-ph,y-2,1,2);return}
+  if(id==='owl'){const fl=Math.floor((t||performance.now()/1000)*8)%2,fy=y-5;px(g,'#4a3624',x-3,fy-7,7,8);px(g,'#6a5034',x-2,fy-6,5,6);px(g,'#a88a60',x-1,fy-3,3,3);px(g,'#4a3624',x-3,fy-9,2,2);px(g,'#4a3624',x+2,fy-9,2,2);px(g,'#f4d35e',x-2,fy-6,2,2);px(g,'#f4d35e',x+1,fy-6,2,2);px(g,'#1a1210',x-1,fy-5,1,1);px(g,'#1a1210',x+2,fy-5,1,1);px(g,'#d8a040',x,fy-4,1,1);
+    if(fl){px(g,'#3a2a1a',x-6,fy-8,3,2);px(g,'#3a2a1a',x+4,fy-8,3,2)}else{px(g,'#3a2a1a',x-5,fy-4,2,3);px(g,'#3a2a1a',x+4,fy-4,2,3)}px(g,'#d8a040',x-1,fy+1,1,1);px(g,'#d8a040',x+1,fy+1,1,1)}
   if(id==='cub'){px(g,'#6b4428',x-5,y-7,9,5);px(g,'#6b4428',x+2,y-9,5,5);px(g,'#6b4428',x+2,y-10,1,1);px(g,'#6b4428',x+5,y-10,1,1);px(g,'#9a7048',x+5,y-7,2,2);px(g,'#1a1210',x+6,y-7,1,1);px(g,'#1a1210',x+4,y-8,1,1);px(g,'#4a2e1a',x-4+ph,y-2,2,2);px(g,'#4a2e1a',x+1-ph,y-2,2,2);return}
 }
 /* pet physics: looks ahead, hops obstacles, leaps gaps and rivers, lands with gravity */
@@ -3529,7 +3533,7 @@ function campGeom(){const r=campRect(),k=Math.max(1,Math.floor(Math.min(r.w/140,
 function campPoke(x,y){
   const G=campGeom(),apt=styleOf('home')==='apt',fx=apt?G.cx+61*G.k:G.cx,fy=apt?G.gy-86*G.k:G.gy-10*G.k,rad=(apt?16:20)*G.k;
   if(Math.hypot(x-fx,y-fy)>rad)return false;
-  const now=performance.now()/1000;if(now-pokeT>2.2)pokeN=0;pokeT=now;pokeN++;campFlare=Math.min(1.4,campFlare+.45);SFX.crackle&&SFX.crackle();
+  const now=performance.now()/1000;if(now-pokeT>2.2)pokeN=0;pokeT=now;pokeN++;campFlare=Math.min(1.4,campFlare+.45);if(pokeN===3&&typeof campSay==='function')campSay(pick([0,1,3,4]),"dude, you're gonna burn the forest down");SFX.crackle&&SFX.crackle();
   for(let i=0;i<6+pokeN*3;i++)sparks.push({x:(Math.random()-.5)*10,y:-12,vx:(Math.random()-.5)*30,vy:-20-Math.random()*30,life:1+Math.random()});
   if(pokeN>=5){pokeN=0;for(let i=0;i<50;i++)sparks.push({x:(Math.random()-.5)*12,y:-14,vx:(Math.random()-.5)*70,vy:-30-Math.random()*50,life:1.4+Math.random()});
     const was=snakeOK();SNAKE_ON=true;try{save('rc_snake','1')}catch(e){}SFX.badge&&SFX.badge();toast(was?'The woods are quiet... for now.':'Something rustles in the woods...');}
@@ -5548,7 +5552,22 @@ function drawHikerFront(g,c,x,y,mouth){
   if(c.stick){px(g,'#5a5048',x+8,y-15,1,15);px(g,'#9a948c',x+8,y-16,1,2);px(g,'#2a2420',x+8,y-9,1,1)}
   if(c.flames&&!PXC){const ft=(typeof S!=='undefined'&&S?S.t:performance.now()/1000),fk=Math.floor(ft*12)%2;px(g,'#ff7a2a',x-4,y-2-fk,2,2);px(g,'#ffd166',x-4,y-1,1,1);px(g,'#ff7a2a',x+2,y-3+fk,2,2);px(g,'#ffd166',x+3,y-1,1,1)}
 }
-const sparks=[],smokes=[],leaves=[];let laughId=-1,laughT=0,bearEyes=0,bearEyesSide=1,chatT=0,chatNext=6,chatI=0,chatLine='',owlBlink=0;
+const sparks=[],smokes=[],leaves=[];
+/* ---------- campfire secrets + things to poke ---------- */
+let CAMP={};try{CAMP=JSON.parse(localStorage.getItem('rc_camp')||'{}')||{}}catch(e){}
+const campSave=()=>{try{save('rc_camp',JSON.stringify(CAMP))}catch(e){}};
+let CAMP_HITS=[],campTexts=[],owlPuff=0,owlSpin=0,hootT=0,eyesHit=0,eyesHX=0,eyesHY=0,mallowOff=[0,0],mallowFx=[],flyCaught={},starFx=null,campStarAt=0,coolerT=0,coonT=0,petWake=0,campDay=Math.floor(Date.now()/864e5);
+const CAMP_SECRETS=['owl','eyes','mallow','jar','star','visit'],VISITORS=['fox','elk','skunk','raccoon'];
+const CREW_LINES={patch:["Bro I'm gonna tickle you",'bro I am SO tired','Boggs out.','who wants Catan after this','AI is ruining everything'],
+  curly:['No.','8-ball rematch. Now.','spikeball tomorrow?',"I'm undefeated, by the way","that's not how you play Euchre"],
+  camo:['RAAAGH','*weird noise*','I could climb that tree','best hike EVER','banjo song? banjo song.'],
+  stache:['the acoustics out here are insane','that mic would sound SO good here','ugh. guys.','*deep masculine grunt*','Fortnite later?'],
+  nathan:['clanker sympathizer? me?','Euchre after this?','Hew Stu forever',"who's down for Catan",'one more story']};
+function campFound(k){CAMP.found=CAMP.found||{};if(CAMP.found[k])return;CAMP.found[k]=1;campSave();if(CAMP_SECRETS.every(s=>CAMP.found[s]))setTimeout(()=>{if(badges.cf_all)return;unlockBadge('cf_all');wallet+=500;persist();toast('Campfire Legend! +500 pinecones')},1400)}
+function campSay(i,line){chatI=i;chatLine=line;chatT=2.8;chatNext=Math.max(chatNext,8)}
+function campText(x,y,s,c){campTexts.push({x,y,s,c:c||'#fff3dc',t:0})}
+
+let laughId=-1,laughT=0,bearEyes=0,bearEyesSide=1,chatT=0,chatNext=6,chatI=0,chatLine='',owlBlink=0;
 const CAMP_CHAT=['anyone hear that?','pass the s\'mores','who\'s on breakfast?','one more story','the bear\'s not real','my legs are toast','same time tomorrow?','that one\'s burnt','who packed the bug spray?','look at the stars, man','is it my turn to tell one?','nobody fart near the fire'];
 function campRect(){
   const f=document.getElementById(STORY?'fireSpot2':'fireSpot');if(!f)return{x:0,y:0,w:cw,h:ch};
@@ -5663,7 +5682,7 @@ function drawCamp(t){
   const r=campRect();
   const k=Math.max(1,Math.floor(Math.min(r.w/140,r.h/78)*2)/2);
   const cx=Math.round(r.x+r.w/2),gy=Math.round(r.y+r.h/2+26*k);
-  ARC_HIT=null;
+  ARC_HIT=null;CAMP_HITS=[];
   if(!STORY&&styleOf('home')==='apt'){drawApt(t,dt,r,k,cx,gy);return}
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
   const hz=gy-24*k,flk=1+Math.sin(t*9)*.05+Math.sin(t*23)*.04;
@@ -5702,10 +5721,18 @@ function drawCamp(t){
   {const bough=(x,y,len,dir,c)=>{ctx.fillStyle=c;const n=Math.max(3,Math.round(len/(9*k)));ctx.fillRect(Math.min(x,x+dir*len),Math.round(y-k*.6),len,Math.max(1,Math.round(k*1.2)));
      for(let j=0;j<n;j++){const f=j/n,bx=x+dir*len*f,by=y+f*f*10*k,sw=(1-f*.6)*12*k,sh=(1-f*.5)*14*k;ctx.beginPath();ctx.moveTo(bx-sw*.2,by-sh*.25);ctx.lineTo(bx+dir*sw,by+sh*.15);for(let q=0;q<=4;q++){ctx.lineTo(bx+dir*sw*(1-q/4)+(q%2?0:dir*k),by+sh*(.5+(q%2?.5:.3)))}ctx.lineTo(bx-dir*sw*.3,by+sh*.4);ctx.closePath();ctx.fill()}};
    for(let i=0;i<5;i++){const sd=i%2?1:-1,y=hash(i*3.1)*cTop*.7,len=(40+hash(i*1.7)*50)*k;bough(sd<0?-6:cw+6,y,len,-sd,i<3?'#05090a':'#080d10')}}
-  // an owl on a branch, blinking now and then
-  {const u=Math.max(2,Math.round(k*1.1)),ox=Math.round(cx-58*k),oy2=Math.round(hz-62*k);owlBlink-=1/60;if(owlBlink<-3.5-hash(Math.floor(t))*3)owlBlink=.18;
-   const O=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(ox+x*u,oy2+y*u,w*u,h*u)};O(-8,4,20,2,'#1a120c');O(-1,-6,8,10,'#4a3624');O(0,-5,6,8,'#6a5034');O(1,-1,4,4,'#8a7050');O(-1,-8,2,2,'#4a3624');O(5,-8,2,2,'#4a3624');
-   if(owlBlink>0){O(1,-4,2,1,'#2a1a10');O(4,-4,2,1,'#2a1a10')}else{O(1,-5,2,2,'#f4d35e');O(4,-5,2,2,'#f4d35e');O(2,-4,1,1,'#000');O(4,-4,1,1,'#000')}O(3,-3,1,1,'#d8a040');O(1,4,1,1,'#d8a040');O(4,4,1,1,'#d8a040')}
+  // a rare shooting star through the gaps up top: tap it for pinecones
+  if(!STORY){if(!starFx&&t-campStarAt>22&&Math.random()<dt*.06){campStarAt=t;starFx={x:cw*(.35+Math.random()*.6),y:r.y+20+Math.random()*Math.max(20,hz*.3),t:0}}
+    if(starFx){const sf=starFx;sf.t+=dt;if(sf.t>1.8)starFx=null;else{const px2=sf.x-sf.t*120,py2=sf.y+sf.t*48;for(let q=0;q<14;q++){ctx.globalAlpha=(1-q/14)*Math.min(1,(1.8-sf.t)*2);ctx.fillStyle=q<2?'#ffffff':'#cfe3ff';ctx.fillRect(Math.round(px2+q*3),Math.round(py2-q*1.2),Math.max(2,k*.8),Math.max(1,k*.6))}ctx.globalAlpha=1;
+      CAMP_HITS.push({x:px2,y:py2,r:30,fn:()=>{starFx=null;wallet+=25;persist();SFX.win&&SFX.win();campText(px2,py2,'+25','#ffd166');campSay(2,'WHOA did you see that?!');campFound('star')}})}}}
+  // an owl on a branch: tap it (a lot)
+  {const u=Math.max(2,Math.round(k*1.1)),ox=Math.round(cx-58*k),oy2=Math.round(hz-62*k);owlBlink-=dt;if(owlBlink<-3.5-hash(Math.floor(t))*3)owlBlink=.18;owlPuff=Math.max(0,owlPuff-dt);owlSpin=Math.max(0,owlSpin-dt);hootT=Math.max(0,hootT-dt);
+   const pf=owlPuff>0?1:0,O=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(ox+x*u,oy2+y*u,w*u,h*u)};O(-8,4,20,2,'#1a120c');O(-1-pf,-6-pf,8+pf*2,10+pf,'#4a3624');O(0-pf,-5-pf,6+pf*2,8+pf,'#6a5034');O(1,-1,4,4,'#8a7050');O(-1-pf,-8-pf,2,2,'#4a3624');O(5+pf,-8-pf,2,2,'#4a3624');
+   const back=owlSpin>0&&Math.floor(owlSpin*10)%4<2;
+   if(back){O(0,-5,6,4,'#5a4028')}else if(owlBlink>0){O(1,-4,2,1,'#2a1a10');O(4,-4,2,1,'#2a1a10')}else{O(1,-5,2,2,'#f4d35e');O(4,-5,2,2,'#f4d35e');O(2,-4,1,1,'#000');O(4,-4,1,1,'#000')}if(!back)O(3,-3,1,1,'#d8a040');O(1,4,1,1,'#d8a040');O(4,4,1,1,'#d8a040');
+   if(hootT>0){ctx.globalAlpha=Math.min(1,hootT*2);ctx.font='700 '+Math.round(6*k)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#e8dcc0';ctx.fillText('hoo',ox+3*u,oy2-12*u-(1-hootT)*6*k);ctx.globalAlpha=1}
+   if(!STORY)CAMP_HITS.push({x:ox+3*u,y:oy2-1*u,r:10*u,fn:()=>{CAMP.owl=(CAMP.owl||0)+1;campSave();owlPuff=.35;owlSpin=.6;hootT=1;SFX.tap&&SFX.tap();
+     if(CAMP.owl===25&&!badges.cf_owl){unlockBadge('cf_owl');setTimeout(()=>toast('The owl wants to come with you! Owl pet unlocked in the Store'),1600);campFound('owl')}else if(CAMP.owl>25&&CAMP.owl%10===0)campText(ox+3*u,oy2-16*u,'hoo hoo!')}})}
   // forest floor
   const gg=ctx.createLinearGradient(0,hz,0,gy+20*k);gg.addColorStop(0,'#141b13');gg.addColorStop(1,'#120f0b');
   ctx.fillStyle=gg;ctx.fillRect(0,hz,cw,ch-hz);
@@ -5724,11 +5751,11 @@ function drawCamp(t){
   ctx.fillStyle='#0e160f';
   for(let i=0;i<26;i++){const x=Math.round(hash(i*6.1)*cw);if(Math.abs(x-cx)<70*k)continue;const h=(5+hash(i+3)*7)*k;
     for(let j=-2;j<=2;j++){ctx.beginPath();ctx.moveTo(x,hz+3*k);ctx.lineTo(x+j*3*k,hz+3*k-h*(1-Math.abs(j)*.25));ctx.lineTo(x+j*3*k+k,hz+3*k);ctx.fill()}}
-  if(!STORY){const u=k*.42;drawArcCab(t,Math.round(cx-40*k-10*u),Math.round(hz+2*k),u);ctx.setTransform(dpr,0,0,dpr,0,0)}
+  if(!STORY){const u=k*.42;drawArcCab(t,Math.round(cx+40*k-10*u),Math.round(hz+2*k),u,true);ctx.setTransform(dpr,0,0,dpr,0,0)}
   // fireflies
   for(let i=0;i<9;i++){
     const fx=r.x+r.w*(.08+hash(i*3.3)*.84)+Math.sin(t*.6+i*2)*18,fy=r.y+r.h*(.15+hash(i*7.1)*.5)+Math.cos(t*.45+i)*12,a=Math.max(0,Math.sin(t*1.3+i*1.9));
-    if(a<.05)continue;ctx.fillStyle='rgba(214,242,122,'+(a*.9).toFixed(2)+')';ctx.fillRect(Math.round(fx),Math.round(fy),2,2);
+    if(a<.05||(flyCaught[i]||0)>t)continue;if(!STORY)CAMP_HITS.push({x:fx,y:fy,r:16,fn:()=>{flyCaught[i]=t+18;CAMP.flies=(CAMP.flies||0)+1;campSave();SFX.cone&&SFX.cone();campText(fx,fy-6,CAMP.flies<50?CAMP.flies+' / 50':'+1','#d6f27a');if(CAMP.flies===50&&!badges.cf_jar){unlockBadge('cf_jar');setTimeout(()=>toast('Firefly jar unlocked! Tap the lantern'),1600);campFound('jar')}}});ctx.fillStyle='rgba(214,242,122,'+(a*.9).toFixed(2)+')';ctx.fillRect(Math.round(fx),Math.round(fy),2,2);
     ctx.fillStyle='rgba(214,242,122,'+(a*.18).toFixed(2)+')';ctx.fillRect(Math.round(fx)-2,Math.round(fy)-2,6,6);
   }
   const fl=1+Math.sin(t*9)*.04+Math.sin(t*23)*.03;
@@ -5736,7 +5763,10 @@ function drawCamp(t){
   ctx.fillStyle=gl;ctx.fillRect(cx-140*k,gy-140*k,280*k,210*k);
   // bear eyes in the dark woods
   bearEyes-=dt;if(bearEyes<-9-Math.random()*8){bearEyes=2.2;bearEyesSide=Math.random()<.5?-1:1}
-  if(bearEyes>0&&Math.floor(t*3)%5!==0){const ex=Math.round(cx+bearEyesSide*Math.min(cw/2-20,110*k)),ey=Math.round(gy-22*k);ctx.fillStyle='#f4d35e';ctx.fillRect(ex,ey,Math.max(2,k*1.5),Math.max(2,k*1.5));ctx.fillRect(ex+5*k,ey,Math.max(2,k*1.5),Math.max(2,k*1.5))}
+  eyesHit=Math.max(0,eyesHit-dt);if(eyesHit>0){ctx.globalAlpha=Math.min(1,eyesHit*2);ctx.font='700 '+Math.round(6*k)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillStyle='#e8c8a0';ctx.fillText('*grumble*',eyesHX,eyesHY-(1.4-eyesHit)*8*k);ctx.globalAlpha=1}
+  if(bearEyes>0&&Math.floor(t*3)%5!==0){const ex=Math.round(cx+bearEyesSide*63*k),ey=Math.round(gy-36*k),es=Math.max(2,k*1.5);const eg=ctx.createRadialGradient(ex+2.5*k,ey,1,ex+2.5*k,ey,8*k);eg.addColorStop(0,'rgba(244,211,94,.35)');eg.addColorStop(1,'rgba(244,211,94,0)');ctx.fillStyle=eg;ctx.fillRect(ex-8*k,ey-8*k,20*k,16*k);ctx.fillStyle='#f4d35e';ctx.fillRect(ex,ey,es,es);ctx.fillRect(ex+5*k,ey,es,es);
+    if(!STORY)CAMP_HITS.push({x:ex+2.5*k,y:ey,r:11*k,fn:()=>{bearEyes=0;eyesHit=1.4;eyesHX=ex+2.5*k;eyesHY=ey-6*k;CAMP.eyes=(CAMP.eyes||0)+1;campSave();SFX.hit&&SFX.hit();campSay(pick([0,1,3,4]),pick(['was that the bear?!','did something just growl?','nope. nope nope.']));
+      if(CAMP.eyes===10&&!badges.cf_eyes){unlockBadge('cf_eyes');wallet+=200;persist();setTimeout(()=>toast('Bear Spotter! +200 pinecones'),1600);campFound('eyes')}}})}
   // scene units: origin = fire base
   ctx.setTransform(dpr*k,0,0,dpr*k,dpr*cx,dpr*gy);
   const ids=STORY?['patch','curly','nathan','camo','stache']:seatIds(),C=ids.map(byId);
@@ -5750,6 +5780,9 @@ function drawCamp(t){
   else if(SEASON==='fall'){for(let i=0;i<26;i++){const x=Math.round((hash(i*4.1)-.5)*190),y=Math.round(-2+hash(i*2.2)*14);if(Math.abs(x)<16)continue;px(ctx,['#d9622b','#e8a03a','#b8322e'][i%3],x,y,2,1)}}
   else if(SEASON==='spring'){for(let i=0;i<12;i++){const x=Math.round((hash(i*5.1)-.5)*190),y=Math.round(hash(i*2.7)*12);if(Math.abs(x)<30)continue;px(ctx,'#3f7a35',x,y-2,1,2);px(ctx,['#f29ac0','#f2d36a','#ffffff'][i%3],x-1,y-3,3,1)}}
   drawCampTent(styleOf('tent'));
+  if(!STORY){const kind=VISITORS[campDay%4],ph=(t%46)/14;if(ph<1){const vx=110-ph*220,vy=-24;ctx.save();ctx.translate(vx,vy);ctx.scale(.7,.7);ctx.globalAlpha=.9;try{beast(ctx,kind,0,0,-1,{t,f:Math.floor(t*8)})}catch(e){}ctx.restore();ctx.globalAlpha=1;
+    CAMP_HITS.push({x:cx+vx*k,y:gy+(vy-5)*k,r:12*k,fn:()=>{if(CAMP.visitDay===campDay){campText(cx+vx*k,gy+(vy-14)*k,'see you tomorrow');return}CAMP.visitDay=campDay;CAMP.seen=CAMP.seen||{};CAMP.seen[kind]=1;campSave();wallet+=50;persist();SFX.win&&SFX.win();campText(cx+vx*k,gy+(vy-14)*k,'+50','#ffd166');toast('A '+(kind==='raccoon'?'raccoon':kind)+' stopped by camp! +50 pinecones');
+      if(VISITORS.every(v=>CAMP.seen[v])&&!badges.cf_visit){setTimeout(()=>unlockBadge('cf_visit'),1600);campFound('visit')}}})}}
   // back log + center guy
   px(ctx,'#4a2e17',-13,-22,26,4);px(ctx,'#6b4423',-13,-22,26,1);
   drawHikerFront(ctx,C[2],0,-20+bob(2),laughId===2&&laughT>0);
@@ -5786,38 +5819,52 @@ function drawCamp(t){
   drawHiker(ctx,C[3],-27,bob(3),0,false,'sit');
   drawHiker(ctx,C[4],-48,bob(4),0,false,'sit');
   ctx.restore();
-  // cooler, mid-right, in the fire's light with a soft shadow behind it
-  {ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(44,17,11,2,0,0,6.283);ctx.fill();
-   px(ctx,'#1d1a17',31,6,17,11);px(ctx,'#2a7ab0',32,7,15,9);px(ctx,'#e8eef2',32,7,15,3);px(ctx,'#ffffff',32,7,15,1);px(ctx,'#c8d0d6',37,5,5,2);px(ctx,'#1e5a86',32,14,15,2);px(ctx,'#5aa0d0',32,10,1,4);px(ctx,'rgba(255,150,70,.35)',32,7,4,9)}
-  {const pt=equip.pet;if(pt&&pt!=='none'&&!STORY){outlined(ctx,()=>drawPet(ctx,pt,-24,9,0,false));ctx.font='700 5px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';for(let z=0;z<2;z++){const kk=(t*.4+z/2)%1;ctx.globalAlpha=Math.sin(kk*Math.PI)*.8;ctx.fillStyle='#fff3dc';ctx.fillText('z',-22+kk*6,-2-kk*10)}ctx.globalAlpha=1}}
+  // cooler, mid-right: tap it for a drink (or a surprise)
+  {coolerT=Math.max(0,coolerT-dt);coonT=Math.max(0,coonT-dt);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(44,17,11,2,0,0,6.283);ctx.fill();
+   const open=coolerT>0||coonT>0,front=()=>{px(ctx,'#1d1a17',31,9,17,8);px(ctx,'#2a7ab0',32,9,15,7);px(ctx,'#1e5a86',32,14,15,2);px(ctx,'#5aa0d0',32,10,1,4);px(ctx,'rgba(255,150,70,.35)',32,9,4,7)};
+   px(ctx,'#1d1a17',31,6,17,11);px(ctx,'#2a7ab0',32,7,15,9);if(open)px(ctx,'#0e2a3a',32,7,15,2);
+   if(coonT>0){const rise=Math.min(1,(2.4-coonT)*4,coonT*3);drawPet(ctx,'coon',41,Math.round(10-rise*5),0,false)}
+   front();
+   if(open){px(ctx,'#1d1a17',30,-1,18,4);px(ctx,'#e8eef2',31,0,16,2);px(ctx,'#ffffff',31,0,16,1);px(ctx,'#c8d0d6',37,-2,5,2)}else{px(ctx,'#e8eef2',32,7,15,3);px(ctx,'#ffffff',32,7,15,1);px(ctx,'#c8d0d6',37,5,5,2)}
+   if(coolerT>0&&coonT<=0){const kk=1-coolerT/1.2,cxn=40-kk*14,cyn=6-Math.sin(kk*Math.PI)*16;px(ctx,'#c8262a',Math.round(cxn),Math.round(cyn),3,4);px(ctx,'#e8e8e8',Math.round(cxn),Math.round(cyn),3,1)}
+   if(!STORY)CAMP_HITS.push({x:cx+39*k,y:gy+10*k,r:10*k,fn:()=>{if(open)return;SFX.tap&&SFX.tap();if(Math.random()<1/6){coonT=2.4;campSay(3,"THERE'S A RACCOON IN THE COOLER")}else{coolerT=1.2;campSay(pick([1,3]),pick(['*psst* ahh','thanks bro','ice cold']))}}})}
+  {const pt=equip.pet;petWake=Math.max(0,petWake-dt);if(pt&&pt!=='none'&&!STORY){if(petWake>0){const hop=Math.round(Math.abs(Math.sin(petWake*7))*5),fl2=Math.floor(petWake*3)%2;ctx.save();ctx.translate(-24,0);if(fl2)ctx.scale(-1,1);outlined(ctx,()=>drawPet(ctx,pt,0,9-hop,t,hop>0));ctx.restore()}
+    else{outlined(ctx,()=>drawPet(ctx,pt,-24,9,0,false));ctx.font='700 5px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';for(let z=0;z<2;z++){const kk=(t*.4+z/2)%1;ctx.globalAlpha=Math.sin(kk*Math.PI)*.8;ctx.fillStyle='#fff3dc';ctx.fillText('z',-22+kk*6,-2-kk*10)}ctx.globalAlpha=1}
+    CAMP_HITS.push({x:cx-24*k,y:gy+4*k,r:9*k,fn:()=>{if(petWake>0)return;petWake=2.2;SFX.tap&&SFX.tap()}})}}
   yawnNext-=dt;if(yawnNext<=0&&yawnT<=0){yawnI=pick([0,1,3,4]);yawnT=1.6;yawnNext=9+Math.random()*9}
   if(yawnT>0){yawnT-=dt;const yx=[-48,-27,0,27,48][yawnI],sk=look(C[yawnI]).skin,up=Math.min(1,(1.6-yawnT)*3,yawnT*3);px(ctx,sk,yx-6,Math.round(-14-6*up),2,Math.round(4+4*up));px(ctx,sk,yx+4,Math.round(-14-6*up),2,Math.round(4+4*up));
     ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.globalAlpha=up;ctx.fillStyle='#ffe9b8';ctx.fillText('*yawn*',yx,-34);ctx.globalAlpha=1}
   // marshmallow sticks
   const stick=(x0,y0,x1,y1,tt)=>{const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let s=0;s<=n;s++)px(ctx,'#6b4423',Math.round(x0+(x1-x0)*s/n),Math.round(y0+(y1-y0)*s/n),1,1);
-    const toast=(Math.sin(t*.35+tt)+1)/2;px(ctx,toast>.75?'#c98b3a':toast>.45?'#f2d29a':'#ffffff',Math.round(x1)-1,Math.round(y1)-1,3,3)};
+    const si=tt?1:0,tv=(Math.sin(t*.35+tt+mallowOff[si])+1)/2;px(ctx,tv>.9?'#2a1a10':tv>.62?'#c98b3a':tv>.4?'#f2d29a':'#ffffff',Math.round(x1)-1,Math.round(y1)-1,3,3);
+    if(!STORY)CAMP_HITS.push({x:cx+x1*k,y:gy+y1*k,r:7*k,fn:()=>{const who=si?3:1;mallowOff[si]=-Math.PI/2-(t*.35+tt);
+      if(tv>.62&&tv<=.9){CAMP.mstreak=(CAMP.mstreak||0)+1;campSave();mallowFx.push({x:x1,y:y1,k:'gold',t:0});SFX.cone&&SFX.cone();campText(cx+x1*k,gy+(y1-6)*k,CAMP.mstreak<10?'perfect x'+CAMP.mstreak:'perfect!','#ffd166');campSay(who,pick(['golden brown. beautiful.','now THAT is a marshmallow','chef\'s kiss']));
+        if(CAMP.mstreak>=10&&!badges.cf_mallow){unlockBadge('cf_mallow');setTimeout(()=>toast("Golden s'more stick unlocked in the Closet"),1600);campFound('mallow')}}
+      else if(tv>.9){CAMP.mstreak=0;campSave();mallowFx.push({x:x1,y:y1,k:'fire',t:0});SFX.hit&&SFX.hit();campSay(who,"that one's toast")}
+      else{CAMP.mstreak=0;campSave();campSay(who,'still raw, bro')}}})};
   stick(-22,-8+bob(1),-6,-17,0);stick(22,-8+bob(3),6,-18,2);
+  for(let i=mallowFx.length-1;i>=0;i--){const m=mallowFx[i];m.t+=dt;if(m.t>.8){mallowFx.splice(i,1);continue}if(m.k==='gold'){for(let q=0;q<6;q++){const a=q/6*6.283+m.t*3,rr=2+m.t*10;ctx.globalAlpha=1-m.t/.8;px(ctx,'#ffd166',Math.round(m.x+Math.cos(a)*rr),Math.round(m.y+Math.sin(a)*rr),1,1)}}else{ctx.globalAlpha=1-m.t/.8;drawFlame(ctx,m.x,m.y+2,6*(1-m.t),t,7)}ctx.globalAlpha=1}
+  // tap a crew member and they say something
+  if(!STORY)[[-48,-12,0],[-27,-12,1],[0,-32,2],[27,-12,3],[48,-12,4]].forEach(([x,y,i])=>CAMP_HITS.push({x:cx+x*k,y:gy+y*k,r:9*k,fn:()=>{const c=C[i],L2=CREW_LINES[c.id]||CREW_LINES.nathan;SFX.tap&&SFX.tap();campSay(i,pick(L2))}}));
   // laughing text
   if(laughT>0&&laughId>=0){
     const pos=[[-48,-30],[-27,-30],[0,-51],[27,-30],[48,-30]][laughId];
     ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#ffe9b8';
     ctx.globalAlpha=Math.min(1,laughT*2);ctx.fillText(STORY?'...':'haha',pos[0],pos[1]-Math.round((1.4-laughT)*4));ctx.globalAlpha=1;
   }
-  // lantern up front on a flat rock, closest thing to the viewer
-  {const lf=.88+Math.sin(t*5)*.06+Math.sin(t*13)*.03,LX2=-52,LY=22;
-   const pool=ctx.createRadialGradient(LX2,LY,1,LX2,LY,26);pool.addColorStop(0,'rgba(255,190,100,'+(.5*lf).toFixed(3)+')');pool.addColorStop(1,'rgba(255,200,120,0)');ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(LX2,LY);ctx.scale(1,.32);ctx.translate(-LX2,-LY);ctx.fillStyle=pool;ctx.fillRect(LX2-26,LY-26,52,52);ctx.restore();
-   const halo=ctx.createRadialGradient(LX2,LY-11,1,LX2,LY-11,20);halo.addColorStop(0,'rgba(255,200,110,'+(.55*lf).toFixed(3)+')');halo.addColorStop(1,'rgba(255,210,130,0)');ctx.globalCompositeOperation='lighter';ctx.fillStyle=halo;ctx.fillRect(LX2-20,LY-31,40,40);ctx.globalCompositeOperation='source-over';
+  // lantern up front on a flat rock, closest thing to the viewer: tap to switch it
+  {const LX2=-52,LY=22,lm=CAMP.lamp||'lamp',lf=.88+Math.sin(t*5)*.06+Math.sin(t*13)*.03;
+   if(lm!=='off'){const jc=lm==='jar'?'170,240,120':'255,190,100',pool=ctx.createRadialGradient(LX2,LY,1,LX2,LY,26);pool.addColorStop(0,'rgba('+jc+','+(.5*lf).toFixed(3)+')');pool.addColorStop(1,'rgba('+jc+',0)');ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(LX2,LY);ctx.scale(1,.32);ctx.translate(-LX2,-LY);ctx.fillStyle=pool;ctx.fillRect(LX2-26,LY-26,52,52);ctx.restore();ctx.globalCompositeOperation='source-over'}
    px(ctx,'#2a2826',LX2-9,LY-1,18,4);px(ctx,'#4a4744',LX2-8,LY-2,16,2);px(ctx,'#6e6a64',LX2-7,LY-2,11,1);
    const L=(x,y,w,h,c)=>px(ctx,c,LX2+x,LY-2+y,w,h);
-   L(-4,-2,9,2,'#2a2a2a');L(-3,-3,7,1,'#4a4a4a');
-   L(-3,-11,7,8,'#ffe9a8');L(-2,-10,5,6,'#fff6d8');L(-1,-8,3,3,'#ffd060');L(0,-7,1,2,'#ff9a3a');
-   L(-4,-11,1,8,'#3a3a3a');L(4,-11,1,8,'#3a3a3a');L(0,-11,1,8,'rgba(40,40,40,.55)');
-   L(-4,-13,9,2,'#2a2a2a');L(-2,-15,5,2,'#3a3a3a');L(-1,-16,3,1,'#2a2a2a');
-   for(let q=0;q<7;q++){const a=Math.PI*(q/6);L(Math.round(Math.cos(a)*-4),Math.round(-17-Math.sin(a)*3),1,1,'#4a4a4a')}}
+   if(lm==='jar'){L(-4,-12,9,10,'#1d2a20');L(-3,-11,7,9,'rgba(160,210,190,.35)');L(-4,-14,9,2,'#8a6a3a');L(-3,-15,7,1,'#a8844a');for(let q=0;q<5;q++){if(Math.sin(t*3+q*1.7)>-.2)L(-2+Math.round((Math.sin(t*.9+q*2)+1)*2.5),-10+Math.round((Math.cos(t*.7+q*3)+1)*3.5),1,1,'#e6ff8a')}}
+   else{L(-4,-2,9,2,'#2a2a2a');L(-3,-3,7,1,'#4a4a4a');L(-3,-11,7,8,lm==='off'?'#2a2e30':'#ffe9a8');if(lm!=='off'){L(-2,-10,5,6,'#fff6d8');L(-1,-8,3,3,'#ffd060');L(0,-7,1,2,'#ff9a3a')}else L(-2,-10,2,6,'rgba(200,220,230,.25)');
+     L(-4,-11,1,8,'#3a3a3a');L(4,-11,1,8,'#3a3a3a');L(0,-11,1,8,'rgba(40,40,40,.55)');L(-4,-13,9,2,'#2a2a2a');L(-2,-15,5,2,'#3a3a3a');L(-1,-16,3,1,'#2a2a2a');for(let q=0;q<7;q++){const a=Math.PI*(q/6);L(Math.round(Math.cos(a)*-4),Math.round(-17-Math.sin(a)*3),1,1,'#4a4a4a')}}
+   if(!STORY)CAMP_HITS.push({x:cx+LX2*k,y:gy+(LY-10)*k,r:10*k,fn:()=>{const order=badges.cf_jar?['lamp','jar','off']:['lamp','off'];CAMP.lamp=order[(order.indexOf(lm)+1)%order.length];campSave();SFX.tap&&SFX.tap()}})}
   // crew chatter: a little bubble now and then
   if(!STORY){chatNext-=dt;if(chatNext<=0&&chatT<=0){chatI=pick([0,1,2,3,4]);chatLine=pick(CAMP_CHAT);chatT=2.8;chatNext=10+Math.random()*10}
     if(chatT>0){chatT-=dt;const pos=[[-48,-34],[-27,-34],[0,-55],[27,-34],[48,-34]][chatI],a=Math.min(1,(2.8-chatT)*5,chatT*3);ctx.globalAlpha=Math.max(0,a);ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-      const w=Math.ceil(ctx.measureText(chatLine).width)+8,bx=Math.round(Math.max(-96+w/2,Math.min(96-w/2,pos[0]))-w/2),by=pos[1]-10;px(ctx,'#1d1a17',bx-1,by-1,w+2,11);px(ctx,'#fff8e8',bx,by,w,9);px(ctx,'#fff8e8',pos[0]-1,by+9,3,2);px(ctx,'#1d1a17',pos[0]-2,by+9,1,2);px(ctx,'#1d1a17',pos[0]+2,by+9,1,2);
+      const w=Math.ceil(ctx.measureText(chatLine).width)+8,lim=Math.min(96,cw/2/k-4),bx=Math.round(Math.max(-lim+w/2,Math.min(lim-w/2,pos[0]))-w/2),by=pos[1]-10;px(ctx,'#1d1a17',bx-1,by-1,w+2,11);px(ctx,'#fff8e8',bx,by,w,9);px(ctx,'#fff8e8',pos[0]-1,by+9,3,2);px(ctx,'#1d1a17',pos[0]-2,by+9,1,2);px(ctx,'#1d1a17',pos[0]+2,by+9,1,2);
       ctx.fillStyle='#1d1a17';ctx.fillText(chatLine,bx+w/2,by+5);ctx.globalAlpha=1}}
   // warm light wash over the crew
   ctx.globalCompositeOperation='lighter';
@@ -5849,11 +5896,15 @@ function drawCamp(t){
     if(SEASON==='winter')ctx.fillStyle='rgba(240,246,255,.8)',ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,k*.7),Math.max(1,k*.7));else{ctx.fillStyle=['#d9622b','#e8a03a','#b8322e'][i%3];ctx.fillRect(Math.round(x),Math.round(y),Math.round(2*k*.7),Math.max(1,Math.round(k*.6)))}}}
   // light falls off away from the fire
   {ctx.globalCompositeOperation='multiply';const fo=ctx.createRadialGradient(cx,gy-10*k,40*k,cx,gy-10*k,Math.max(cw,ch)*.75);fo.addColorStop(0,'rgb(255,255,255)');fo.addColorStop(1,'rgb(120,120,165)');ctx.fillStyle=fo;ctx.fillRect(0,0,cw,ch);ctx.globalCompositeOperation='source-over'}
-  // the lantern makes its own light, so it stays bright after the falloff
-  {ctx.setTransform(dpr*k,0,0,dpr*k,dpr*cx,dpr*gy);const lf=.88+Math.sin(t*5)*.06+Math.sin(t*13)*.03,LX2=-52,LY=20;
-   ctx.globalCompositeOperation='lighter';const h2=ctx.createRadialGradient(LX2,LY-9,1,LX2,LY-9,16);h2.addColorStop(0,'rgba(255,190,100,'+(.4*lf).toFixed(3)+')');h2.addColorStop(1,'rgba(255,170,80,0)');ctx.fillStyle=h2;ctx.fillRect(LX2-16,LY-25,32,32);ctx.globalCompositeOperation='source-over';
-   const L=(x,y,w,h,c)=>px(ctx,c,LX2+x,LY+y,w,h);L(-3,-11,7,8,'#ffe9a8');L(-2,-10,5,6,'#fff6d8');L(-1,-8,3,3,'#ffd060');L(0,-7,1,2,'#ff9a3a');L(-4,-11,1,8,'#3a3a3a');L(4,-11,1,8,'#3a3a3a');L(0,-11,1,8,'rgba(40,40,40,.4)');
-   ctx.setTransform(dpr,0,0,dpr,0,0)}
+  // the lantern makes its own light, so it stays bright after the falloff (or the night gets darker when it's off)
+  {const lm=CAMP.lamp||'lamp';if(lm==='off'&&!STORY){ctx.fillStyle='rgba(4,6,16,.22)';ctx.fillRect(0,0,cw,ch);ctx.globalCompositeOperation='lighter';for(let i=0;i<40;i++){const x=Math.round(hash(i*7.3)*cw),y=Math.round(hash(i*3.9)*hz*.35),a=.3+.5*Math.abs(Math.sin(t*(.5+hash(i))+i));ctx.fillStyle='rgba(255,250,230,'+a.toFixed(2)+')';ctx.fillRect(x,y,Math.max(1,k*.6|0),Math.max(1,k*.6|0))}ctx.globalCompositeOperation='source-over'}
+   else if(!STORY){ctx.setTransform(dpr*k,0,0,dpr*k,dpr*cx,dpr*gy);const lf=.88+Math.sin(t*5)*.06+Math.sin(t*13)*.03,LX2=-52,LY=20,jc=lm==='jar'?'170,240,120':'255,190,100';
+    ctx.globalCompositeOperation='lighter';const h2=ctx.createRadialGradient(LX2,LY-9,1,LX2,LY-9,16);h2.addColorStop(0,'rgba('+jc+','+(.4*lf).toFixed(3)+')');h2.addColorStop(1,'rgba('+jc+',0)');ctx.fillStyle=h2;ctx.fillRect(LX2-16,LY-25,32,32);ctx.globalCompositeOperation='source-over';
+    const L=(x,y,w,h,c)=>px(ctx,c,LX2+x,LY+y,w,h);if(lm==='jar'){for(let q=0;q<5;q++){if(Math.sin(t*3+q*1.7)>-.2)L(-2+Math.round((Math.sin(t*.9+q*2)+1)*2.5),-10+Math.round((Math.cos(t*.7+q*3)+1)*3.5),1,1,'#f0ffb0')}}
+    else{L(-3,-11,7,8,'#ffe9a8');L(-2,-10,5,6,'#fff6d8');L(-1,-8,3,3,'#ffd060');L(0,-7,1,2,'#ff9a3a');L(-4,-11,1,8,'#3a3a3a');L(4,-11,1,8,'#3a3a3a');L(0,-11,1,8,'rgba(40,40,40,.4)')}
+    ctx.setTransform(dpr,0,0,dpr,0,0)}}
+  // little floating texts from taps
+  for(let i=campTexts.length-1;i>=0;i--){const q=campTexts[i];q.t+=dt;if(q.t>1.4){campTexts.splice(i,1);continue}ctx.globalAlpha=Math.min(1,(1.4-q.t)*2);ctx.font='700 '+Math.round(6.5*k)+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='rgba(10,8,6,.8)';ctx.fillText(q.s,q.x+1,q.y-q.t*14*k+1);ctx.fillStyle=q.c;ctx.fillText(q.s,q.x,q.y-q.t*14*k)}ctx.globalAlpha=1;
 }
 
 /* ---------- the arcade cabinet in the woods ---------- */
@@ -5861,9 +5912,9 @@ const ARCADE_LOCK=true,ARCADE_LV=3;let ARC_HIT=null;
 const arcadeOpen=()=>!ARCADE_LOCK||modeOk('arcade');
 function arcHit(x,y,w,h){const mw=Math.max(w,46),mh=Math.max(h,46);ARC_HIT={x:x+w/2-mw/2,y:y+h/2-mh/2,w:mw,h:mh}}
 /* an old cabinet half swallowed by the woods behind the crew: firelit, mossy, the screen just barely glowing */
-function drawArcCab(t,X,BY,u){
+function drawArcCab(t,X,BY,u,flip){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
-  const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(X+x*u),Math.round(BY+y*u),Math.max(1,Math.round(w*u)),Math.max(1,Math.round(h*u)))},on=arcadeOpen(),fl=Math.random()<.015?.3:1;
+  const R=(x,y,w,h,c)=>{if(flip)x=20-x-w;ctx.fillStyle=c;ctx.fillRect(Math.round(X+x*u),Math.round(BY+y*u),Math.max(1,Math.round(w*u)),Math.max(1,Math.round(h*u)))},on=arcadeOpen(),fl=Math.random()<.015?.3:1;
   arcHit(X,BY-40*u,20*u,40*u);
   if(on){const g=ctx.createRadialGradient(X+10*u,BY-25*u,2*u,X+10*u,BY-25*u,26*u);g.addColorStop(0,'rgba(90,200,230,'+(.13*fl)+')');g.addColorStop(1,'rgba(90,200,230,0)');ctx.fillStyle=g;ctx.fillRect(X-20*u,BY-55*u,60*u,60*u)}
   /* body, mostly in shadow, warm on the side facing the fire */
@@ -5937,7 +5988,7 @@ function showArcade(){
   const fade=()=>box.classList.toggle('more',box.scrollHeight-box.scrollTop-box.clientHeight>6);box.onscroll=fade;requestAnimationFrame(fade);
 }
 document.getElementById('arcNav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;SFX.tap();arcView(b.dataset.v)});
-document.getElementById('home').addEventListener('click',e=>{if(e.target.closest('button,a,input'))return;const b=cv.getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top,h=ARC_HIT;if(h&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){showArcade();return}campPoke(x,y)});
+document.getElementById('home').addEventListener('click',e=>{if(e.target.closest('button,a,input'))return;const b=cv.getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top,h=ARC_HIT;if(h&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){showArcade();return}for(let i=CAMP_HITS.length-1;i>=0;i--){const q=CAMP_HITS[i];if(Math.hypot(x-q.x,y-q.y)<=q.r){q.fn();return}}campPoke(x,y)});
 /* ---------- loop ---------- */
 let last=performance.now(),snackShown=false;
 function frame(now){
@@ -6311,6 +6362,12 @@ const BADGES=[
  {id:'ar_gem',ic:'GEM',name:'Spelunker',desc:'Find a cave gem in Fart Copter'},
  {id:'ar_snake30',ic:'30',name:'Conga Line',desc:'Grow a 30-hiker line in Snake Trail'},
  {id:'ar_all',ic:'ALL',name:'Arcade Rat',desc:'Play all four arcade games'},
+ {id:'cf_owl',ic:'HOO',name:'Night Owl',desc:'Make a friend in the trees above camp'},
+ {id:'cf_eyes',ic:'EYES',name:'Bear Spotter',desc:'Catch the eyes in the woods 10 times'},
+ {id:'cf_mallow',ic:'GOLD',name:'Golden Brown',desc:'Roast 10 perfect marshmallows in a row'},
+ {id:'cf_jar',ic:'JAR',name:'Jar of Stars',desc:'Catch 50 fireflies at camp'},
+ {id:'cf_visit',ic:'HI',name:'Campfire Regulars',desc:'Meet all four camp visitors'},
+ {id:'cf_all',ic:'CAMP',name:'Campfire Legend',desc:'Find every secret around the campfire'},
  {id:'dr_first',ic:'#1',name:'First Ridge',desc:'Play your first official Daily Ridge'},
  {id:'dr_camp',ic:'TENT',name:'Made Camp',desc:'Reach the ridge line on a Daily Ridge'},
  {id:'dr_streak3',ic:'3D',name:'On a Roll',desc:'Play the Daily Ridge 3 days in a row'},
@@ -7211,7 +7268,7 @@ function petBanner(){const c=document.createElement('canvas');c.width=200;c.heig
 function renderPetShop(up){
   up.appendChild(petBanner());
   up.appendChild(el('div','shopsec','Pets run alongside your leader (and your bear).'));
-  for(const pt of PETS){const face=petTile(pt.id);
+  for(const pt of PETS){if(pt.secret&&!badges[pt.secret])continue;const face=petTile(pt.id);
     up.appendChild(pickRow(pt,(equip.pet||'none')===pt.id,()=>{equip.pet=pt.id},'pet_',face))}
 }
 function renderStyleShop(up){
