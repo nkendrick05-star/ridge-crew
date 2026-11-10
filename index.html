@@ -3214,7 +3214,13 @@ function drawPeeOdyssey(){
 }
 
 /* ---------- unlocks: modes by level or milestone, themed gear by badge, and a big reveal when something opens up ---------- */
-const MODE_REQ={night:{lvl:2},solo:{lvl:3},uphill:{lvl:4},bear:{fn:()=>(LIFE.eaten||0)>=5,txt:'Get eaten by the bear 5 times',prog:()=>Math.min(5,LIFE.eaten||0)+' / 5'},fire:{badge:'meters1500'},arcade:{badge:'meters500'},copter:{badge:'gut5'},odyssey:{badge:'up_camp'}};
+const bestRunM=()=>Math.max(0,...Object.values((typeof bestDist!=='undefined'&&bestDist)||{}).map(v=>+v||0));
+const MODE_REQ={night:{lvl:3},solo:{lvl:5},uphill:{lvl:7},
+ bear:{fn:()=>(LIFE.eaten||0)>=15,txt:'Get eaten by the bear 15 times',prog:()=>Math.min(15,LIFE.eaten||0)+' / 15'},
+ fire:{fn:()=>bestRunM()>=2000,txt:'Run 2,000 m in one run',prog:()=>Math.min(2000,bestRunM()).toLocaleString()+' / 2,000 m'},
+ arcade:{fn:()=>bestRunM()>=1000,txt:'Run 1,000 m in one run',prog:()=>Math.min(1000,bestRunM()).toLocaleString()+' / 1,000 m'},
+ copter:{fn:()=>(LIFE.farts||0)>=50,txt:'Stop 50 farts (all-time)',prog:()=>Math.min(50,LIFE.farts||0)+' / 50'},
+ odyssey:{badge:'up_high'}};
 function modeOk(id){if(id==='arcade'){if(['cross','copter','odyssey','snake'].some(k=>modeBest[k]))return true}else if(modeBest[id]||(id==='fire'&&['fire_blaze','fire_lava','fire_ride'].some(k=>modeBest[k]))||(id==='bear'&&modeBest.bear_t))return true;
   const r=MODE_REQ[id];if(!r)return true;if(r.lvl)return level()>=r.lvl;if(r.badge)return !!badges[r.badge];if(r.fn)return r.fn();return true}
 function modeReq(id){const r=MODE_REQ[id]||{};if(r.lvl)return 'Reach level '+r.lvl;if(r.badge){const b=BADGES.find(x=>x.id===r.badge);return (b?b.desc:'Earn a badge')+(b?'  ('+b.name+' badge)':'')}return r.txt||''}
@@ -5805,7 +5811,7 @@ function arcArt(id,cv){
 }
 function arcCart(id){const L=ARC_LBL[id]||['#3a2a50','#24183a'],sh=el('span','cshell');sh.style.setProperty('--c1',L[0]);sh.style.setProperty('--c2',L[1]);const cv=document.createElement('canvas');try{arcArt(id,cv)}catch(e){console.error(e)}sh.append(cv,el('i','gl'));return sh}
 function showArcade(){
-  if(!arcadeOpen()){toast('Out of order. '+modeReq('arcade').replace(/  \(.*\)$/,'')+' to fix it.');return}
+  if(!arcadeOpen()){toast('Out of order. '+modeReq('arcade')+' to fix it ('+modeProg('arcade')+').');return}
   SFX.tap();screen('arcScr');showArcBoard(false);const box=$('arcList');box.innerHTML='';box.scrollTop=0;
   for(const m of MODES.filter(m=>m.arcade&&(m.id!=='snake'||snakeOK()))){if(!modeOk(m.id)){const lk=el('div','cart locked');const tx=el('div');tx.append(el('b',null,m.name),el('span',null,'Locked. '+modeReq(m.id)));const sh=arcCart(m.id);sh.style.filter='grayscale(1) brightness(.6)';lk.append(sh,tx);box.appendChild(lk);continue}const b=el('button','cart');b.type='button';
     const tx=el('div');tx.append(el('b',null,m.name),el('span',null,m.desc));if(modeBest[m.id])tx.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
