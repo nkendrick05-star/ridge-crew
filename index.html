@@ -453,7 +453,10 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
 .frow .btn{flex:1;min-width:0}
 .frow .btn.big{font-size:1.35rem;padding:12px 6px}
 .frow.small .btn{padding:10px 2px;font-size:.92rem}
-.modelist{display:flex;flex-direction:column;gap:6px;text-align:left}
+.modelist{display:flex;flex-direction:column;gap:6px;text-align:left;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 4px 10px 0;scrollbar-width:thin;-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 22px),transparent)}
+.modelist>*{flex:none}
+.mcard:has(.modelist){height:min(600px,100%)}
+.mcard:has(.modelist)>h2,.mcard:has(.modelist)>.btn{flex:none}
 .modebtn i.fstack{display:flex;flex-direction:column;align-items:flex-end;gap:0;flex:none;line-height:1.2;font-size:.66rem;white-space:nowrap;margin:-2px 0}
 .modebtn i.fstack span{display:block;font:500 .64rem var(--display);color:var(--muted);line-height:1.25}
 .modebtn i.fstack b{font:700 .72rem var(--display);color:var(--amber)}
