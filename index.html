@@ -3011,7 +3011,7 @@ function drawPeeCave(){
   eye(ex-12);eye(ex+12);
   const bp=t%13;if(bp>7&&bp<9.5){const k=Math.min(1,(bp-7)*2,(9.5-bp)*2);ctx.globalAlpha=k*.85;const bx=Math.round(W*.82),by=GY-40;px(ctx,'#ff4a2a',bx-6,by,3,2);px(ctx,'#ff4a2a',bx+4,by,3,2);ctx.globalAlpha=1;if(bp>8.7&&bp<9.5){ctx.globalAlpha=.5;ctx.fillStyle='#fff3dc';ctx.font='700 7px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.fillText('...',ex,ey-14);ctx.globalAlpha=1}}
   ctx.restore();
-  SFX.setPee(.55+.15*Math.sin(t*3));
+  const pv=.75+.15*Math.sin(t*3);SFX.peeSurface('ground');SFX.setPee(pv);SFX.peeVoice(0,pv);
 }
 function drawPee(){
   if(S.mode==='copter'){drawPeeCave();return}
