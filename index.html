@@ -3132,9 +3132,22 @@ function drawPeeOdyssey(){
 const OD_GARAGE=[{k:'od_eng',n:'Engine',d:'Acceleration. Climb hills you used to stall on'},{k:'od_top',n:'Transmission',d:'Higher top speed'},{k:'od_tire',n:'Tires',d:'Traction on steep hills, mud, ice and snow'},{k:'od_sus',n:'Handling',d:'Harder to flip, better control in the air'},{k:'od_dur',n:'Roof cage',d:'The roof survives hits so you can roll back over'},{k:'od_tank',n:'Gas tank',d:'Holds more gas'}],OD_COST=[30,60,100,160,240,340,460,600],OD_MAXLV=8;
 const XSKINS=[{id:'',n:'Your leader',price:0},
  {id:'ranger',n:'Park Ranger',price:300,c:{id:'x_ranger',def:'Ranger',hat:'tan',hatC:'#7a6a3a',brim:'#5a4a2a',hair:'#3a2a1e',shirt:'#7a7a4a',pants:'#4a4a32',pack:'#3a4a2e',skin:'#e8b890',stache:true}},
- {id:'tank',n:'Tank-top Henry',price:250,c:{id:'x_tank',def:'Henry',hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#f8f8f4',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'}},
+ {id:'tank',n:'Tank-top Henry',price:250,c:{id:'x_tank',def:'Henry',jacked:1,hat:'camo',hatC:'#5f6448',brim:'#454a33',hair:'#4a3424',shirt:'#f8f8f4',pants:'#4d4a44',pack:'#6f747a',skin:'#ebb38e'}},
  {id:'coon',n:'Trash Panda',price:450,c:{id:'x_coon',def:'Raccoon',animal:'raccoon'}},
  {id:'goose',n:'The Goose',price:600,c:{id:'x_goose',def:'Goose',animal:'goose'}}];
+/* Tank-top Henry is JACKED: wrap the three hiker views and bolt on the guns */
+{const D0=drawHiker,B0=drawHikerBack,F0=drawHikerFront,sk=c=>c.skin||'#ebb38e',dk='rgba(0,0,0,.22)',hl='rgba(255,255,255,.28)';
+ drawHiker=function(g,c,x,y,t,air,pose){D0(g,c,x,y,t,air,pose);if(!c||!c.jacked||pose==='sit')return;x=Math.round(x);y=Math.round(y);const S2=sk(c);
+   px(g,S2,x-7,y-16,3,7);px(g,dk,x-7,y-16,1,7);
+   px(g,c.shirt,x-5,y-16,10,9);px(g,dk,x-4,y-12,7,1);px(g,dk,x,y-11,1,3);px(g,S2,x-1,y-16,3,2);
+   if(air){px(g,S2,x+4,y-16,5,4);px(g,S2,x+5,y-24,4,8);px(g,S2,x+4,y-27,5,3);px(g,dk,x+8,y-24,1,8);px(g,hl,x+5,y-22,1,3)}
+   else{px(g,S2,x+4,y-16,5,4);px(g,S2,x+5,y-13,5,5);px(g,S2,x+6,y-9,3,3);px(g,dk,x+9,y-13,1,5);px(g,hl,x+6,y-12,2,1);px(g,dk,x+5,y-9,4,1)}};
+ drawHikerBack=function(g,c,x,y,wide){B0(g,c,x,y,wide);if(!c||!c.jacked)return;x=Math.round(x);y=Math.round(y);const S2=sk(c);
+   for(const d of [-1,1]){const ax=d<0?x-10:x+5;px(g,S2,ax,y-18,5,4);px(g,S2,ax,y-14,5,5);px(g,S2,ax+(d<0?1:0),y-9,4,3);px(g,dk,d<0?ax:ax+4,y-17,1,10);px(g,hl,ax+(d<0?2:1),y-16,2,1)}
+   px(g,c.shirt,x-6,y-18,2,3);px(g,c.shirt,x+4,y-18,2,3)};
+ drawHikerFront=function(g,c,x,y,mouth){F0(g,c,x,y,mouth);if(!c||!c.jacked)return;x=Math.round(x);y=Math.round(y);const S2=sk(c);
+   for(const d of [-1,1]){const ax=d<0?x-10:x+5;px(g,S2,ax,y-16,5,4);px(g,S2,ax,y-12,5,5);px(g,S2,ax+(d<0?1:0),y-7,4,3);px(g,dk,d<0?ax:ax+4,y-15,1,10);px(g,hl,ax+(d<0?2:1),y-14,2,1)}
+   px(g,S2,x-3,y-15,2,2);px(g,S2,x+1,y-15,2,2);px(g,dk,x-4,y-12,8,1);px(g,dk,x-1,y-11,1,4);px(g,dk,x-3,y-9,6,1)}}
 function xHero(L){const k=equip.xskin,sk=k&&XSKINS.find(q=>q.id===k);return sk&&sk.c?sk.c:L}
 function drawCritter(g,k,x,y,t,air,face){x=Math.round(x);y=Math.round(y-(air?2:0));
   if(k==='raccoon'){g.save();g.translate(x,y);g.scale(1.6,1.6);beast(g,'raccoon',0,0,face<0?-1:1,{f:t?Math.floor(t*10)%4:-1,t:t||0});g.restore();return}
