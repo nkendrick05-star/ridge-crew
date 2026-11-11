@@ -2487,14 +2487,14 @@ function spFur(dx,dy,x,y){const r=dx*dx+dy*dy,n=hash(Math.floor(x*2)*7.3+Math.fl
   if(n<.05)c=spShade(c,-.14);else if(n>.95)c=spShade(c,.1);return c}
 /* the bear from behind with the leader on his back. fr: 0-5 run cycle, 'j' jump, 'd' duck */
 function spRiderSpr(c,fr){const key='r'+(c.id||'x')+JSON.stringify([c.hat,c.hatC,c.shirt,c.pack,c.lamp,c.curly,c.hair])+fr;if(SP_SPR[key])return SP_SPR[key];
-  const W=56,H=76,g=spGrid(W,H,2),cx=W/2,duck=fr==='d',jump=fr==='j',p=typeof fr==='number'?fr/6:0;
+  const W=56,H=76,g=spGrid(W,H,1),cx=W/2,duck=fr==='d',jump=fr==='j',p=typeof fr==='number'?fr/6:0;
   const by=jump?-1:duck?3:Math.round(-Math.abs(Math.sin(p*Math.PI*2))*1.5*2)/2,hb=duck?4:Math.round(Math.sin(p*Math.PI*2+1)*.8*2)/2;
   /* hind legs: thigh, shin, and a big padded paw that flips up when the leg kicks back */
   for(const [side,q0] of [[-1,p],[1,(p+.5)%1]]){const q=jump?.75:q0,lx=cx+side*10,swing=q>=.5,lift=swing?Math.sin((q-.5)*2*Math.PI)*7:0,foot=H-2-lift;
     g.ell(lx,52+by,7.5,9,spFur);
     g.poly([[lx-4.5,54+by],[lx+4.5,54+by],[lx+3.5,foot-1],[lx-3.5,foot-1]],(x,y)=>x<lx-2?SPB.lt:x>lx+2?SPB.dk:SPB.b);
-    if(swing&&lift>2.5){g.ell(lx,foot-2,4.6,3.6,SPB.pad);for(let i=0;i<4;i++)g.ell(lx-3+i*2,foot-5.4,.9,.9,SPB.bean);g.ell(lx,foot-1.6,2.2,1.4,SPB.bean)}
-    else{g.ell(lx,foot-1.6,5,2.2,SPB.dp);for(let i=0;i<4;i++)g.px(lx-3+i*2,foot-.2,SPB.claw)}}
+    if(swing&&lift>2.5){g.ell(lx,foot-2,4.6,3.6,SPB.pad);for(let i=0;i<3;i++)g.set(lx-2+i*2,foot-5,SPB.bean);g.ell(lx,foot-1.6,2,1.2,SPB.bean)}
+    else{g.ell(lx,foot-1.6,5,2.2,SPB.dp);for(let i=0;i<3;i++)g.set(lx-2+i*2,foot-1,SPB.claw)}}
   /* rump and back, with a stubby tail */
   g.ell(cx,41+by,19.5,14,spFur);g.ell(cx,28+by,16,8.5,spFur);
   g.ell(cx,48+by,3,2.2,(dx,dy)=>dy<0?SPB.lt:SPB.dk);
