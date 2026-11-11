@@ -537,9 +537,10 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
 .mmwrap{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:16px;border:2px solid var(--line);background:#0a0e14;display:flex;justify-content:center}
 .mmmap{position:relative;flex:none}
 .mmcv{position:absolute;left:0;top:0;image-rendering:pixelated}
-.mmarea{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 14px;border-radius:12px;background:rgba(8,12,10,.78);border:2px solid var(--ac);z-index:2;white-space:nowrap}
-.mmarea b{font:700 1rem var(--display);color:var(--ac);letter-spacing:.06em;text-transform:uppercase}
-.mmarea span{font:700 .72rem var(--display);color:#ffd166}
+.mmarea{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 12px 4px;border-radius:6px;background:linear-gradient(#7a4e28,#5a3a1e 55%,#4a2e17);border:2px solid #1a0e08;box-shadow:inset 0 1px 0 #a8743c,inset 0 -2px 0 #3a2414,0 4px 0 rgba(0,0,0,.45);z-index:2;white-space:nowrap}
+.mmarea::before,.mmarea::after{content:"";position:absolute;top:50%;width:4px;height:4px;margin-top:-2px;border-radius:50%;background:#2a1a0e;box-shadow:inset 1px 1px 0 #8a6a4a}.mmarea::before{left:5px}.mmarea::after{right:5px}
+.mmarea b{font:700 .78rem var(--display);color:#fff3dc;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 2px 0 #2a1a0e;border-bottom:2px solid var(--ac);padding-bottom:1px}
+.mmarea span{font:700 .64rem var(--display);color:#ffd166;text-shadow:0 1px 0 #2a1a0e}
 .mmcamp{position:absolute;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;border:3px solid #1a0e08;background:radial-gradient(circle at 35% 30%,#ffb347,#e0601e 60%,#8a2a10);box-shadow:0 4px 0 #3a1608,0 0 0 3px #ff8a2a55;cursor:pointer;padding:0;display:grid;place-items:center;z-index:3}
 .mmcamp i{font:700 1.4rem var(--display);font-style:normal;color:#fff3dc;text-shadow:0 2px 0 #5a1e08}
 .mmcamp.boss{width:72px;height:72px;background:radial-gradient(circle at 35% 30%,#ffe08a,#e8a020 55%,#8a4a08);box-shadow:0 5px 0 #4a2a06,0 0 0 4px #ffd16677}
@@ -2202,6 +2203,82 @@ function mlOverArt(g,t,cr){const P=OV.P;
   cr.slice(0,4).forEach((c,i)=>{const x=16+i*15;drawHiker(g,c,x,100,0,false,'sit')});
   if(cr[4]){OV.shadow(g,78,104,6);drawHiker(g,cr[4],78,104,0,false)}
   OV.fireflies(g,t,4,40,80);OV.rim(g,'#ff8a4a',.16);OV.vign(g,.5)}
+/* the trail map art: drawn in chunky 2px pixels so it matches the rest of the game */
+function mmPaint(g,W,H,pos,ROW,band){
+  const u=2,w=Math.ceil(W/u),h=Math.ceil(H/u);g.save();g.scale(u,u);
+  const R=(c,x,y,ww,hh)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(ww)),Math.max(1,Math.round(hh)))};
+  const P=i=>{const [x,y]=pos(i);return[x/u,y/u]};const B=a=>band(a).map(v=>v/u);
+  const [r0,r1]=B(0),[l0,l1]=B(1),[t0,t1]=B(2);
+  /* sky-to-forest backdrop, blended between the three areas */
+  {const q=g.createLinearGradient(0,0,0,h);const f=v=>Math.min(1,Math.max(0,v/h));
+   q.addColorStop(0,'#070b1a');q.addColorStop(f(t1*.35),'#121830');q.addColorStop(f(t1-10),'#1c2030');q.addColorStop(f(l0+30),'#0d1828');q.addColorStop(f(l1-20),'#0e1a22');q.addColorStop(f(r0+40),'#0e1912');q.addColorStop(1,'#090f0b');g.fillStyle=q;g.fillRect(0,0,w,h)}
+  /* stars and the moon over the ridge */
+  for(let i=0;i<110;i++){const y=hash(i*2.7)*t1*.6,a=.25+hash(i)*.65;R('rgba(255,248,225,'+a.toFixed(2)+')',hash(i*1.3)*w,y,1,1);if(hash(i*9.1)>.93){R('rgba(255,248,225,.35)',hash(i*1.3)*w-1,y,3,1);R('rgba(255,248,225,.35)',hash(i*1.3)*w,y-1,1,3)}}
+  {const mx=w*.8,my=34;const mg=g.createRadialGradient(mx,my,2,mx,my,46);mg.addColorStop(0,'rgba(200,215,255,.3)');mg.addColorStop(1,'rgba(200,215,255,0)');g.fillStyle=mg;g.fillRect(mx-46,my-46,92,92);
+   g.fillStyle='#ece8d6';g.beginPath();g.arc(mx,my,8,0,6.283);g.fill();R('rgba(160,150,130,.5)',mx-4,my-2,3,3);R('rgba(160,150,130,.5)',mx+2,my+3,2,2);R('rgba(160,150,130,.4)',mx-1,my+4,2,1)}
+  /* a pixel spruce: jagged tiers, moonlit on the right */
+  const spruce=(x,base,ht,col,hi)=>{x=Math.round(x);base=Math.round(base);const tiers=Math.max(3,Math.round(ht/6));R(col,x,base-ht*.18,1,ht*.18+1);
+    for(let r=0;r<ht*.86;r++){const f=r/(ht*.86),tp=(f*tiers)%1,ww=Math.max(.5,(f*.42*ht)*(.62+.38*tp)),y=base-ht*.12-(ht*.86-r);R(col,x-ww,y,ww*2+1,1);if(hi&&tp>.55&&ww>1.5)R(hi,x+ww*.35,y,ww*.65,1)}};
+  const nearPath=(x,y,pad)=>{for(let i=0;i<MM_LV.length;i++){const [px0,py0]=P(i);if(Math.abs(y-py0)<ROW/u*.55&&Math.abs(x-px0)<pad)return true}return false};
+  /* ---- Ridge Top: two snowy ranges, rocky slopes, a few hardy pines ---- */
+  mlRange(g,-10,w+10,t0+150,120,34,'#262c40','#1f2436','#c8d2e0',4);mlRange(g,-10,w+10,t0+190,90,26,'#2e3446','#262b3c','#e8eef4',11);
+  {const q=g.createLinearGradient(0,t0+185,0,t1);q.addColorStop(0,'#2a2e38');q.addColorStop(1,'#1c2026');g.fillStyle=q;g.fillRect(0,t0+185,w,t1-t0-185)}
+  for(let i=0;i<90;i++){const x=hash(i*3.7)*w,y=t0+190+hash(i*1.3)*(t1-t0-190),r=hash(i*5.1);if(r<.35){R('#3a3e48',x,y,5,3);R('#4e525c',x,y,4,1);R('#20242a',x,y+3,5,1)}else if(r<.6)R('rgba(232,238,244,.55)',x,y,6+hash(i)*6,1);else R('#30343e',x,y,2,1)}
+  for(let i=0;i<26;i++){const x=hash(i*7.3)*w,y=t0+200+hash(i*4.4)*(t1-t0-210);if(nearPath(x,y,22))continue;spruce(x,y,10+hash(i)*10,'#141a22','#24303e');R('rgba(232,238,244,.6)',x-2,y-8,3,1)}
+  /* the lookout tower on the summit */
+  {const [x15,y15]=P(MM_LV.length-1),tx=x15<w/2?x15+38:x15-38,ty=y15+10;R('#2a1a0e',tx-7,ty-34,1,34);R('#2a1a0e',tx+6,ty-34,1,34);for(let i=0;i<4;i++){R('#3a2414',tx-7,ty-8-i*8,14,1)}R('#4a2e17',tx-10,ty-40,20,6);R('#6b4423',tx-10,ty-40,20,1);R('#2a1a0e',tx-11,ty-43,22,3);R('#1a0e08',tx,ty-58,1,15);R('#c8282b',tx+1,ty-58,8,5);R('#e85a4a',tx+1,ty-58,8,1);
+   const lg=g.createRadialGradient(tx,ty-37,1,tx,ty-37,16);lg.addColorStop(0,'rgba(255,200,120,.45)');lg.addColorStop(1,'rgba(255,200,120,0)');g.fillStyle=lg;g.fillRect(tx-16,ty-53,32,32);R('#ffd38a',tx-3,ty-38,6,2)}
+  /* treeline + mist between the ridge and the lake */
+  {const q=g.createLinearGradient(0,t1-26,0,t1+10);q.addColorStop(0,'rgba(40,46,66,0)');q.addColorStop(1,'rgba(40,46,66,.55)');g.fillStyle=q;g.fillRect(0,t1-26,w,36)}
+  for(let i=0;i<w/5;i++){const x=i*5+hash(i)*4,y=t1+4+hash(i*2)*6;if(nearPath(x,y,16))continue;spruce(x,y,14+hash(i*3)*12,'#0c1420','#1a2636')}
+  /* ---- Lakeside: a moonlit lake the trail crosses on a boardwalk ---- */
+  const ly=(l0+l1)/2,lrx=w*.46,lry=(l1-l0)*.3,lake=(x,y)=>{const dy=(y-ly)/lry;if(Math.abs(dy)>=1)return false;const hw=lrx*Math.sqrt(1-dy*dy)*(1+.07*Math.sin(y*.21)+.04*Math.sin(y*.53));return Math.abs(x-w/2-Math.sin(y*.05)*6)<hw};
+  for(let y=Math.floor(ly-lry);y<=ly+lry;y++){const dy=(y-ly)/lry,hw=lrx*Math.sqrt(Math.max(0,1-dy*dy))*(1+.07*Math.sin(y*.21)+.04*Math.sin(y*.53)),cx=w/2+Math.sin(y*.05)*6;if(hw<1)continue;
+    R('#3a3a34',cx-hw-2,y,2,1);R('#3a3a34',cx+hw,y,2,1);R('#4a4a42',cx-hw-3,y,1,1);
+    const q=g.createLinearGradient(cx-hw,0,cx+hw,0);q.addColorStop(0,'#14304e');q.addColorStop(.5,'#0c2140');q.addColorStop(1,'#14304e');g.fillStyle=q;g.fillRect(Math.round(cx-hw),y,Math.round(hw*2),1)}
+  for(let i=0;i<70;i++){const x=w*.12+hash(i*2.1)*w*.76,y=ly-lry+hash(i*4.3)*lry*2;if(!lake(x,y)||!lake(x+8,y))continue;R('rgba(159,208,242,'+(.12+hash(i)*.25).toFixed(2)+')',x,y,3+hash(i+1)*7,1)}
+  {const mx=w*.8;for(let y=ly-lry*.8;y<ly+lry*.8;y+=3){const ww=3+hash(y)*6;if(lake(mx,y))R('rgba(236,232,214,'+(.18+hash(y*1.7)*.3).toFixed(2)+')',mx-ww/2,y,ww,1)}}
+  /* shoreline rocks, a canoe and some trees around the lake */
+  for(let i=0;i<40;i++){const a=hash(i*3.3)*6.283,x=w/2+Math.cos(a)*(lrx+4),y=ly+Math.sin(a)*(lry+3);if(nearPath(x,y,10))continue;R('#3e3c38',x,y,4,2);R('#56544e',x,y,3,1)}
+  {const cx=w*.3,cy=ly+lry*.35;if(lake(cx,cy)){R('#1a0e08',cx-8,cy,16,3);R('#8a4a2a',cx-7,cy,14,2);R('#b06a3a',cx-7,cy,14,1);R('#3a2414',cx-2,cy-1,1,1)}}
+  for(let i=0;i<60;i++){const x=hash(i*5.7)*w,y=l0+hash(i*2.9)*(l1-l0);if(lake(x,y)||lake(x,y-10)||nearPath(x,y,20))continue;spruce(x,y,14+hash(i*3.1)*14,i%3?'#0a1620':'#0e1c28','#1a2c3c')}
+  /* treeline + mist between the lake and the ranger station */
+  {const q=g.createLinearGradient(0,l1-20,0,l1+12);q.addColorStop(0,'rgba(26,40,40,0)');q.addColorStop(1,'rgba(26,40,40,.5)');g.fillStyle=q;g.fillRect(0,l1-20,w,32)}
+  /* ---- Ranger Station: deep woods, the ranger cabin, the trailhead ---- */
+  for(let row=0;row<3;row++)for(let i=0;i<44;i++){const x=hash(i*3.3+row*17)*w,y=r0+10+hash(i*1.9+row*5)*(r1-r0-10),ht=16+hash(i*7.1+row)*18+row*4;if(nearPath(x,y,24))continue;
+    spruce(x,y,ht,['#0c1810','#102016','#13261a'][row],['#1a2e20','#1e3626','#22402c'][row])}
+  {const [x1,y1]=P(0),cx=x1<w/2?x1+44:x1-60,cy=y1+20;/* the cabin, window lit */
+   R('#1a0e08',cx-1,cy-17,26,18);R('#5a3a22',cx,cy-16,24,16);for(let j=0;j<5;j++)R(j%2?'#4a2e17':'#6b4423',cx,cy-15+j*3,24,1);R('#2a1a0e',cx-3,cy-22,30,2);R('#3a2414',cx-2,cy-24,28,2);R('#4a2e17',cx,cy-26,24,2);R('#3a2414',cx+18,cy-30,3,6);
+   R('#ffd38a',cx+4,cy-11,5,4);R('#1a0e08',cx+6,cy-11,1,4);R('#2a1a0e',cx+14,cy-10,5,10);
+   const lg=g.createRadialGradient(cx+6,cy-9,1,cx+6,cy-9,22);lg.addColorStop(0,'rgba(255,200,120,.4)');lg.addColorStop(1,'rgba(255,200,120,0)');g.fillStyle=lg;g.fillRect(cx-16,cy-31,44,44);
+   for(let i=0;i<4;i++){const k=i/4;g.globalAlpha=.25*(1-k);g.fillStyle='#8a8a8a';g.beginPath();g.arc(cx+19+k*6,cy-32-k*14,1.5+k*3,0,6.283);g.fill()}g.globalAlpha=1;
+   /* trailhead sign */
+   const sx=x1+(x1<w/2?-24:16),sy=y1+28;R('#2a1a0e',sx,sy-12,2,12);R('#1a0e08',sx-7,sy-17,16,7);R('#8a5a2e',sx-6,sy-16,14,5);R('#c08a4a',sx-6,sy-16,14,1);R('#3a2414',sx-4,sy-14,10,1)}
+  /* ---- the trail ---- */
+  const pts=[];{const [x0,y0]=P(0);for(let y=y0+30;y>y0;y--)pts.push([x0,y]);
+   for(let i=1;i<MM_LV.length;i++){const [x0,y0]=P(i-1),[x1,y1]=P(i),c1=[x0,y0-ROW/u*.5],c2=[x1,y1+ROW/u*.5];for(let k=0;k<=60;k++){const f=k/60,m=1-f;pts.push([m*m*m*x0+3*m*m*f*c1[0]+3*m*f*f*c2[0]+f*f*f*x1,m*m*m*y0+3*m*m*f*c1[1]+3*m*f*f*c2[1]+f*f*f*y1,i])}}}
+  const dot=(x,y,r,c)=>{g.fillStyle=c;g.beginPath();g.arc(Math.round(x),Math.round(y),r,0,6.283);g.fill()};
+  for(const p of pts)dot(p[0],p[1]+1,6,'rgba(0,0,0,.35)');
+  for(const p of pts)dot(p[0],p[1],5.5,lake(p[0],p[1])?'#1a0e08':'#241810');
+  for(const p of pts){if(lake(p[0],p[1]))dot(p[0],p[1],4.5,'#6b4423');else dot(p[0],p[1],4.5,'#5a4430')}
+  for(let i=0;i<pts.length;i+=2){const [x,y]=pts[i];if(lake(x,y)){if(i%6===0)R('#3a2414',x-5,y,10,1);else if(i%6===2)R('#8a5a2e',x-4,y,8,1)}else{const r=hash(i*1.7);if(r<.25)R('#6e5640',x-3+hash(i)*6,y,1,1);else if(r<.35)R('#3e2e1e',x-3+hash(i)*6,y,2,1)}}
+  /* edge stones */
+  for(let i=0;i<pts.length;i+=7){const [x,y]=pts[i],s=hash(i*3.1)<.5?-1:1;if(lake(x,y)||hash(i*1.1)<.4)continue;R('#46423c',x+s*6,y,3,2);R('#5e5a52',x+s*6,y,2,1)}
+  /* lanterns light up along the stretch you've cleared */
+  for(let i=1;i<MM_LV.length;i++){const lit=!!(MM_PROG[i]&&MM_PROG[i].s);const seg=pts.filter(p=>p[2]===i),p=seg[Math.floor(seg.length*.5)];if(!p)continue;const s=(i%2?1:-1),x=p[0]+s*10,y=p[1];
+    R('#1a0e08',x,y-12,1,12);R('#2a1a0e',x-1,y-13,3,2);R(lit?'#ffd38a':'#3a3a3a',x-1,y-11,3,3);
+    if(lit){const lg=g.createRadialGradient(x,y-10,1,x,y-10,14);lg.addColorStop(0,'rgba(255,200,110,.55)');lg.addColorStop(1,'rgba(255,200,110,0)');g.fillStyle=lg;g.fillRect(x-14,y-24,28,28)}}
+  /* each camp: a trampled clearing and its NO FIRES sign (burned once you clear it), forts beside the boss camps */
+  MM_LV.forEach((L,i)=>{const [x,y]=P(i),done=!!(MM_PROG[i+1]&&MM_PROG[i+1].s);g.fillStyle='rgba(30,22,14,.55)';g.beginPath();g.ellipse(x,y+4,22,10,0,0,6.283);g.fill();
+    const s=x<w/2?1:-1,sx=x+s*28,sy=y+8;
+    if(L.boss){const fx=x+s*40,fy=y+6;for(let j=0;j<7;j++){const hh=16+hash(j+i)*4;R(done?'#1a1210':'#3a2414',fx-12+j*3.5,fy-hh,3,hh);R(done?'#2a1e18':'#6b4423',fx-12+j*3.5,fy-hh,1,hh);R(done?'#1a1210':'#2a1a0e',fx-12+j*3.5,fy-hh-1,3,1)}
+      if(done){for(let j=0;j<5;j++){const k=j/5;g.globalAlpha=.3*(1-k);g.fillStyle='#5a5654';g.beginPath();g.arc(fx+Math.sin(j*2)*3,fy-20-k*22,2+k*5,0,6.283);g.fill()}g.globalAlpha=1;for(let j=0;j<5;j++)R(j%2?'#ff6a2a':'#ffb347',fx-10+hash(j+i)*20,fy-1,1,1)}}
+    R('#2a1a0e',sx,sy-10,1,10);if(done){R('#1a1210',sx-5,sy-14,11,6);R('#3a3430',sx-4,sy-13,9,4);R('#ff6a2a',sx-2,sy-11,1,1);R('#ffb347',sx+2,sy-12,1,1)}
+    else{R('#1a0e08',sx-5,sy-15,11,8);R('#e8dcc0',sx-4,sy-14,9,6);g.strokeStyle='#c8282b';g.lineWidth=.8;g.beginPath();g.arc(sx+.5,sy-11,2.2,0,6.283);g.stroke();g.beginPath();g.moveTo(sx-1,sy-12.5);g.lineTo(sx+2,sy-9.5);g.stroke()}});
+  /* fireflies and a soft vignette */
+  for(let i=0;i<16;i++){const x=hash(i*8.3)*w,y=l1+hash(i*6.1)*(r1-l1);R('rgba(220,255,150,.4)',x,y,1,1);const fg=g.createRadialGradient(x,y,0,x,y,4);fg.addColorStop(0,'rgba(220,255,150,.15)');fg.addColorStop(1,'rgba(220,255,150,0)');g.fillStyle=fg;g.fillRect(x-4,y-4,8,8)}
+  {const q=g.createLinearGradient(0,0,w,0);q.addColorStop(0,'rgba(0,0,0,.45)');q.addColorStop(.18,'rgba(0,0,0,0)');q.addColorStop(.82,'rgba(0,0,0,0)');q.addColorStop(1,'rgba(0,0,0,.45)');g.fillStyle=q;g.fillRect(0,0,w,h)}
+  g.restore()}
 /* ---------- Mad Mallows: 15 hand-built camps along a trail ---------- */
 const MM_AREAS=[{n:'Ranger Station',c:'#6ab04a'},{n:'Lakeside',c:'#7ac0f0'},{n:'Ridge Top',c:'#e8eef4'}];
 /* every camp has its own lineup, never the same guy twice */
@@ -2250,35 +2327,16 @@ function showMM(){mode='menu';runMode='mallow';save('rc_mode','mallow');screen('
   const c=document.createElement('canvas'),d=window.devicePixelRatio||1;c.width=W*d;c.height=H*d;c.style.width=W+'px';c.style.height=H+'px';c.className='mmcv';map.appendChild(c);
   const g=c.getContext('2d');g.scale(d,d);g.imageSmoothingEnabled=false;
   const pos=i=>[Math.round(W/2+Math.sin(i*1.25+.4)*W*.27),Math.round(H-90-i*ROW)];
-  /* backgrounds: the three areas, bottom to top */
   const band=(a)=>{const y1=a===0?H:H-90-(a*5-.5)*ROW,y0=a===2?0:H-90-(a*5+4.5)*ROW;return[y0,y1]};
-  const spr=(x,base,h,col)=>{const w=h*.36;g.fillStyle=col;for(let i=0;i<6;i++){const f=i/6,ty=base-h*.15-f*h*.8,tw=w*(1-f)*.55+1;g.beginPath();g.moveTo(x,ty-h*.22);g.lineTo(x-tw,ty);g.lineTo(x+tw,ty);g.closePath();g.fill()}g.fillRect(x-1,base-h*.18,2,h*.18)};
-  {const [y0,y1]=band(0);const q=g.createLinearGradient(0,y0,0,y1);q.addColorStop(0,'#16241c');q.addColorStop(1,'#0c140f');g.fillStyle=q;g.fillRect(0,y0,W,y1-y0);
-   for(let i=0;i<70;i++){const x=hash(i*3.3)*W,y=y0+hash(i*1.9)*(y1-y0),h=26+hash(i*7.1)*34;if(Math.abs(x-W/2)<W*.36&&hash(i+2)<.85)continue;spr(x,y,h,i%2?'#0a120d':'#13201a')}}
-  {const [y0,y1]=band(1);const q=g.createLinearGradient(0,y0,0,y1);q.addColorStop(0,'#0e1a30');q.addColorStop(1,'#14263a');g.fillStyle=q;g.fillRect(0,y0,W,y1-y0);
-   /* the lake in the middle of the band, with the moon on it */
-   const ly=(y0+y1)/2;g.fillStyle='#0a1a34';g.beginPath();g.ellipse(W*.5,ly,W*.52,(y1-y0)*.32,0,0,6.283);g.fill();g.fillStyle='#10264a';g.beginPath();g.ellipse(W*.5,ly,W*.46,(y1-y0)*.26,0,0,6.283);g.fill();
-   for(let i=0;i<40;i++){const x=W*.15+hash(i*2.1)*W*.7,y=ly-(y1-y0)*.22+hash(i*4.3)*(y1-y0)*.44;g.fillStyle='rgba(159,208,242,'+(.15+hash(i)*.3).toFixed(2)+')';g.fillRect(Math.round(x),Math.round(y),4+hash(i+1)*10|0,1)}
-   for(let i=0;i<40;i++){const x=hash(i*5.7)*W,y=y0+hash(i*2.9)*(y1-y0),h=22+hash(i*3.1)*26;const dx=(x-W*.5)/(W*.52),dy=(y-ly)/((y1-y0)*.34);if(dx*dx+dy*dy<1.1)continue;spr(x,y,h,'#0b1626')}}
-  {const [y0,y1]=band(2);const q=g.createLinearGradient(0,y0,0,y1);q.addColorStop(0,'#0a0e20');q.addColorStop(.4,'#1a2236');q.addColorStop(1,'#2a2e36');g.fillStyle=q;g.fillRect(0,y0,W,y1-y0);
-   for(let i=0;i<60;i++){g.fillStyle='rgba(255,248,225,'+(.3+hash(i)*.6).toFixed(2)+')';g.fillRect(Math.round(hash(i*1.3)*W),Math.round(y0+hash(i*2.7)*130),1,1)}
-   g.fillStyle='#e8e4d2';g.beginPath();g.arc(W*.8,y0+60,12,0,6.283);g.fill();
-   mlRange(g,-20,W+20,y0+430,300,70,'#2a3044','#22273a','#c8d2e0',4);mlRange(g,-20,W+20,y0+500,190,52,'#323848','#2a2f40','#e8eef4',11);
-   g.fillStyle='#262a32';g.fillRect(0,y0+500,W,y1-y0-500);for(let i=0;i<50;i++){g.fillStyle=i%3?'#3a3e48':'#4a4e58';g.fillRect(Math.round(hash(i*3.7)*W),Math.round(y0+500+hash(i*1.3)*(y1-y0-500)),6,3)}
-   for(let i=0;i<20;i++){g.fillStyle='rgba(232,238,244,.5)';g.fillRect(Math.round(hash(i*8.1)*W),Math.round(y0+500+hash(i*2.2)*(y1-y0-500)),10,2)}}
-  /* the trail: a worn dirt path with footprints */
-  g.lineCap='round';g.lineJoin='round';for(const [w,col] of [[16,'#2a1e14'],[11,'#5a4430'],[3,'rgba(255,230,190,.18)']]){g.strokeStyle=col;g.lineWidth=w;g.beginPath();for(let i=0;i<MM_LV.length;i++){const [x,y]=pos(i);if(!i)g.moveTo(x,y+40);if(!i)g.lineTo(x,y);else{const [px0,py0]=pos(i-1);g.bezierCurveTo(px0,py0-ROW*.5,x,y+ROW*.5,x,y)}}g.stroke()}
-  for(let i=1;i<MM_LV.length;i++){const [x0,y0]=pos(i-1),[x1,y1]=pos(i);for(let k=1;k<6;k++){const f=k/6,mt=1-f,cx1=x0,cy1=y0-ROW*.5,cx2=x1,cy2=y1+ROW*.5,x=mt*mt*mt*x0+3*mt*mt*f*cx1+3*mt*f*f*cx2+f*f*f*x1,y=mt*mt*mt*y0+3*mt*mt*f*cy1+3*mt*f*f*cy2+f*f*f*y1;g.fillStyle=MM_PROG[i]&&MM_PROG[i].s?'rgba(255,209,102,.6)':'rgba(30,20,12,.7)';g.fillRect(Math.round(x)-1+(k%2?2:-2),Math.round(y),2,3)}}
+  mmPaint(g,W,H,pos,ROW,band);
   /* area banners */
-  MM_AREAS.forEach((A,a)=>{const [y0,y1]=band(a),st=MM_LV.slice(a*5,a*5+5).reduce((s,_,j)=>s+((MM_PROG[a*5+j+1]||{}).s||0),0);const b=el('div','mmarea');const by=a===0?H-34:H-90-(a*5-.5)*ROW,px0=a===0?pos(0)[0]:(pos(a*5-1)[0]+pos(a*5)[0])/2;b.style.top=Math.round(by-20)+'px';if(px0>W/2){b.style.left='12px';b.style.transform='none'}else{b.style.left='auto';b.style.right='12px';b.style.transform='none'}b.append(el('b',null,A.n),el('span',null,'★ '+st+' / 15'));b.style.setProperty('--ac',A.c);map.appendChild(b)});
+  MM_AREAS.forEach((A,a)=>{const [y0,y1]=band(a),st=MM_LV.slice(a*5,a*5+5).reduce((s,_,j)=>s+((MM_PROG[a*5+j+1]||{}).s||0),0);const b=el('div','mmarea');/* hang the area sign beside the middle camp of the area, on the side away from the trail */const [mx,my]=pos(a*5+2);b.style.top=Math.round(my-24)+'px';b.style.transform='none';if(mx>W/2){b.style.left='10px'}else{b.style.left='auto';b.style.right='10px'}b.append(el('b',null,A.n),el('span',null,'★ '+st+' / 15'));b.style.setProperty('--ac',A.c);map.appendChild(b)});
   /* the camps */
   let cur=1;for(let i=1;i<=MM_LV.length;i++)if(mmOpen(i))cur=i;
   MM_LV.forEach((L,i)=>{const n=i+1,[x,y]=pos(i),open=mmOpen(n),p=MM_PROG[n]||{},b=el('button','mmcamp'+(L.boss?' boss':'')+(open?'':' locked')+(n===cur?' cur':''));b.type='button';b.style.left=x+'px';b.style.top=y+'px';
     b.append(el('i',null,open?String(n):''));const st=el('span','mmst');for(let s=0;s<3;s++)st.appendChild(el('em',s<(p.s||0)?'on':'','★'));b.appendChild(st);
     const lab=el('span','mmname',L.n);b.appendChild(lab);
     b.addEventListener('click',()=>{if(!open){SFX.hit&&SFX.hit();toast('Clear camp '+(n-1)+' first');return}SFX.tap&&SFX.tap();mmCard(n)});map.appendChild(b)});
-  /* the leader waits by the next camp */
-  {const [x,y]=pos(cur-1),pc=portrait(byId(sel)||CHARS[0],3);pc.className='mmme';pc.style.left=(x+(x<W/2?40:-88))+'px';pc.style.top=(y-60)+'px';map.appendChild(pc)}
   $('mmStars').textContent='★ '+mmStars()+' / '+MM_LV.length*3;
   requestAnimationFrame(()=>{const [,y]=pos(cur-1);wrap.scrollTop=Math.max(0,y-wrap.clientHeight*.55)})}
 /* the card before a camp: name, lineup, best */
