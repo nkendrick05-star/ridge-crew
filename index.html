@@ -1969,9 +1969,10 @@ function mlDown(e){const ml=S.ml;if(!ml||S.dead||ml.done)return;
   if(ml.clear)return;
   const x=e&&e.clientX!=null?e.clientX:cw*.3,y=e&&e.clientY!=null?e.clientY:ch*.6;
   /* grab the thrower to aim; grab anywhere else to look around */
-  const G=mlGeom(),hx=(ML_SLING.x-1-ml.camX)*G.k,hy=G.gyS+(-ML_HILL-14)*G.k,onGuy=Math.hypot(x-hx,y-hy)<Math.max(46,20*G.k);
-  if(ml.state==='aim'&&!S.intro&&(onGuy||!e||e.clientX==null)){ml.aim={x0:x,y0:y,x,y,id:e&&e.pointerId};return}
-  if(S.intro&&ml.state==='aim'&&onGuy)return;
+  const G=mlGeom(),R=cv.getBoundingClientRect(),lx=x-R.left,ly=y-R.top,hx=(ML_SLING.x-1-ml.camX)*G.k,hy=G.gyS+(-ML_HILL-14)*G.k,
+    /* a generous grab box around the thrower and the stick in his hand */
+    onGuy=Math.abs(lx-hx)<Math.max(56,26*G.k)&&ly>hy-Math.max(80,36*G.k)&&ly<hy+Math.max(56,24*G.k);
+  if(ml.state==='aim'&&(onGuy||!e||e.clientX==null)){S.intro=null;ml.aim={x0:x,y0:y,x,y,id:e&&e.pointerId};return}
   ml.pan={x0:x,c0:ml.camX}}
 function mlMove(e){const ml=S&&S.ml;if(!ml)return;if(ml.aim){ml.aim.x=e.clientX;ml.aim.y=e.clientY}else if(ml.pan){const G=mlGeom(),camL=ML_SLING.x-G.vw*.3,camR=Math.max(camL,ml.maxX+16-G.vw);ml.camX=Math.max(camL-20,Math.min(camR+30,ml.pan.c0-(e.clientX-ml.pan.x0)/G.k));ml.pan.moved=1}}
 function mlUp(){const ml=S&&S.ml;if(!ml)return;if(ml.pan){ml.pan=null;return}if(!ml.aim)return;const a=mlAimVec(ml);ml.aim=null;if(ml.state!=='aim'||S.dead||mode!=='play')return;if(a.p<.12)return;mlLaunch(ml,a.dx,a.dy,a.p)}
