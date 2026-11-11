@@ -1019,7 +1019,7 @@ const SETS=[
  {id:'owl',name:'Night Owl',items:{hat:'headlamp',extra:'shades',pack:'purple'},perk:'See farther at night'},
  {id:'bruin',name:'Bruin',items:{hat:'bcap',shirt:'belmont'},perk:'Trail mix gives two snacks'},
  {id:'firefighter',name:'Firefighter',items:{hat:'fireman',shirt:'turnout',pack:'airtank'},perk:'Mad Mallows: Nathan\'s Flare burns a wider area'},
- {id:'lavaproof',name:'Lava-proof',items:{hat:'silverhood',shirt:'reflect',pack:'fireproof'},perk:'Lava Floor: start with 4 hearts'},
+ {id:'lavaproof',name:'Lava-proof',items:{hat:'silverhood',shirt:'reflect',pack:'fireproof'},perk:'Forest Fire: start with 4 hearts'},
  {id:'rodeo',name:'Bear Rodeo',items:{hat:'rodeo',shirt:'saddle',extra:'lasso'},perk:'Bear Ride: riders hold on longer'},
  {id:'arcade',name:'Arcade Kid',items:{hat:'arcadecap',shirt:'arcadetee',extra:'pixshades'},perk:'Arcade games pay 50% more tickets'},
  {id:'roadtrip',name:'Road Trip',items:{hat:'visor',shirt:'odytee',pack:'gascan'},perk:'Odyssey Climb: 30% bigger gas tank'},
@@ -1157,8 +1157,8 @@ const UPGRADES=[
 ];
 const SKILLS=[
  {id:'ab_patch',who:'patch',name:'Triple jump',desc:'Sam gets a third jump in mid-air.',price:1800},
- {id:'ab_curly',who:'curly',name:'Even more D1',desc:"A longer air dash that recharges faster, and longer reach in Lava Floor.",price:1800},
- {id:'ab_camo',who:'camo',name:'Quick recharge',desc:"Henry's smash comes back every 150 m (every 4 swings in Lava Floor).",price:1800},
+ {id:'ab_curly',who:'curly',name:'Even more D1',desc:"A longer air dash that recharges faster, and longer reach in Forest Fire.",price:1800},
+ {id:'ab_camo',who:'camo',name:'Quick recharge',desc:"Henry's smash comes back every 150 m (every 4 swings in Forest Fire).",price:1800},
  {id:'ab_stache',who:'stache',name:'Super magnet',desc:'Blake pulls pinecones from twice as far.',price:1800},
  {id:'ab_nathan',who:'nathan',name:'Mega hype',desc:'Pinecones count triple for the shop when Nathan leads.',price:1800}
 ];
@@ -1470,7 +1470,7 @@ const MODES=[
  {id:'uphill',name:'Summit Climb',desc:'Climb from the trailhead to the 14,505 ft summit. Camps, rockslides, and something waiting up top.'},
  {id:'solo',name:'Solo Hike',desc:'No crew behind you. One hit ends it, but pinecones count double.'},
  {id:'bear',name:'Bear Mode',desc:'You are the bear. Catch all five as fast as you can. Fastest time wins.'},
- {id:'fire',name:'Forest Fire',desc:'Swing over the lava or ride the bear out of the fire.'},
+ {id:'fire',name:'Forest Fire',desc:'The floor is lava. Swing and fling through the burning woods.'},
  {id:'mallow',name:'Mad Mallows',desc:'Throw flaming marshmallows at the rangers\' forts. 15 camps, three stars each.'},
  {id:'cross',name:'Ridge Cross',arcade:true,desc:'Hop up the ridge across creeks, elk stampedes, bike trails and rockslides. Tap to hop, swipe to dodge. Don\'t let the bear catch you.'},
  {id:'snake',name:'Snake Trail',arcade:true,desc:'A hidden one. Swipe to steer your hiking line, grab pinecones to grow it, and steer clear of trees, rocks and the wandering bear.'},
@@ -1500,9 +1500,9 @@ function newRun(leaderId,demo,rm){
   if(set&&set.id==='ranger'&&rm!=='bear')s.snacks=2;
   if(rm==='uphill'&&!demo)Object.assign(s,{upNext:0,upCamps:[],upBonus:0,upMax:UP_BASE,yeti:false,banner:null,summited:false,rollIn:5});
   if(rm==='bear'){s.prey=CHARS.slice().sort(()=>Math.random()-.5);s.gapX=80;Object.assign(s,{stam:100+25*(ups.bl_lungs||0),chargeT:0,roarCd:2,freezeT:0,bearPts:0,lastChomp:-9,pounce:null,bits:[],snacksEaten:0,hits:0,hypeT:0,hypeIn:9,shoved:false,shortcut:false,throwIn:4,talkIn:2,eatT:0,doubles:0,roars:0})}
-  if(rm==='fire'){s.fartIn=1e12;LAVA_Y=GY+18;s.ff=(typeof window!=='undefined'&&window.__FF)||(typeof ffPick!=='undefined'&&ffPick!=='random'&&ffPick!=='blaze'&&ffPick!=='mallow'?ffPick:pick(['lava','ride']));s.fireBack=s.ff==='blaze'?400:96}
+  if(rm==='fire'){s.fartIn=1e12;LAVA_Y=GY+18;s.ff=(typeof window!=='undefined'&&window.__FF)||'lava';s.fireBack=s.ff==='blaze'?400:96}
   S=s;if(DR_NEXT){drApply(s,DR_NEXT);DR_NEXT=null}gen();
-  if(rm==='fire'&&!demo&&!(typeof window!=='undefined'&&window.__FF)&&(typeof ffPick==='undefined'||ffPick==='random'||ffPick==='mallow')){S.spin={t:0,dur:2.2,final:S.ff,last:-1}}
+  if(false){S.spin={t:0,dur:2.2,final:S.ff,last:-1}}
   return s;
 }
 /* ---------- falling star: super rare, carries the crew 1000 m ---------- */
@@ -2359,7 +2359,7 @@ function mmFinish(win){const ml=S.ml;if(ml.done)return;ml.done=true;const n=ml.l
     const tot=Object.values(MM_PROG).reduce((a,q)=>a+(q.b||0),0);if(tot>(modeBest.mallow||0)){modeBest.mallow=tot;save('rc_modebest',JSON.stringify(modeBest));if(!S.demo)submitModes({mallow:tot})}
     for(let a=0;a<3;a++)if([1,2,3,4,5].every(j=>(MM_PROG[a*5+j]||{}).s===3))unlockBadge('mm_a'+(a+1));
     if(MM_LV.every((_,i)=>(MM_PROG[i+1]||{}).s))unlockBadge('mm_all');
-    if(ml.used<=1&&ml.signs0>=3)unlockBadge('ff_kaboom');if(mmStars()>=30)unlockBadge('ff_mallow')}
+    if(ml.used<=1&&ml.signs0>=3)unlockBadge('ff_kaboom');if(typeof ffPlayed!=='undefined'&&ffPlayed.lava)unlockBadge('ff_all');if(mmStars()>=30)unlockBadge('ff_mallow')}
   {let life=0;try{life=+localStorage.getItem('rc_mmburn')||0}catch(e){}life+=ml.burned;save('rc_mmburn',String(life));if(life>=100)unlockBadge('ff_burn');if(life>=300)unlockBadge('ff_burn300')}
   if(win){SFX.win&&SFX.win()}else{SFX.lose&&SFX.lose()}
   const ov=el('div','mmov mmend'),card=el('div','mmcard'+(win?' win':' lose'));
@@ -2379,7 +2379,7 @@ window.addEventListener('pointercancel',()=>{if(S&&S.ml){S.ml.aim=null;S.ml.pan=
 const FF_INFO={
   mallow:{name:'Marshmallow Launcher',intro:()=>'Drag back and let go to throw. Burn every NO FIRES sign! Tap mid-air for each guy\'s move.'},
   blaze:{name:'The Crew Is the Fire',intro:l=>nm(l)+' caught fire! Burn stuff to GROW. Water shrinks you. Bigger fire, more points, more planes.'},
-  lava:{name:'Lava Floor Forest',intro:()=>'The floor is lava! Hold to grab and climb, let go to swing.'},
+  lava:{name:'Forest Fire',intro:()=>'The floor is lava! Hold to grab and climb, let go to swing.'},
   ride:{name:'Ride the Bear',intro:()=>'Bear rodeo! When he bucks one way, tap the other side. Get to the lake at 1,500 m!'}
 };
 let LAVA_Y=GY+18;
@@ -7184,11 +7184,11 @@ const BADGES=[
  {id:'ff_chain',ic:'3H',name:'Human Chain',desc:'Have 3 guys hanging on behind the bear'},
  {id:'ff_burn',ic:'100',name:'Arsonist',desc:'Burn 100 things in Mad Mallows'},
  {id:'ff_inferno',ic:'HOT',name:'Inferno',desc:'Have 12 things burning at once'},
- {id:'ff_swing',ic:'50',name:'Tarzan',desc:'50 swings in one Lava Floor run without a lava hit'},
- {id:'ff_flip',ic:'FLIP',name:'Flip Out',desc:'Land 10 flips in one Lava Floor run'},
+ {id:'ff_swing',ic:'50',name:'Tarzan',desc:'50 swings in one Forest Fire run without a lava hit'},
+ {id:'ff_flip',ic:'FLIP',name:'Flip Out',desc:'Land 10 flips in one Forest Fire run'},
  {id:'ff_pyramid',ic:'5UP',name:'Human Pyramid',desc:'Ride 500 m with the whole pyramid'},
  {id:'ff_lake',ic:'H2O',name:'Splashdown',desc:'Ride the bear all the way to the lake'},
- {id:'ff_all',ic:'2/2',name:'Firestarter',desc:'Play both Forest Fire games'},
+ {id:'ff_all',ic:'2/2',name:'Firestarter',desc:'Play Forest Fire and Mad Mallows'},
  {id:'up_camp',ic:'C1',name:'Base Camper',desc:'Reach Camp 1 in Summit Climb'},
  {id:'up_high',ic:'13K',name:'High Camp',desc:'Reach High Camp at 13,000 ft'},
  {id:'up_summit',ic:'TOP',name:'Summiteer',desc:'Reach the 14,505 ft summit'},
@@ -7513,7 +7513,7 @@ const JOURNAL=[
  {id:'bj_trap',ic:'TC',name:'Tossed Cooler',desc:'The crew fights dirty.',g:'bear'},
  {id:'bj_den',ic:'DN',name:'The Den',desc:'Nap time after a full catch.',g:'bear'},
  {id:'ff_blaze',ic:'MM',name:'Mad Mallows',desc:'Five guys. Fifteen camps.',g:'fire'},
- {id:'ff_lava',ic:'LF',name:'Lava Floor',desc:'Hold to climb, let go to fling.',g:'fire'},
+ {id:'ff_lava',ic:'FF',name:'Forest Fire',desc:'Hold to climb, let go to fling.',g:'fire'},
  {id:'ff_ride',ic:'BX',name:'Bear Express',desc:'One bear, five riders.',g:'fire'},
  {id:'ff_bomber',ic:'WB',name:'Water Bomber',desc:'Soaks the whole trail.',g:'fire'},
  {id:'ff_timber',ic:'WB',name:'Water Barrel',desc:'Puts out everything nearby.',g:'fire'},
@@ -7984,7 +7984,7 @@ function showModes(){
     const ok=modeOk(m.id),b=el('button','modebtn'+(ok?'':' locked'));b.type='button';b.setAttribute('aria-pressed',String(m.id===runMode));
     const t=el('div');t.append(el('b',null,m.name),el('span',null,m.desc));if(!ok){const pg=modeProg(m.id);t.appendChild(el('i','req',modeReq(m.id)+(pg?'  ·  '+pg:'')))}{const th=modeThumb(m.id).cloneNode();th.getContext('2d').drawImage(modeThumb(m.id),0,0);b.appendChild(th)}b.appendChild(t);
     if(!ok){b.addEventListener('click',()=>{SFX.hit();toast('Locked: '+modeReq(m.id))});box.appendChild(b);continue}
-    if(m.id==='fire'){const fb=[['lava','Lava'],['ride','Rodeo']];mlPickRow(t);if(fb.some(([k])=>modeBest['fire_'+k])){const st=el('i','fstack');for(const [k,nm2] of fb){const ln=el('span');ln.append(nm2+' ',el('b',null,modeBest['fire_'+k]?modeBest['fire_'+k].toLocaleString():'\u2014'));st.appendChild(ln)}b.appendChild(st)}}
+    if(m.id==='fire'){const fb=[['lava','Best']];if(fb.some(([k])=>modeBest['fire_'+k])){const st=el('i','fstack');for(const [k,nm2] of fb){const ln=el('span');ln.append(nm2+' ',el('b',null,modeBest['fire_'+k]?modeBest['fire_'+k].toLocaleString():'\u2014'));st.appendChild(ln)}b.appendChild(st)}}
     else if(m.id==='bear'){if(modeBest.bear_t)b.appendChild(el('i',null,'Fastest '+fmtB('bear_t',modeBest.bear_t)))}
     else if(m.id==='mallow'){const n=mmStars();if(n)b.appendChild(el('i',null,'\u2605 '+n+' / 45'))}
     else if(modeBest[m.id])b.appendChild(el('i',null,'Best '+modeBest[m.id].toLocaleString()));
@@ -8151,7 +8151,7 @@ function showOver(){
   S.newBestT=false;if(S.mode==='bear'&&S.win&&S.winTime&&!S.demo){const tv=bearTV(S.winTime);if(tv>(modeBest.bear_t||0)){modeBest.bear_t=tv;S.newBestT=true;save('rc_modebest',JSON.stringify(modeBest))}}
   if(isBest){modeBest[mk]=sc;if(S.mode==='fire')modeBest.fire=Math.max(modeBest.fire||0,sc);save('rc_modebest',JSON.stringify(modeBest))}
   if(!S.demo&&!S.daily){const bk=S.mode==='fire'?'fire_'+S.ff:S.mode==='bear'?'bear_t':S.mode,bsc=S.mode==='bear'?(S.win&&S.winTime?bearTV(S.winTime):0):sc;if(BOARDS.some(b=>b[0]===bk)&&bsc>0){submitModes({[bk]:bsc});if(ACC.code)rpc('rc_submit_week',{p_code:ACC.code,p_mode:bk,p_score:bsc}).then(refreshBoard).catch(()=>{})}}
-  if(S.mode==='fire'){ffPlayed[S.ff]=1;save('rc_ffplayed',JSON.stringify(ffPlayed));if(ffPlayed.lava&&ffPlayed.ride)unlockBadge('ff_all')}
+  if(S.mode==='fire'){ffPlayed[S.ff]=1;save('rc_ffplayed',JSON.stringify(ffPlayed));if(ffPlayed.lava&&Object.keys(MM_PROG).length)unlockBadge('ff_all')}
   if(S.mode==='classic'&&!S.daily&&sc>best){best=sc;save('rc_best',String(best))}
   const gained=S.cones-S.banked;wallet+=gained;S.banked=S.cones;
   const res=applyRun();
@@ -8609,7 +8609,7 @@ function showPlayerCard(r){
   card.appendChild(st);scr.appendChild(ov);
 }
 const MAIN_BOARDS=()=>BOARDS.filter(b=>!['copter','cross','snake','odyssey'].includes(b[0]));
-const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Summit Climb'],['solo','Solo'],['bear_t','Bear Mode'],['mallow','Mad Mallows'],['fire_lava','Lava Floor'],['fire_ride','Bear Ride'],['copter','Fart Copter'],['cross','Ridge Cross'],['snake','Snake Trail'],['odyssey','Odyssey Climb']];
+const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Summit Climb'],['solo','Solo'],['bear_t','Bear Mode'],['mallow','Mad Mallows'],['fire_lava','Forest Fire'],['copter','Fart Copter'],['cross','Ridge Cross'],['snake','Snake Trail'],['odyssey','Odyssey Climb']];
 /* Bear Mode ranks by fastest full catch: stored as 100000 - tenths of a second so bigger is still better */
 const bearTV=sec=>Math.max(1,100000-Math.round(sec*10)),fmtB=(k,v)=>k==='bear_t'?((100000-v)/10).toFixed(1)+'s':Number(v).toLocaleString();
 function boardModes(){const m={};for(const [k] of BOARDS){const v=k==='classic'?Math.max(modeBest.classic||0,best||0):(modeBest[k]||0);if(v>0)m[k]=v}return m}
