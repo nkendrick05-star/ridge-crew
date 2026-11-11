@@ -8693,7 +8693,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
 {let ver=null,hidAt=0;const getVer=()=>fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>(t.match(/ridge-crew-v\d+/)||[])[0]).catch(()=>null);
  if(location.protocol==='https:'){getVer().then(v=>{ver=v});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){hidAt=Date.now();return}if(!hidAt||Date.now()-hidAt<60e3)return;hidAt=0;
-    getVer().then(v=>{if(v&&ver&&v!==ver&&mode!=='play')location.reload();else if(v&&ver&&v!==ver)ver=v})})}}
+    getVer().then(v=>{if(v&&ver&&v!==ver&&mode!=='play'&&mode!=='paused')location.reload();else if(v&&ver&&v!==ver)ver=v})})}}
 try{if(ACC.code&&!sessionStorage.getItem('rc_pulled')){sessionStorage.setItem('rc_pulled','1');syncPull(ACC.code).then(r=>{if(r==='applied')location.reload()}).catch(()=>{})}}catch(e){}
 
 })();
