@@ -1769,14 +1769,14 @@ const ML_POW={
   camo:{n:'Drum Fill',d:'Tap mid-air: explode',say:'BA-DUM-TSS!'},
   stache:{n:'Amp It Up',d:'Tap mid-air: speed boost',say:'Turn it up.'}
 };
-const ML_SLING={x:28,y:-19},ML_V=300,ML_G=300;
+const ML_SLING={x:28,y:-19},ML_V=350,ML_G=300,ML_HILL=16,ML_OX=115;
 /* the spear tip: where the marshmallow sits in the thrower's hand, pulled back as you aim */
-function mlTip(dx,dy,p){return[ML_SLING.x+dx*(11-p*8),ML_SLING.y+dy*(11-p*8)]}
+function mlTip(dx,dy,p){return[ML_SLING.x+dx*(11-p*8),ML_SLING.y-ML_HILL+dy*(11-p*8)]}
 const ML_KIND={
   plank:{dens:.025,hp:100,burn:1,fric:.7},post:{dens:.025,hp:100,burn:1,fric:.7},crate:{dens:.02,hp:90,burn:1,fric:.7},
   stone:{dens:.07,hp:260,burn:0,fric:.85},sign:{dens:.02,hp:60,burn:1,fric:.7},barrel:{dens:.035,hp:45,burn:0,fric:.6},outhouse:{dens:.016,hp:90,burn:1,fric:.7}
 };
-function mlGeom(){const port=ch>cw*1.1,k=port?Math.max(2,Math.floor(cw/170*2)/2):Math.max(1.5,Math.floor(Math.min(cw/250,ch/150)*2)/2),gyS=Math.round(port?ch*.64:ch-Math.max(50,ch*.16));return{k,gyS,vw:cw/k,port}}
+function mlGeom(){const port=ch>cw*1.1,k=port?Math.max(1.5,Math.floor(cw/230*2)/2):Math.max(1.5,Math.floor(Math.min(cw/250,ch/150)*2)/2),gyS=Math.round(port?ch*.64:ch-Math.max(50,ch*.16));return{k,gyS,vw:cw/k,port}}
 function mlRand(seed){let a=seed*2654435761>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function mlBlock(ml,kind,x,yb,w,h,a){const K=ML_KIND[kind],b=MP.body({x,y:yb-h/2,hw:w/2,hh:h/2,a:a||0,m:Math.max(.6,w*h*K.dens),fric:K.fric});
   Object.assign(b,{kind,hp:K.hp,hp0:K.hp,burnable:!!K.burn,burning:false,heat:0,wet:0,char:0,seed:Math.random()*99,fl:0});MP.add(ml.W,b);ml.blocks.push(b);return b}
@@ -1784,7 +1784,9 @@ function mlBlock(ml,kind,x,yb,w,h,a){const K=ML_KIND[kind],b=MP.body({x,y:yb-h/2
 function mlBuild(ml,n){
   ml.W=MP.world();ml.W.g=ML_G;ml.blocks=[];ml.mm=[];ml.stuck=[];ml.parts=[];ml.embers=[];ml.texts=[];ml.lastTrail=ml.trail||[];ml.trail=[];
   const G=MP.add(ml.W,MP.body({x:0,y:60,hw:3000,hh:60,stat:true,fric:.9}));G.kind='ground';ml.ground=G;
-  const B=(k,x,yb,w,h,a)=>mlBlock(ml,k,x,yb,w,h,a);
+  /* the crew's lookout: a raised dirt mound to throw from */
+  {const H=MP.add(ml.W,MP.body({x:-60,y:-ML_HILL+40,hw:110,hh:40,stat:true,fric:.9}));H.kind='ground'}
+  const B=(k,x,yb,w,h,a)=>mlBlock(ml,k,x+ML_OX,yb,w,h,a);
   const frame=(x,yb,w,h)=>{B('post',x-w/2+2.5,yb,5,h);B('post',x+w/2-2.5,yb,5,h);B('plank',x,yb-h,w+4,5);return yb-h-5};
   const sign=(x,yb)=>B('sign',x,yb,16,12);
   const r=mlRand(n*977+13);
@@ -1904,7 +1906,7 @@ function mallowUpdate(dt){
   else if(ml.state==='wait'){tgt=camR;const busy=ml.blocks.some(b=>!b.asleep&&Math.hypot(b.vx,b.vy)>6);if(ml.st>1.1&&(!busy||ml.st>3.5)){ml.shotI++;ml.state=mlShooter(ml)?'aim':'out';ml.st=0}}
   else if(ml.state==='out'){tgt=camR;const busy=ml.blocks.some(b=>b.burning)||ml.blocks.some(b=>!b.asleep&&Math.hypot(b.vx,b.vy)>6);
     if(!S.dead&&(ml.st>1.2&&!busy||ml.st>10)){die(pick(['The NO FIRES sign survived.','Out of marshmallows. The sign is still standing.','The rangers win this round.']),'mallow');SFX.lose&&SFX.lose()}}
-  if(ml.aim&&ml.state==='aim'){const a=mlAimVec(ml);tgt=camL+Math.min(camR-camL,G.vw*.24)*a.p}
+  if(ml.aim&&ml.state==='aim'){const a=mlAimVec(ml);tgt=camL+Math.min(camR-camL,G.vw*.17)*a.p}
   ml.camX+=(tgt-ml.camX)*Math.min(1,dt*(ml.state==='fly'?5:2.6));
   if(S.score!==undefined)S.score=ml.score;
   SFX.setFire&&SFX.setFire(Math.min(.6,.15+burning.length*.05));
@@ -2005,14 +2007,13 @@ function mlMallow(x,y,a,r,lit,t,seed){ctx.save();ctx.translate(x,y);ctx.rotate(a
   ctx.restore();
   if(lit){for(let i=-1;i<=1;i++){const h=(5-Math.abs(i)*1.6)*(.8+.35*Math.abs(Math.sin(t*9+i*2+seed)));px(ctx,'#b8321e',Math.round(x+i*1.6-1),Math.round(y-r-h+1),2,Math.round(h));if(h>2.5)px(ctx,'#ffd166',Math.round(x+i*1.6-.5),Math.round(y-r-h+3),1,Math.round(h-2))}}}
 /* a marshmallow on a sharpened stick: the shaft trails behind the tip */
-function mlSpear(x,y,an,lit,t,seed,len){len=len||18;const c=Math.cos(an),s=Math.sin(an);ctx.save();ctx.translate(x,y);ctx.rotate(an);
-  px(ctx,'#3a2414',-len-1,-1,len,2.2);px(ctx,'#c8a070',-len,-.8,len-1,1.4);px(ctx,'#8a6a40',-len,.2,len-1,.5);px(ctx,'#e8c890',-len*.6,-.8,len*.3,.5);
-  px(ctx,'#5a3a22',-len-1,-1.2,2,2.4);
-  /* the marshmallow skewered on the end */
-  px(ctx,'#2a2220',-4.5,-4,8,8);px(ctx,'#2a2220',-3.5,-5,6,10);px(ctx,'#f4ece0',-3.5,-4,6,8);px(ctx,'#ffffff',-3,-3.5,2,1);px(ctx,'#d8c8b0',-3.5,3,6,1);
-  if(lit){px(ctx,'#c08a4a',-3.5,-4,6,1);px(ctx,'#8a5a2e',1,-4,1.5,2);px(ctx,'#c08a4a',-3.5,-1,1,3)}
-  px(ctx,'#c8a070',2.5,-.6,2.5,1.2);ctx.restore();
-  if(lit){for(let i=-1;i<=1;i++){const h=(6-Math.abs(i)*1.8)*(.8+.35*Math.abs(Math.sin(t*9+i*2+seed)));px(ctx,'#b8321e',Math.round(x-c*1+i*1.8-1),Math.round(y-4-h+1),2,Math.round(h));if(h>2.5)px(ctx,'#f08a24',Math.round(x-c*1+i*1.8-1),Math.round(y-4-h+2.5),2,Math.round(h-2));if(h>4)px(ctx,'#ffd166',Math.round(x-c*1+i*1.8-.5),Math.round(y-4-h+4),1,Math.round(h-4))}}}
+function mlSpear(x,y,an,lit,t,seed,len){len=len||18;const c=Math.cos(an),s=Math.sin(an),X=Math.round(x),Y=Math.round(y);
+  /* a thin 1px stick, stepped pixel by pixel like the ones at camp */
+  const x0=x-c*len,y0=y-s*len,n=Math.ceil(len);for(let q=0;q<=n;q++){const f=q/n;px(ctx,f<.15?'#4a2e17':'#6b4423',Math.round(x0+(x-x0)*f),Math.round(y0+(y-y0)*f),1,1)}
+  px(ctx,'#8a5a2e',Math.round(x0+(x-x0)*.5),Math.round(y0+(y-y0)*.5)-(Math.abs(c)>.5?1:0),1,1);
+  /* the marshmallow: a little 3x3 puff on the end, toasted when it's lit */
+  px(ctx,lit?'#c98b3a':'#ffffff',X-1,Y-1,3,3);px(ctx,lit?'#f2d29a':'#ffffff',X-1,Y-1,2,2);px(ctx,'#ffffff',X-1,Y-1,1,1);
+  if(lit){for(let i=-1;i<=1;i++){const h=Math.round((4-Math.abs(i)*1.5)*(.75+.4*Math.abs(Math.sin(t*9+i*2+seed))));if(h<1)continue;px(ctx,'#b8321e',X+i,Y-1-h,1,h);if(h>1)px(ctx,'#f08a24',X+i,Y-h,1,h-1);if(i===0&&h>2)px(ctx,'#ffd166',X,Y-2,1,1)}}}
 function mallowDraw(){
   const ml=S.ml,G=mlGeom(),k=G.k,t=ml.t;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
   const burning=ml.blocks.filter(b=>b.burning),heat=Math.min(1,burning.length/8);ml.heatV=(ml.heatV||0)+(heat-(ml.heatV||0))*.05;
@@ -2026,7 +2027,15 @@ function mallowDraw(){
    for(let i=Math.floor(L/6);i<R/6;i++){const r=hash(i*2.31),x=i*6+Math.round(r*5),y=Math.round(1+hash(i*3.7)*Math.min(40,ch/k-G.gyS/k+40));
      if(r<.45)px(ctx,i%2?'#2a1e12':'#33240f',x,y,2,1);else if(r<.6){px(ctx,'#2a2824',x,y,4,2);px(ctx,'#3e3a34',x,y,3,1)}else if(r<.7){px(ctx,'#4a3018',x,y,2,1)}else if(r<.76){px(ctx,'#24180c',x,y,6,1);px(ctx,'#24180c',x+5,y+1,4,1)}}
    for(let i=Math.floor(L/40);i<R/40;i++){if(hash(i*7.7)<.5)continue;const x=i*40+hash(i)*30;px(ctx,'#3a3632',x,-2,5,3);px(ctx,'#56524c',x,-2,4,1)}}
-  /* camp on the left: a little fire, the guys who already went, the queue, the slingshot */
+  /* the crew's mound: packed dirt with a worn top, stones and roots in the bank */
+  {const Hh=ML_HILL,x0=-190,x1=50,x2=64;ctx.fillStyle='#2a2016';ctx.beginPath();ctx.moveTo(x0,0);ctx.lineTo(x0,-Hh);ctx.lineTo(x1,-Hh);ctx.lineTo(x1+4,-Hh+3);ctx.lineTo(x2,0);ctx.closePath();ctx.fill();
+   const gm=ctx.createLinearGradient(0,-Hh,0,0);gm.addColorStop(0,'rgba(60,44,28,.9)');gm.addColorStop(1,'rgba(20,15,10,.2)');ctx.fillStyle=gm;ctx.fill();
+   px(ctx,'#4a3824',x0,-Hh,x1-x0,1);px(ctx,'#3a2c1c',x0,-Hh+1,x1-x0,1);px(ctx,'#1e2a16',x0,-Hh-1,x1-x0,1);
+   for(let i=0;i<34;i++){const x=Math.round(x0+hash(i*3.1)*(x1-x0+6)),y=Math.round(-Hh+3+hash(i*1.7)*(Hh-4)),r=hash(i*5.3);if(x>x1+(y+Hh)*.9)continue;
+     if(r<.3){px(ctx,'#3e3a34',x,y,4,2);px(ctx,'#56524c',x,y,3,1)}else if(r<.5)px(ctx,'#4a3018',x,y,2,1);else if(r<.65){px(ctx,'#24180c',x,y,5,1);px(ctx,'#24180c',x+4,y+1,3,1)}else px(ctx,'#33240f',x,y,2,1)}
+   for(let y=-Hh+1;y<0;y++){const xx=Math.round(x1+(y+Hh)*(x2-x1)/Hh);px(ctx,'#3a2c1c',xx-1,y,2,1)}}
+  ctx.save();ctx.translate(0,-ML_HILL);
+  /* camp on the mound: a little fire, the guys who already went, the queue, the thrower */
   const fx=-62;{for(let a=0;a<10;a++){const an=a/10*Math.PI*2,sx=Math.round(fx+Math.cos(an)*7),sy=Math.round(Math.sin(an)*1.6)-1;px(ctx,sy>0?'#3a3734':'#4a4744',sx-1.5,sy-1,3,2);px(ctx,'#a8704a',sx-1.5,sy-1,3,.6)}
     px(ctx,'#4a2e17',fx-6,-3,12,2);for(let i=-2;i<=2;i++){const h=Math.round((8-Math.abs(i)*2.2)*(.75+.35*Math.abs(Math.sin(t*7+i*1.9)))+Math.sin(t*13+i));px(ctx,'#b8321e',fx+i*2-1,-3-h,2,h);if(h>3)px(ctx,'#f08a24',fx+i*2-1,-3-h+2,2,h-2);if(h>6)px(ctx,'#ffd166',fx+i*2-1,-3-h+5,2,h-5)}
     px(ctx,'#4a2e17',fx-28,-4,18,4);px(ctx,'#6b4423',fx-28,-4,18,1)}
@@ -2039,13 +2048,13 @@ function mallowDraw(){
   let P=null,pull=null,dir=[.8,-.6];
   if(shooter){if(ml.aim&&ml.state==='aim'){pull=mlAimVec(ml);dir=[pull.dx,pull.dy]}const pp=pull?pull.p:0;P=mlTip(dir[0],dir[1],pp);
     /* a little line of stones to throw from */
-    for(let i=0;i<4;i++){const x=ML_SLING.x+6+i*1;px(ctx,'#3a3632',x,-1-i*0,2,1)}
     const sx=ML_SLING.x-4-pp*2;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(sx,0,5,1.2,0,0,6.283);ctx.fill();outlined(ctx,()=>drawHiker(ctx,shooter,sx,0,0,false));
-    /* his arm back, holding the stick over his shoulder */
-    const hx=sx+2-dir[0]*pp*3,hy=-18-dir[1]*pp*2;px(ctx,'#0b100d',hx-1.5,hy-1.5,3,3);px(ctx,(look(shooter).skin)||'#e6b28c',hx-1,hy-1,2,2);
-    mlSpear(P[0],P[1],Math.atan2(dir[1],dir[0]),true,t,1)}
+    /* the stick, gripped a third of the way down */
+    const tx=P[0],ty=P[1]+ML_HILL;mlSpear(tx,ty,Math.atan2(dir[1],dir[0]),true,t,1);
+    const hx=Math.round(tx-dir[0]*11),hy=Math.round(ty-dir[1]*11),sk=look(shooter).skin||'#e6b28c';px(ctx,sk,hx-1,hy-1,2,2);px(ctx,'rgba(0,0,0,.25)',hx-1,hy,2,1)}
   else if(ml.recoil>0&&ml.state==='fly'){/* follow-through */const c=ml.shots[ml.shotI],sx=ML_SLING.x-1;if(c){ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(sx,0,5,1.2,0,0,6.283);ctx.fill();outlined(ctx,()=>drawHiker(ctx,c,sx,0,0,false))}}
   else if(ml.state==='fly'||ml.state==='wait'){const c=ml.shots[ml.shotI];if(c){const sx=ML_SLING.x-2;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(sx,0,5,1.2,0,0,6.283);ctx.fill();outlined(ctx,()=>drawHiker(ctx,c,sx,0,0,false))}}
+  ctx.restore();
   /* last shot's path, then the aim guide */
   ctx.fillStyle='rgba(255,243,220,.28)';for(let i=0;i<ml.lastTrail.length;i+=3){const q=ml.lastTrail[i];ctx.fillRect(q[0]-.5,q[1]-.5,1.2,1.2)}
   if(pull&&pull.p>=.12){const v=ML_V*pull.p;let x=P[0],y=P[1],vx=pull.dx*v,vy=pull.dy*v;for(let i=0;i<16;i++){for(let j=0;j<4;j++){vy+=ML_G*.012;x+=vx*.012;y+=vy*.012}ctx.globalAlpha=Math.max(0,.85-i*.05);const z=Math.max(.8,2-i*.07);px(ctx,'#fff3dc',x-z/2,y-z/2,z,z)}ctx.globalAlpha=1}
@@ -2065,7 +2074,7 @@ function mallowDraw(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='rgba(8,10,26,'+(.34-ml.heatV*.08).toFixed(3)+')';ctx.fillRect(0,0,cw,ch);
   ctx.globalCompositeOperation='lighter';const SX=x=>(x-ml.camX)*k+sh[0],SY=y=>G.gyS+y*k+sh[1];
   const glow=(x,y,r,a,c)=>{const g=ctx.createRadialGradient(SX(x),SY(y),1,SX(x),SY(y),r*k);g.addColorStop(0,'rgba('+(c||'255,140,50')+','+a.toFixed(3)+')');g.addColorStop(1,'rgba('+(c||'255,140,50')+',0)');ctx.fillStyle=g;ctx.fillRect(SX(x)-r*k,SY(y)-r*k,r*2*k,r*2*k)};
-  glow(fx,-6,46,.3*(1+Math.sin(t*9)*.05));
+  glow(fx,-6-ML_HILL,46,.3*(1+Math.sin(t*9)*.05));
   for(const b of burning)glow(b.x,b.y-4,30+Math.min(20,b.hw),.2*Math.min(1,b.fl/.6)*(1+Math.sin(t*11+b.seed)*.08));
   for(const m of ml.mm)if(m.lit)glow(m.x,m.y,16,.25);
   if(shooter&&P)glow(P[0],P[1]-3,14,.22);for(const s of ml.stuck)if(s.lit){const o=s.o;glow(o.x+o.c*s.lx-o.s*s.ly,o.y+o.s*s.lx+o.c*s.ly,12,.18)}
@@ -2079,6 +2088,9 @@ function mallowDraw(){
   ctx.textAlign='center';ctx.textBaseline='middle';
   for(const tx of ml.texts){const a=Math.min(1,(1.4-tx.t)*3),f=Math.round((tx.big?9:7)*k*Math.min(1,.6+tx.t*4));ctx.font='700 '+f+'px "RCD","Pixelify Sans", monospace';ctx.globalAlpha=a;
     const x=Math.max(f*2,Math.min(cw-f*2,SX(tx.x))),y=SY(tx.y)-tx.t*14*k;ctx.lineWidth=Math.max(3,f*.2);ctx.strokeStyle='rgba(16,12,10,.9)';ctx.strokeText(tx.s,x,y);ctx.fillStyle=tx.c;ctx.fillText(tx.s,x,y)}ctx.globalAlpha=1;
+  if(ml.state==='aim'||ml.state==='show'){const sg=ml.blocks.filter(b=>b.kind==='sign'),right=ml.camX+G.vw;if(sg.length&&sg.every(b=>b.x>right-4)){const d2=Math.round(Math.min(...sg.map(b=>b.x))-ML_SLING.x),y=G.gyS-34*k,x=cw-18,bob=Math.sin(t*4)*3;
+    mlSignIcon(x-14+bob,y,Math.max(1.4,k*.9),true);ctx.fillStyle='#ffd166';ctx.beginPath();ctx.moveTo(x+bob+2,y-6);ctx.lineTo(x+bob+9,y);ctx.lineTo(x+bob+2,y+6);ctx.closePath();ctx.fill();
+    ctx.font='700 '+Math.round(Math.max(11,k*6))+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='right';ctx.textBaseline='middle';ctx.lineWidth=3;ctx.strokeStyle='rgba(16,12,10,.9)';const s2=d2+' m';ctx.strokeText(s2,x+8,y+14*k*.6+6);ctx.fillStyle='#fff3dc';ctx.fillText(s2,x+8,y+14*k*.6+6)}}
   mlHud(ml,G,shooter);
   if(ml.clear)mlClearCard(ml);
   if(S.spin||S.intro){ctx.setTransform(dpr*sc,0,0,dpr*sc,0,0);drawFFOverlay();ctx.setTransform(dpr,0,0,dpr,0,0)}
