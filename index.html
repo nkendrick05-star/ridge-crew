@@ -1945,7 +1945,7 @@ function mallowUpdate(dt){
   else if(ml.state==='out'){tgt=camR;const busy=ml.blocks.some(b=>b.burning)||ml.blocks.some(b=>!b.asleep&&Math.hypot(b.vx,b.vy)>6);
     if(ml.st>1.2&&!busy||ml.st>10)mmFinish(false)}
   if(ml.aim&&ml.state==='aim'){const a=mlAimVec(ml);tgt=camL+Math.min(camR-camL,G.vw*.17)*a.p}
-  ml.camX+=(tgt-ml.camX)*Math.min(1,dt*(ml.state==='fly'?5:2.6));
+  if(!ml.pan)ml.camX+=(tgt-ml.camX)*Math.min(1,dt*(ml.state==='fly'?5:3.2));
   if(S.score!==undefined)S.score=ml.score;
   SFX.setFire&&SFX.setFire(Math.min(.6,.15+burning.length*.05));
 }
@@ -1966,10 +1966,15 @@ function mlDown(e){const ml=S.ml;if(!ml||S.dead||ml.done)return;
   if(S.intro){S.intro.t=Math.max(S.intro.t,S.intro.dur-.3)}
   if(ml.state==='fly'){mlPower(ml);return}
   if(ml.state==='show'){ml.state='aim';ml.st=0}
-  if(ml.state!=='aim'||ml.clear)return;if(S.intro)return;
-  const x=e&&e.clientX!=null?e.clientX:cw*.3,y=e&&e.clientY!=null?e.clientY:ch*.6;ml.aim={x0:x,y0:y,x,y,id:e&&e.pointerId}}
-function mlMove(e){const ml=S&&S.ml;if(!ml||!ml.aim)return;ml.aim.x=e.clientX;ml.aim.y=e.clientY}
-function mlUp(){const ml=S&&S.ml;if(!ml||!ml.aim)return;const a=mlAimVec(ml);ml.aim=null;if(ml.state!=='aim'||S.dead||mode!=='play')return;if(a.p<.12)return;mlLaunch(ml,a.dx,a.dy,a.p)}
+  if(ml.clear)return;
+  const x=e&&e.clientX!=null?e.clientX:cw*.3,y=e&&e.clientY!=null?e.clientY:ch*.6;
+  /* grab the thrower to aim; grab anywhere else to look around */
+  const G=mlGeom(),hx=(ML_SLING.x-1-ml.camX)*G.k,hy=G.gyS+(-ML_HILL-14)*G.k,onGuy=Math.hypot(x-hx,y-hy)<Math.max(46,20*G.k);
+  if(ml.state==='aim'&&!S.intro&&(onGuy||!e||e.clientX==null)){ml.aim={x0:x,y0:y,x,y,id:e&&e.pointerId};return}
+  if(S.intro&&ml.state==='aim'&&onGuy)return;
+  ml.pan={x0:x,c0:ml.camX}}
+function mlMove(e){const ml=S&&S.ml;if(!ml)return;if(ml.aim){ml.aim.x=e.clientX;ml.aim.y=e.clientY}else if(ml.pan){const G=mlGeom(),camL=ML_SLING.x-G.vw*.3,camR=Math.max(camL,ml.maxX+16-G.vw);ml.camX=Math.max(camL-20,Math.min(camR+30,ml.pan.c0-(e.clientX-ml.pan.x0)/G.k));ml.pan.moved=1}}
+function mlUp(){const ml=S&&S.ml;if(!ml)return;if(ml.pan){ml.pan=null;return}if(!ml.aim)return;const a=mlAimVec(ml);ml.aim=null;if(ml.state!=='aim'||S.dead||mode!=='play')return;if(a.p<.12)return;mlLaunch(ml,a.dx,a.dy,a.p)}
 function mlAimVec(ml){const A=ml.aim,dx=A.x0-A.x,dy=A.y0-A.y,mx=Math.max(70,Math.min(cw,ch)*.24),d=Math.hypot(dx,dy);return{dx:d?dx/d:1,dy:d?dy/d:0,p:Math.min(1,d/mx)}}
 /* a jagged mountain range with lit faces and a ragged snowline (used in the camps and on the trail map) */
 function mlRange(g,x0,x1,base,amp,step,col,shade,snow,seed){const pts=[];for(let x=x0,i=0;x<=x1+step;x+=step,i++){const pk=i%2===0,h=amp*(pk?.62+hash(i*1.7+seed)*.38:.25+hash(i*2.9+seed)*.3);pts.push([x+(hash(i+seed)-.5)*step*.5,base-h,pk])}
@@ -2105,6 +2110,8 @@ function mallowDraw(){
   if(shooter){if(ml.aim&&ml.state==='aim'){pull=mlAimVec(ml);dir=[pull.dx,pull.dy]}const pp=pull?pull.p:0;P=mlTip(dir[0],dir[1],pp);
     /* a little line of stones to throw from */
     const sx=ML_SLING.x-4-pp*2;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(sx,0,5,1.2,0,0,6.283);ctx.fill();outlined(ctx,()=>drawHiker(ctx,shooter,sx,0,0,false));
+    /* a pulsing ring around him says: grab here */
+    if(!ml.aim&&!ml.pan&&ml.state==='aim'){const a=.35+.3*Math.sin(t*5);ctx.strokeStyle='rgba(255,209,102,'+a.toFixed(2)+')';ctx.lineWidth=1;ctx.beginPath();ctx.arc(ML_SLING.x-1,-14,15+Math.sin(t*5)*1.5,0,6.283);ctx.stroke()}
     /* the stick, gripped a third of the way down */
     const tx=P[0],ty=P[1]+ML_HILL;mlSpear(tx,ty,Math.atan2(dir[1],dir[0]),true,t,1);
     const hx=Math.round(tx-dir[0]*11),hy=Math.round(ty-dir[1]*11),sk=look(shooter).skin||'#e6b28c';px(ctx,sk,hx-1,hy-1,2,2);px(ctx,'rgba(0,0,0,.25)',hx-1,hy,2,1)}
@@ -2161,7 +2168,7 @@ function mlHud(ml,G,shooter){ctx.setTransform(dpr,0,0,dpr,0,0);
   row=Math.round(row+f*1.05);ctx.font=FONT(sm);shadow('CAMP '+ml.lvl,pad,row,'#ffb347');const lw=ctx.measureText('CAMP '+ml.lvl).width;
   const left=mlSigns(ml),s=Math.max(1.4,sm/9);for(let i=0;i<ml.signs0;i++)mlSignIcon(pad+lw+14+s*6+i*s*14,row,s,i<left);
   /* whose turn + his move, at the bottom */
-  if(shooter&&ml.state==='aim'&&!ml.clear&&!S.intro&&!S.spin){const P=ML_POW[shooter.id]||ML_POW.nathan,txt=nm(shooter)+' · '+P.n,sub=ml.aim?'Let go to throw':P.d;
+  if(shooter&&ml.state==='aim'&&!ml.clear&&!S.intro&&!S.spin){const P=ML_POW[shooter.id]||ML_POW.nathan,txt=nm(shooter)+' · '+P.n,sub=ml.aim?'Let go to throw':ml.pan?'Let go to look back':'Pull back from '+nm(shooter)+' to throw';
     ctx.font=FONT(sm);const tw1=ctx.measureText(txt).width;ctx.font=FONT(Math.round(sm*.8));const tw2=ctx.measureText(sub).width,lt=(ml.shots.length-ml.shotI)+' left',tw3=ctx.measureText(lt).width,bh=Math.round(sm*2.7),bw=Math.min(cw-32,Math.round(bh*1.1+Math.max(tw1+tw3+28,tw2+16))),land=!G.port,bx=Math.round(land?cw-pad-bw:cw/2-bw/2),by=Math.round(land?pad+f*1.5:ch-Math.max(26,ch*.06)-bh);
     ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.roundRect?ctx.roundRect(bx+2,by+3,bw,bh,12):ctx.rect(bx+2,by+3,bw,bh);ctx.fill();
     const g=ctx.createLinearGradient(0,by,0,by+bh);g.addColorStop(0,'rgba(58,20,12,.94)');g.addColorStop(1,'rgba(18,8,6,.94)');ctx.fillStyle=g;ctx.beginPath();ctx.roundRect?ctx.roundRect(bx,by,bw,bh,12):ctx.rect(bx,by,bw,bh);ctx.fill();
@@ -2198,7 +2205,7 @@ function mlOverArt(g,t,cr){const P=OV.P;
 const MM_AREAS=[{n:'Ranger Station',c:'#6ab04a'},{n:'Lakeside',c:'#7ac0f0'},{n:'Ridge Top',c:'#e8eef4'}];
 /* every camp has its own lineup, never the same guy twice */
 const MM_LV=[
- {n:'First Spark',crew:['nathan','patch'],tip:'Drag back and let go to throw. Burn the NO FIRES sign! Nathan\'s Flare: tap mid-air to set everything close on fire.',
+ {n:'First Spark',crew:['nathan','patch'],tip:'Grab the thrower and pull back, then let go to throw. Drag anywhere else to look at the fort. Nathan\'s Flare: tap mid-air to set everything close on fire.',
   b:(B,F,S)=>{const t=F(150,0,30,24);S(150,t)}},
  {n:'Spread Out',crew:['patch','nathan'],tip:'Sam\'s Tickle Split: tap mid-air to split into three. Great for signs that are spread out.',
   b:(B,F,S)=>{B('crate',128,0,12,12);S(128,-12);const t=F(172,0,22,18);S(172,t);B('crate',216,0,12,12);B('crate',216,-12,12,12);S(216,-24)}},
@@ -2306,9 +2313,9 @@ function mmFinish(win){const ml=S.ml;if(ml.done)return;ml.done=true;const n=ml.l
   card.appendChild(r2);ov.appendChild(card);$('app').appendChild(ov);$('pauseBtn').hidden=true}
 var ffPick=(()=>{try{return localStorage.getItem('rc_ffpick')||'random'}catch(e){return 'random'}})();
 function mlPickRow(t){const seg=el('div','ffpick');for(const [k,lab] of [['random','Random'],['lava','Lava'],['ride','Rodeo']]){const s=el('span',ffPick===k?'on':'',lab);s.classList.toggle('on',ffPick===k||(k==='random'&&ffPick==='mallow'));s.addEventListener('click',ev=>{ev.stopPropagation();ffPick=k;save('rc_ffpick',k);runMode='fire';save('rc_mode','fire');SFX.tap&&SFX.tap();const sc=$('modeList').scrollTop;showModes();$('modeList').scrollTop=sc});seg.appendChild(s)}t.appendChild(seg)}
-window.addEventListener('pointermove',e=>{if(S&&S.ml&&S.ml.aim)mlMove(e)});
-window.addEventListener('pointerup',e=>{if(S&&S.ml&&S.ml.aim)mlUp(e)});
-window.addEventListener('pointercancel',()=>{if(S&&S.ml)S.ml.aim=null});
+window.addEventListener('pointermove',e=>{if(S&&S.ml&&(S.ml.aim||S.ml.pan))mlMove(e)});
+window.addEventListener('pointerup',e=>{if(S&&S.ml&&(S.ml.aim||S.ml.pan))mlUp(e)});
+window.addEventListener('pointercancel',()=>{if(S&&S.ml){S.ml.aim=null;S.ml.pan=null}});
 /* ---------- forest fire mode: three random variants ---------- */
 const FF_INFO={
   mallow:{name:'Marshmallow Launcher',intro:()=>'Drag back and let go to throw. Burn every NO FIRES sign! Tap mid-air for each guy\'s move.'},
