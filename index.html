@@ -6938,7 +6938,7 @@ function drawHikerFront(g,c,x,y,mouth){
 }
 const sparks=[],smokes=[],leaves=[];
 /* ---------- campfire secrets + things to poke ---------- */
-var POOL_SPOT=Math.random()<.35?[[-40,17],[18,20],[-14,21],[54,17]][Math.floor(Math.random()*4)]:null;
+var POOL_SPOT=Math.random()<.35?[[-17,9],[16,9],[-11,12],[11,12]][Math.floor(Math.random()*4)]:null;
 let CAMP={};try{CAMP=JSON.parse(localStorage.getItem('rc_camp')||'{}')||{}}catch(e){}
 const campSave=()=>{try{save('rc_camp',JSON.stringify(CAMP))}catch(e){}};
 let CAMP_HITS=[],campTexts=[],owlPuff=0,owlSpin=0,hootT=0,eyesHit=0,eyesHX=0,eyesHY=0,mallowOff=[0,0],mallowFx=[],flyCaught={},starFx=null,campStarAt=0,coolerT=0,coonT=0,petWake=0,campDay=Math.floor(Date.now()/864e5);
