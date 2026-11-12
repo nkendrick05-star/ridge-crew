@@ -2719,7 +2719,8 @@ function plRack(){const B=[{n:0,x:25,y:76,vx:0,vy:0,in:false}],R=PL.R,d=R*2+.02,
   /* 8 in the middle of row 3, a solid and a stripe in the back corners, the rest shuffled */
   const rest=[1,2,3,4,5,6,7,9,10,11,12,13,14,15].sort(()=>Math.random()-.5);const corners=[rest.splice(rest.findIndex(n=>n<8),1)[0],rest.splice(rest.findIndex(n=>n>8),1)[0]];
   const pos=[];for(let row=0;row<5;row++)for(let i=0;i<=row;i++)pos.push([25+(i-row/2)*d,top-row*d*.866]);
-  pos.forEach((p,i)=>{let n;if(i===4)n=8;else if(i===10)n=corners[0];else if(i===14)n=corners[1];else n=rest.shift();B.push({n,x:p[0]+(Math.random()-.5)*.03,y:p[1],vx:0,vy:0,in:false})});return B}
+  pos.forEach((p,i)=>{let n;if(i===4)n=8;else if(i===10)n=corners[0];else if(i===14)n=corners[1];else n=rest.shift();B.push({n,x:p[0]+(Math.random()-.5)*.03,y:p[1],vx:0,vy:0,in:false})});
+  for(const b of B){plOrient(b);plRotate(b,1,0,(Math.random()-.5)*.9);plRotate(b,0,1,(Math.random()-.5)*.9)}return B}
 function poolInit(){const opp=byId(POOL_OPP)||CHARS.find(c=>c.id!==(S.leader&&S.leader.id)&&!c.animal);
   S.pl={t:0,balls:plRack(),turn:Math.random()<.5?'p':'o',grp:{p:null,o:null},hand:true,brk:true,aim:-Math.PI/2,power:0,spin:0,moving:false,opp,shot:null,called:null,msg:null,bub:null,ai:null,over:null,drag:null,pots:[]};
   const pl=S.pl;if(pl.turn==='o')plAiPlan(pl);plMsg(pl,pl.turn==='p'?'Your break':nm(opp)+' breaks','#ffd166');
@@ -2731,25 +2732,53 @@ function plSay(pl,kind){const L=(PL_AI[pl.opp.id]||PL_AI.nathan).lines[kind];if(
 function plTargets(pl,who){const g=pl.grp[who],live=plLive(pl).filter(b=>b.n!==0);if(!g)return live.filter(b=>b.n!==8);const mine=live.filter(b=>plType(b.n)===g);return mine.length?mine:live.filter(b=>b.n===8)}
 const plOnEight=(pl,who)=>{const t=plTargets(pl,who);return t.length===1&&t[0].n===8};
 /* ---- physics: rolling friction, ball-ball and cushion bounces, pockets ---- */
-function plStep(pl,dt){const R=PL.R,B=plLive(pl),n=8,h=dt/n;let any=false;
-  for(let s=0;s<n;s++){for(const b of B){if(b.in)continue;b.x+=b.vx*h;b.y+=b.vy*h;const sp=Math.hypot(b.vx,b.vy);if(sp>0){const ns=Math.max(0,sp-h*(16+sp*.35));b.vx*=ns/sp;b.vy*=ns/sp}if(ns_small(b))b.vx=b.vy=0}
-    for(let it=0;it<3;it++)for(let i=0;i<B.length;i++){const a=B[i];if(a.in)continue;for(let j=i+1;j<B.length;j++){const c=B[j];if(c.in)continue;const dx=c.x-a.x,dy=c.y-a.y,d=Math.hypot(dx,dy);if(d>=2*R||d===0)continue;
-      const nx=dx/d,ny=dy/d,ov=2*R-d;a.x-=nx*ov/2;a.y-=ny*ov/2;c.x+=nx*ov/2;c.y+=ny*ov/2;const rv=(c.vx-a.vx)*nx+(c.vy-a.vy)*ny;if(rv>=0)continue;const imp=-rv*.97;
-      a.vx-=nx*imp;a.vy-=ny*imp;c.vx+=nx*imp;c.vy+=ny*imp;
-      if(pl.shot&&!pl.shot.first&&(a.n===0||c.n===0)){pl.shot.first=a.n===0?c.n:a.n;const cb=a.n===0?a:c;if(pl.shot.spin){const u=pl.shot.dir;cb.vx+=u[0]*pl.shot.spin*pl.shot.v*.32;cb.vy+=u[1]*pl.shot.spin*pl.shot.v*.32}}
-      if(Math.abs(rv)>12)SFX.tap&&SFX.tap()}}
+/* ---- physics: each ball slides, then rolls; spin is real (follow and draw come from it) ---- */
+/* table units are inches; g in inches/s^2. A ball keeps a linear velocity v and a "roll" velocity w
+   (how fast its surface is turning, as a speed). While they differ it slides and friction pulls them together;
+   once they match it rolls and only slows a little. */
+const PL_G=386,PL_MUS=.2,PL_MUR=.013,PL_EB=.95,PL_EC=.74;
+/* the knuckles of each pocket mouth: balls that clip them rattle out */
+const PL_JAWS=(()=>{const J=[];const c=3.3,sd=2.9;for(const [x,y,sx,sy] of [[0,0,1,1],[50,0,-1,1],[0,100,1,-1],[50,100,-1,-1]]){J.push([x+sx*c,y],[x,y+sy*c])}for(const x of [0,50])J.push([x,50-sd],[x,50+sd]);return J})();
+function plOrient(b){if(!b.M)b.M=[1,0,0,0,1,0,0,0,1]}
+function plRotate(b,ax,ay,ang){/* spin the ball's body about a horizontal axis by ang (Rodrigues) */
+  if(ang===0)return;plOrient(b);const c=Math.cos(ang),s=Math.sin(ang),t=1-c,x=ax,y=ay,z=0,R=[t*x*x+c,t*x*y-s*z,t*x*z+s*y,t*x*y+s*z,t*y*y+c,t*y*z-s*x,t*x*z-s*y,t*y*z+s*x,t*z*z+c],M=b.M,N=new Array(9);
+  for(let r=0;r<3;r++)for(let q=0;q<3;q++)N[r*3+q]=R[r*3]*M[q]+R[r*3+1]*M[3+q]+R[r*3+2]*M[6+q];b.M=N}
+function plStep(pl,dt){const R=PL.R,B=plLive(pl);let mx=0;for(const b of B)mx=Math.max(mx,Math.hypot(b.vx,b.vy));
+  const n=Math.max(4,Math.ceil(mx*dt/(R*.35))),h=dt/n;let any=false;
+  for(let st=0;st<n;st++){
+    for(const b of B){if(b.in)continue;b.wx=b.wx||0;b.wy=b.wy||0;
+      const sx=b.vx-b.wx,sy=b.vy-b.wy,sl=Math.hypot(sx,sy);
+      if(sl>.4){/* sliding: friction slows v and spins w up toward it */const a=PL_MUS*PL_G*h;const k=Math.min(a,sl/3.5*1)/sl;b.vx-=sx*k;b.vy-=sy*k;b.wx+=sx*k*2.5;b.wy+=sy*k*2.5}
+      else{/* rolling: a little rolling resistance */const sp=Math.hypot(b.vx,b.vy);if(sp>0){const ns=Math.max(0,sp-PL_MUR*PL_G*h-sp*.04*h);b.vx*=ns/sp;b.vy*=ns/sp}b.wx=b.vx;b.wy=b.vy}
+      b.x+=b.vx*h;b.y+=b.vy*h;
+      /* the ball's markings turn with how its surface rolls */
+      const wl=Math.hypot(b.wx,b.wy);if(wl>.01)plRotate(b,-b.wy/wl,b.wx/wl,wl*h/R);
+      if(Math.hypot(b.vx,b.vy)<.5&&Math.hypot(b.wx,b.wy)<.5){b.vx=b.vy=b.wx=b.wy=0}}
+    for(let it=0;it<2;it++)for(let i=0;i<B.length;i++){const a=B[i];if(a.in)continue;for(let j=i+1;j<B.length;j++){const c=B[j];if(c.in)continue;const dx=c.x-a.x,dy=c.y-a.y,d=Math.hypot(dx,dy);if(d>=2*R||d===0)continue;
+      const nx=dx/d,ny=dy/d,ov=2*R-d;a.x-=nx*ov/2;a.y-=ny*ov/2;c.x+=nx*ov/2;c.y+=ny*ov/2;const rv=(c.vx-a.vx)*nx+(c.vy-a.vy)*ny;if(rv>=0)continue;
+      /* equal masses: the normal part of the speed swaps (a hair lost), spin stays with each ball */
+      const imp=-rv*(1+PL_EB)/2;a.vx-=nx*imp;a.vy-=ny*imp;c.vx+=nx*imp;c.vy+=ny*imp;
+      if(pl.shot&&pl.shot.first==null&&(a.n===0||c.n===0))pl.shot.first=a.n===0?c.n:a.n;
+      if(Math.abs(rv)>6)plClick(pl,Math.abs(rv))}}
     for(const b of B){if(b.in)continue;
-      for(const p of PL_POCKETS){const side=p[1]===50,cap=side?2.35:2.75;if(Math.hypot(b.x-p[0],b.y-p[1])<cap){b.in=true;b.vx=b.vy=0;pl.pots.push(b.n);pl.sink=pl.sink||[];pl.sink.push({n:b.n,x:p[0],y:p[1],t:0});SFX.cone&&SFX.cone();break}}
-      if(b.in)continue;const nearCornerY=b.y<3.2||b.y>96.8,nearSide=Math.abs(b.y-50)<2.5,nearCornerX=b.x<3.2||b.x>46.8;
-      if(!nearCornerY&&!nearSide){if(b.x<R){b.x=R;b.vx=Math.abs(b.vx)*.78}else if(b.x>PL.W-R){b.x=PL.W-R;b.vx=-Math.abs(b.vx)*.78}}
-      else{if(b.x<-2.5){b.x=-2.5;b.vx=Math.abs(b.vx)*.5}if(b.x>PL.W+2.5){b.x=PL.W+2.5;b.vx=-Math.abs(b.vx)*.5}}
-      if(!nearCornerX){if(b.y<R){b.y=R;b.vy=Math.abs(b.vy)*.78}else if(b.y>PL.H-R){b.y=PL.H-R;b.vy=-Math.abs(b.vy)*.78}}
-      else{if(b.y<-2.5){b.y=-2.5;b.vy=Math.abs(b.vy)*.5}if(b.y>PL.H+2.5){b.y=PL.H+2.5;b.vy=-Math.abs(b.vy)*.5}}}}
-  for(const b of B)if(!b.in&&(b.vx||b.vy))any=true;return any}
-function ns_small(b){return Math.hypot(b.vx,b.vy)<.6}
+      for(const p of PL_POCKETS){const side=p[1]===50,cap=side?2.3:2.6;if(Math.hypot(b.x-p[0],b.y-p[1])<cap){b.in=true;pl.pots.push(b.n);pl.sink=pl.sink||[];pl.sink.push({n:b.n,b,x:b.x,y:b.y,px:p[0],py:p[1],vx:b.vx,vy:b.vy,t:0});b.vx=b.vy=b.wx=b.wy=0;SFX.cone&&SFX.cone();break}}
+      if(b.in)continue;
+      /* pocket jaws */
+      for(const J of PL_JAWS){const dx=b.x-J[0],dy=b.y-J[1],d=Math.hypot(dx,dy),rr=R+.25;if(d<rr&&d>0){const nx=dx/d,ny=dy/d;b.x=J[0]+nx*rr;b.y=J[1]+ny*rr;const vn=b.vx*nx+b.vy*ny;if(vn<0){b.vx-=(1+PL_EC)*vn*nx;b.vy-=(1+PL_EC)*vn*ny;b.wx*=.6;b.wy*=.6;if(-vn>8)plThud(pl,-vn)}}}
+      const inCornerY=b.y<3.3||b.y>96.7,inSide=Math.abs(b.y-50)<2.9,inCornerX=b.x<3.3||b.x>46.7;
+      const bounce=(axis,sign)=>{if(axis==='x'){const vn=b.vx*sign;if(vn<0){b.vx=-b.vx*PL_EC;b.wx=-b.wx*.5;b.wy*=.8;if(-vn>8)plThud(pl,-vn)}}else{const vn=b.vy*sign;if(vn<0){b.vy=-b.vy*PL_EC;b.wy=-b.wy*.5;b.wx*=.8;if(-vn>8)plThud(pl,-vn)}}};
+      if(!inCornerY&&!inSide){if(b.x<R){b.x=R;bounce('x',1)}else if(b.x>PL.W-R){b.x=PL.W-R;bounce('x',-1)}}else{if(b.x<-3){b.x=-3;bounce('x',1)}if(b.x>PL.W+3){b.x=PL.W+3;bounce('x',-1)}}
+      if(!inCornerX){if(b.y<R){b.y=R;bounce('y',1)}else if(b.y>PL.H-R){b.y=PL.H-R;bounce('y',-1)}}else{if(b.y<-3){b.y=-3;bounce('y',1)}if(b.y>PL.H+3){b.y=PL.H+3;bounce('y',-1)}}}}
+  for(const b of B)if(!b.in&&(b.vx||b.vy||b.wx||b.wy))any=true;return any}
+/* sounds scaled to how hard things hit (with a little cooldown so a break isn't a wall of noise) */
+function plClick(pl,v){if(pl._ck>0)return;pl._ck=.03;SFX.tap&&SFX.tap()}
+function plThud(pl,v){if(pl._th>0)return;pl._th=.05;if(v>30)SFX.land&&SFX.land();else SFX.tap&&SFX.tap()}
+/* the stick hits the cue ball: centre ball slides first, top spin rolls through, bottom spin draws back */
 function plShoot(pl,ang,power,spin){const c=plCue(pl),v=PL.VMIN+power*(PL.VMAX-PL.VMIN),u=[Math.cos(ang),Math.sin(ang)];c.vx=u[0]*v;c.vy=u[1]*v;
-  pl.shot={who:pl.turn,first:null,dir:u,v,spin:spin||0,brk:pl.brk};pl.pots=[];pl.moving=true;pl.hand=false;pl.power=0;SFX.hit&&SFX.hit();pl.cueKick=1}
-/* after the balls stop: decide fouls, groups, whose turn, and whether someone won */
+  const wf=spin>0?1.25:spin<0?-1.1:0;c.wx=u[0]*v*wf;c.wy=u[1]*v*wf;
+  pl.shot={who:pl.turn,first:null,dir:u,v,spin:spin||0,brk:pl.brk};pl.pots=[];pl.moving=true;pl.hand=false;pl.power=0;pl.cueKick=1}
+/* the stroke: the cue slides forward from where you pulled it back, then the ball goes */
+function plStrike(pl,ang,power,spin){pl.strike={t:0,ang,power,spin,from:power};SFX.hit&&SFX.hit()}
 function plResolve(pl){const sh=pl.shot,who=sh.who,oth=who==='p'?'o':'p',pots=pl.pots,scratch=pots.includes(0),eight=pots.includes(8),g=pl.grp[who];
   const wasOnEight=!!g&&pl.balls.filter(b=>plType(b.n)===g).every(b=>b.in&&!pots.includes(b.n));
   const firstOk=sh.first!=null&&(sh.brk||(!g?sh.first!==8:(wasOnEight?sh.first===8:plType(sh.first)===g)));
@@ -2784,17 +2813,19 @@ function plAiShoot(pl){const P=PL_AI[pl.opp.id]||PL_AI.nathan,c=plCue(pl);
     for(const b of tg)PL_POCKETS.forEach((p,pi)=>{const tx=p[0]-b.x,ty=p[1]-b.y,d2=Math.hypot(tx,ty),ux=tx/d2,uy=ty/d2,px0=b.x-ux*12,py0=b.y-uy*12;if(px0<2||px0>48||py0<2||py0>98)return;if(plLive(pl).some(o=>o!==c&&Math.hypot(o.x-px0,o.y-py0)<3))return;if(!plClear(pl,b.x,b.y,p[0],p[1],[b,c]))return;if(!best||d2<best.d2)best={x:px0,y:py0,d2}});
     if(best){c.x=best.x;c.y=best.y}}
   const opts=plBest(pl,'o');let ang,pw;
-  if(opts.length){const o=opts[Math.min(opts.length-1,Math.random()<.2?1:0)];ang=o.ang;pw=Math.max(.22,Math.min(.95,.2+(o.d1+o.d2*1.6)/170+o.cut*.12+P.pw));if(o.b.n===8)pl.called=o.pi}
-  else{const tg=plTargets(pl,'o').sort((a,b)=>Math.hypot(a.x-c.x,a.y-c.y)-Math.hypot(b.x-c.x,b.y-c.y))[0];ang=tg?Math.atan2(tg.y-c.y,tg.x-c.x):Math.random()*6.28;pw=.38+P.pw;if(tg&&tg.n===8)pl.called=0}
+  if(opts.length){const o=opts[Math.min(opts.length-1,Math.random()<.2?1:0)];ang=o.ang;pw=Math.max(.16,Math.min(.95,.14+(o.d1+o.d2*1.5)/230+o.cut*.14+P.pw));if(o.b.n===8)pl.called=o.pi}
+  else{const tg=plTargets(pl,'o').sort((a,b)=>Math.hypot(a.x-c.x,a.y-c.y)-Math.hypot(b.x-c.x,b.y-c.y))[0];ang=tg?Math.atan2(tg.y-c.y,tg.x-c.x):Math.random()*6.28;pw=.3+P.pw;if(tg&&tg.n===8)pl.called=0}
   ang+=(Math.random()-.5)*2*P.err*(1+Math.random());return{ang,pw,spin:Math.random()<.25?(Math.random()<.5?1:-1):0}}
-function poolUpdate(dt){const pl=S.pl;if(!pl)return;pl.t+=dt;pl.cueKick=Math.max(0,(pl.cueKick||0)-dt*4);
+function poolUpdate(dt){const pl=S.pl;if(!pl)return;pl.t+=dt;pl.cueKick=Math.max(0,(pl.cueKick||0)-dt*4);pl._ck=Math.max(0,(pl._ck||0)-dt);pl._th=Math.max(0,(pl._th||0)-dt);
+  if(pl.strike){const k=pl.strike;k.t+=dt;pl.power=k.from*Math.max(0,1-k.t/.09);if(k.t>=.09){pl.strike=null;plShoot(pl,k.ang,k.power,k.spin)}return}
+  pl.tray=pl.tray||[];for(const tb of pl.tray)tb.t+=dt;
   if(pl.msg){pl.msg.t+=dt;if(pl.msg.t>2.2)pl.msg=null}if(pl.bub){pl.bub.t+=dt;if(pl.bub.t>2.6)pl.bub=null}
-  if(pl.sink){for(const s of pl.sink)s.t+=dt;pl.sink=pl.sink.filter(s=>s.t<.5)}
+  if(pl.sink){for(const s of pl.sink){s.t+=dt;/* roll on into the hole */const k=Math.min(1,s.t/.18);s.x+=(s.px-s.x)*k*.5;s.y+=(s.py-s.y)*k*.5;if(s.t>.35&&!s.done){s.done=1;if(s.n!==0)(pl.tray=pl.tray||[]).push({n:s.n,b:s.b,t:0,slot:pl.tray.length})}}pl.sink=pl.sink.filter(s=>s.t<.4)}
   if(pl.over){pl.over.t+=dt;return}
-  if(pl.moving){if(!plStep(pl,Math.min(dt,1/30))){pl.moving=false;plResolve(pl)}return}
+  if(pl.moving){if(!plStep(pl,Math.min(dt,1/30))&&!(pl.sink&&pl.sink.length)){pl.moving=false;plResolve(pl)}return}
   if(pl.turn==='o'&&pl.ai){const A=pl.ai;A.t+=dt;if(!A.shot&&A.t>.5){A.shot=plAiShoot(pl);A.from=pl.aim}
     if(A.shot){const k=Math.min(1,(A.t-.5)/Math.max(.3,A.think-.5)),d=((A.shot.ang-A.from+Math.PI*3)%(Math.PI*2))-Math.PI;pl.aim=A.from+d*(1-Math.pow(1-k,3));
-      if(A.t>A.think)pl.power=Math.min(A.shot.pw,(A.t-A.think)*1.6);if(A.t>A.think+A.shot.pw/1.6+.15){pl.spin=A.shot.spin;plShoot(pl,A.shot.ang,A.shot.pw,A.shot.spin);pl.spin=0;pl.ai=null}}}}
+      if(A.t>A.think)pl.power=Math.min(A.shot.pw,(A.t-A.think)*1.6);if(A.t>A.think+A.shot.pw/1.6+.15){plStrike(pl,A.shot.ang,A.shot.pw,A.shot.spin);pl.ai=null}}}}
 /* ---------- Camp 8-Ball: drawing, controls and menus ---------- */
 function plGeom(){const port=ch>=cw*.9,hT=Math.round(Math.max(port?96:70,ch*(port?.12:.16))),hB=port?Math.round(Math.max(76,ch*.1)):18,PW=36,RA=4.6;
   const aw=cw-PW-40,ah=ch-hT-hB;let s,ox,oy,fw,fh;
@@ -2809,15 +2840,21 @@ function plRay(pl,ang){const c=plCue(pl),R=PL.R,ux=Math.cos(ang),uy=Math.sin(ang
   const wall=Math.min(ux>0?(PL.W-R-c.x)/ux:ux<0?(R-c.x)/ux:1e9,uy>0?(PL.H-R-c.y)/uy:uy<0?(R-c.y)/uy:1e9);if(wall<best){best=wall;hit=null}
   return{t:best,b:hit,gx:c.x+ux*best,gy:c.y+uy*best}}
 const PL_PORT={};function plPortrait(c){if(!PL_PORT[c.id])PL_PORT[c.id]=portrait(c,2);return PL_PORT[c.id]}
-function plBall(G,b,x,y,r){const s=G.s,col=PL_COL[b.n>8?b.n-8:b.n],X=Math.round(x),Y=Math.round(y);
-  ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(X+r*.25,Y+r*.35,r,r*.8,0,0,6.283);ctx.fill();
-  ctx.save();ctx.beginPath();ctx.arc(X,Y,r,0,6.283);ctx.clip();
-  if(b.n>8){ctx.fillStyle='#f4efe4';ctx.fillRect(X-r,Y-r,r*2,r*2);ctx.fillStyle=col;ctx.fillRect(X-r,Y-r*.52,r*2,r*1.04)}else{ctx.fillStyle=b.n===0?'#f4efe4':col;ctx.fillRect(X-r,Y-r,r*2,r*2)}
-  /* chunky shading: a dark lower crescent and a bright upper spot */
-  ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.arc(X+r*.35,Y+r*.45,r,0,6.283);ctx.arc(X-r*.1,Y-r*.1,r*.95,0,6.283,true);ctx.fill('evenodd');ctx.restore();
-  if(b.n>0&&r>4){ctx.fillStyle='#f4efe4';ctx.beginPath();ctx.arc(X,Y,r*.48,0,6.283);ctx.fill();ctx.fillStyle='#151515';ctx.font='700 '+Math.max(6,Math.round(r*.78))+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(b.n),X,Y+.5)}
-  ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(Math.round(X-r*.55),Math.round(Y-r*.62),Math.max(1,Math.round(r*.32)),Math.max(1,Math.round(r*.32)));
-  ctx.strokeStyle='rgba(10,8,6,.55)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(X,Y,r,0,6.283);ctx.stroke()}
+/* each ball is rendered pixel by pixel as a little sphere: its stripe and number spots turn as it rolls */
+const PL_HEX={};function plRGB(h){if(!PL_HEX[h]){const n=parseInt(h.slice(1),16);PL_HEX[h]=[n>>16&255,n>>8&255,n&255]}return PL_HEX[h]}
+const PL_BCV=document.createElement('canvas'),PL_BG=PL_BCV.getContext('2d');
+function plBall(G,b,x,y,r,dim){const n=b.n,col=plRGB(PL_COL[n>8?n-8:n]),wh=[244,239,228],M=b.M||[1,0,0,0,1,0,0,0,1],D=Math.max(4,Math.round(r*2)),rr=D/2,X=Math.round(x-rr),Y=Math.round(y-rr),swap=G&&G.port===false;
+  ctx.fillStyle='rgba(0,0,0,.32)';ctx.beginPath();ctx.ellipse(x+r*.28,y+r*.38,r*1.02,r*.82,0,0,6.283);ctx.fill();
+  if(PL_BCV.width<D){PL_BCV.width=PL_BCV.height=D}const img=PL_BG.createImageData(D,D),px2=img.data;
+  for(let j=0;j<D;j++)for(let i=0;i<D;i++){const sx=(i+.5-rr)/rr,sy=(j+.5-rr)/rr,q=sx*sx+sy*sy;if(q>1)continue;const z=Math.sqrt(1-q),wx=swap?sy:sx,wy=swap?sx:sy;
+    /* into the ball's own frame */const bx=M[0]*wx+M[3]*wy+M[6]*z,by=M[1]*wx+M[4]*wy+M[7]*z,bz=M[2]*wx+M[5]*wy+M[8]*z;
+    let c=n===0?wh:n>8?(Math.abs(by)<.5?col:wh):col;const spot=Math.abs(bz)>.8;if(n>0&&spot)c=wh;if(n===0&&Math.hypot(bx,by)<.18&&bz>0)c=[200,40,40];
+    const L=Math.max(0,-sx*.42-sy*.52+z*.74),sh=.38+.62*L,spec=L>.965?1:0,o=(j*D+i)*4;
+    px2[o]=Math.min(255,c[0]*sh+spec*120);px2[o+1]=Math.min(255,c[1]*sh+spec*120);px2[o+2]=Math.min(255,c[2]*sh+spec*120);px2[o+3]=q>.86?235:255}
+  PL_BG.clearRect(0,0,D,D);PL_BG.putImageData(img,0,0);ctx.save();if(dim)ctx.globalAlpha*=dim;ctx.drawImage(PL_BCV,0,0,D,D,X,Y,D,D);
+  /* the printed number on whichever spot faces up */
+  if(n>0&&r>5)for(const sg of [1,-1]){const pz=M[8]*sg,pxw=M[6]*sg,pyw=M[7]*sg;if(pz>.55){const ox=(swap?pyw:pxw)*rr,oy=(swap?pxw:pyw)*rr,fs=Math.max(6,Math.round(r*.78*pz));ctx.font='700 '+fs+'px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#151515';ctx.fillText(String(n),Math.round(x+ox),Math.round(y+oy+.5))}}
+  ctx.restore()}
 function poolDraw(){const pl=S.pl,G=plGeom(),s=G.s,t=pl.t,R=PL.R*s;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
   /* a lantern-lit clearing at night */
   {const q=ctx.createLinearGradient(0,0,0,ch);q.addColorStop(0,'#0a0f1e');q.addColorStop(.45,'#121a18');q.addColorStop(1,'#0e0c09');ctx.fillStyle=q;ctx.fillRect(0,0,cw,ch);
@@ -2844,7 +2881,7 @@ function poolDraw(){const pl=S.pl,G=plGeom(),s=G.s,t=pl.t,R=PL.R*s;ctx.setTransf
      if(pl.called===pi){ctx.strokeStyle='#ffd166';ctx.lineWidth=3;ctx.beginPath();ctx.arc(X,Y,r+s*1.6+Math.sin(t*6)*2,0,6.283);ctx.stroke()}
      else if(pl.turn==='p'&&!pl.moving&&!pl.over&&plOnEight(pl,'p')&&pl.called==null){ctx.strokeStyle='rgba(255,209,102,'+(.4+.4*Math.sin(t*6)).toFixed(2)+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(X,Y,r+s*1.4,0,6.283);ctx.stroke()}})}
   /* guide line + cue stick */
-  const c=plCue(pl),aiming=!pl.moving&&!pl.over&&!c.in;
+  const c=plCue(pl),aiming=(!pl.moving||pl.strike)&&!pl.over&&!c.in;
   if(aiming&&pl.turn==='p'){const ry=plRay(pl,pl.aim),[cx0,cy0]=G.toS(c.x,c.y),[gx,gy]=G.toS(ry.gx,ry.gy);ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(cx0,cy0);ctx.lineTo(gx,gy);ctx.stroke();ctx.setLineDash([]);
     ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(gx,gy,R,0,6.283);ctx.stroke();
     if(ry.b){const nx=ry.b.x-ry.gx,ny=ry.b.y-ry.gy,nl=Math.hypot(nx,ny)||1,ux=Math.cos(pl.aim),uy=Math.sin(pl.aim),cut=Math.abs(ux*nx/nl+uy*ny/nl),[bx,by]=G.toS(ry.b.x,ry.b.y),[ex,ey]=G.toS(ry.b.x+nx/nl*16*cut,ry.b.y+ny/nl*16*cut);
@@ -2853,9 +2890,15 @@ function poolDraw(){const pl=S.pl,G=plGeom(),s=G.s,t=pl.t,R=PL.R*s;ctx.setTransf
       const want=plTargets(pl,'p');if(pl.grp.p&&!want.includes(ry.b)){ctx.strokeStyle='#ff5a4a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gx-R*.7,gy-R*.7);ctx.lineTo(gx+R*.7,gy+R*.7);ctx.moveTo(gx+R*.7,gy-R*.7);ctx.lineTo(gx-R*.7,gy+R*.7);ctx.stroke()}}}
   /* balls, and any just dropping into a pocket */
   for(const b of pl.balls){if(b.in)continue;const [X,Y]=G.toS(b.x,b.y);plBall(G,b,X,Y,R)}
-  for(const sk of (pl.sink||[])){const [X,Y]=G.toS(sk.x,sk.y);ctx.globalAlpha=1-sk.t*2;plBall(G,{n:sk.n},X,Y,R*(1-sk.t*1.4))}ctx.globalAlpha=1;
+  for(const sk of (pl.sink||[])){const [X,Y]=G.toS(sk.x,sk.y),k=Math.min(1,sk.t/.35);ctx.save();ctx.globalAlpha=1-k*.85;plBall(G,sk.b||{n:sk.n},X,Y,R*(1-k*.45));ctx.restore()}ctx.globalAlpha=1;
+  /* the ball return: pocketed balls roll down a wooden gutter */
+  {const tr=pl.tray||[],tw=G.port?Math.min(G.fw,cw-120):R*2.4,th=G.port?R*2.4:Math.max(R*6,G.fh-72),tx=G.port?Math.round(G.ox+G.fw/2-tw/2):Math.round(G.ox-G.RA*s-R*2.4-26),ty=G.port?Math.round(G.oy+G.fh+G.RA*s+6):Math.round(G.oy);
+   ctx.fillStyle='#2a1a0e';ctx.beginPath();ctx.roundRect?ctx.roundRect(tx-3,ty-3,tw+6,th+6,R*1.4):ctx.rect(tx-3,ty-3,tw+6,th+6);ctx.fill();ctx.fillStyle='#120c08';ctx.beginPath();ctx.roundRect?ctx.roundRect(tx,ty,tw,th,R*1.2):ctx.rect(tx,ty,tw,th);ctx.fill();
+   tr.forEach((tb,i)=>{const slot=G.port?tx+R*1.2+i*(R*2.1):tx+th*0,end=G.port?slot:ty+R*1.2+i*(R*2.1),k=Math.min(1,tb.t/.7),e=1-Math.pow(1-k,3);
+     if(G.port){const sx=tx+tw-R*1.2,X=sx+(slot-sx)*e;if(k<1&&tb.b)plRotate(tb.b,0,1,-.25);plBall(G,tb.b||{n:tb.n},X,ty+th/2,R*.92)}
+     else{const sy=ty+th-R*1.2,Yy=sy+(end-sy)*e;if(k<1&&tb.b)plRotate(tb.b,1,0,.25);plBall(G,tb.b||{n:tb.n},tx+tw/2,Yy,R*.92)}})}
   if(pl.hand&&pl.turn==='p'&&!pl.moving&&!pl.over){const [X,Y]=G.toS(c.x,c.y);ctx.strokeStyle='rgba(255,209,102,'+(.5+.4*Math.sin(t*6)).toFixed(2)+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(X,Y,R*2.2,0,6.283);ctx.stroke()}
-  if(aiming){const [X,Y]=G.toS(c.x,c.y),dx=Math.cos(pl.aim),dy=Math.sin(pl.aim),sdx=G.port?dx:dy,sdy=G.port?dy:dx,back=R*1.5+pl.power*s*14+pl.cueKick*-s*3,L=s*62;
+  if(aiming){const [X,Y]=G.toS(c.x,c.y),dx=Math.cos(pl.aim),dy=Math.sin(pl.aim),sdx=G.port?dx:dy,sdy=G.port?dy:dx,back=R*1.15+pl.power*s*14,L=s*62;
     const ax=X-sdx*back,ay=Y-sdy*back,bx=X-sdx*(back+L),by=Y-sdy*(back+L);ctx.lineCap='round';
     ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=Math.max(4,s*1.3);ctx.beginPath();ctx.moveTo(ax+3,ay+5);ctx.lineTo(bx+3,by+5);ctx.stroke();
     ctx.strokeStyle='#1a0e08';ctx.lineWidth=Math.max(5,s*1.5);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
@@ -2882,7 +2925,7 @@ function plHud(pl,G){const f=Math.round(Math.max(13,Math.min(18,cw/26))),FONT=n=
   const rec=POOL_REC[pl.opp.id]||{w:0,l:0};if(G.port){ctx.font=FONT(Math.round(f*.66));ctx.textAlign='center';ctx.fillStyle='#c8b8a0';ctx.fillText('vs '+nm(pl.opp)+'  '+rec.w+'-'+rec.l,cw/2,py+ph+12)}
   /* what's going on */
   const hint=pl.over?null:pl.moving?null:pl.turn==='o'?nm(pl.opp)+' is lining up a shot...':pl.hand?'Ball in hand: drag the cue ball, then aim':plOnEight(pl,'p')&&pl.called==null?'Tap a pocket to call the 8':'Drag to aim, pull the bar to shoot';
-  const by=G.port?Math.round(G.oy+G.fh+G.RA*G.s+28):Math.round(ch-10);
+  const by=G.port?Math.round(G.oy+G.fh+G.RA*G.s+PL.R*G.s*2.4+26):Math.round(ch-10);
   if(hint){ctx.font=FONT(Math.round(f*.8));ctx.textAlign='center';ctx.fillStyle='rgba(255,243,220,.75)';ctx.fillText(hint,G.port?cw/2+20:cw/2,by)}
   if(pl.msg){const a=Math.min(1,pl.msg.t*5,(2.2-pl.msg.t)*3);ctx.globalAlpha=a;ctx.font=FONT(Math.round(f*1.25));ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=5;ctx.strokeStyle='rgba(16,10,6,.9)';const y=Math.round(G.oy+G.fh*.5);ctx.strokeText(pl.msg.s,G.ox+G.fw/2,y);ctx.fillStyle=pl.msg.c;ctx.fillText(pl.msg.s,G.ox+G.fw/2,y);ctx.globalAlpha=1}
   if(pl.bub){const a=Math.min(1,pl.bub.t*5,(2.6-pl.bub.t)*3);ctx.globalAlpha=a;ctx.font=FONT(Math.round(f*.85));const w=Math.min(cw-30,ctx.measureText(pl.bub.s).width+22),x=cw-10-w,y=py+ph+22;
@@ -2901,7 +2944,7 @@ function plMove(e){const pl=S&&S.pl;if(!pl||!pl.drag)return;const G=plGeom(),[X,
   else if(pl.drag.k==='pow')pl.power=Math.max(0,Math.min(1,(Y-pl.drag.y0)/(G.bar.h*.9)));
   else if(pl.drag.k==='cue'){const nx=Math.max(PL.R,Math.min(PL.W-PL.R,tx)),ny=Math.max(PL.R,Math.min(PL.H-PL.R,ty));if(!plLive(pl).some(b=>b!==c&&Math.hypot(b.x-nx,b.y-ny)<PL.R*2.05)){c.x=nx;c.y=ny}}}
 function plUp(){const pl=S&&S.pl;if(!pl||!pl.drag)return;const d=pl.drag;pl.drag=null;
-  if(d.k==='pow'){if(pl.power<.04){pl.power=0;return}if(plOnEight(pl,'p')&&pl.called==null){plMsg(pl,'Call a pocket for the 8 first','#ffd166');pl.power=0;return}plShoot(pl,pl.aim,pl.power,pl.spin)}}
+  if(d.k==='pow'){if(pl.power<.04){pl.power=0;return}if(plOnEight(pl,'p')&&pl.called==null){plMsg(pl,'Call a pocket for the 8 first','#ffd166');pl.power=0;return}plStrike(pl,pl.aim,pl.power,pl.spin)}}
 /* ---- menus: pick who to play, and the end-of-game card ---- */
 function poolMenu(){for(const o of document.querySelectorAll('.mmov'))o.remove();const ov=el('div','mmov'),card=el('div','mmcard');
   card.append(el('span','mmk','HIDDEN MODE'),el('h3',null,'Camp 8-Ball'),el('p','mmbest','Pick who you\'re playing.'));
