@@ -2706,11 +2706,11 @@ const PL_POCKETS=[[-.7,-.7],[50.7,-.7],[-1.1,50],[51.1,50],[-.7,100.7],[50.7,100
 const PL_COL=['#ffffff','#f2c12e','#2a5ad8','#d8342a','#6a3ab0','#f07a1e','#2a8a4a','#8a2a2a','#151515'];
 /* how each guy plays and what he says */
 const PL_AI={
-  curly:{err:.006,pw:0,lines:{pot:['Easy.','Routine.','Next.'],miss:['No.','Table\'s off.','Whatever.'],foul:['That\'s ball in hand.','Thanks.'],win:['That\'s game.','Rematch? No.'],lose:['...fine.','Lucky.']}},
-  camo:{err:.02,pw:.18,lines:{pot:['HRAAAAH!','DID YOU SEE THAT?!','I meant to do that.'],miss:['WHAT?!','The table\'s crooked!','*weird noise*'],foul:['HA HA HA HA','Oooh no no no'],win:['HENRY WINS! HENRY WINS!','Bow to me.'],lose:['I let you win.','This is rigged!']}},
-  patch:{err:.013,pw:-.08,lines:{pot:['Ok that was kinda clean.','Smooth.','Bro.'],miss:['Bro I\'m gonna tickle you.','Lucky table.','Nah.'],foul:['Ok that was kinda cold.','Hehe.'],win:['GG bro.','Too easy, Boggs out.'],lose:['Ok you\'re cooking.','Bro I\'m gonna tickle you.']}},
-  stache:{err:.009,pw:.04,lines:{pot:['Textbook.','Angle of incidence, baby.','Clean signal.'],miss:['Bad mix on that one.','Your stance is all wrong. Mine too.'],foul:['Amateur hour.','Respectfully, no.'],win:['As expected.','Peak performance.'],lose:['The acoustics in here are terrible.','I\'ll allow it.']}},
-  nathan:{err:.01,pw:0,lines:{pot:['Let\'s go!','Called it.'],miss:['Clanker sympathizer strikes again.','Ugh.'],foul:['Ball in hand, baby.'],win:['GG!'],lose:['Good game, good game.']}}
+  curly:{err:.0012,pw:0,lines:{pot:['Easy.','Routine.','Next.'],miss:['No.','Table\'s off.','Whatever.'],foul:['That\'s ball in hand.','Thanks.'],win:['That\'s game.','Rematch? No.'],lose:['...fine.','Lucky.']}},
+  camo:{err:.004,pw:.1,lines:{pot:['HRAAAAH!','DID YOU SEE THAT?!','I meant to do that.'],miss:['WHAT?!','The table\'s crooked!','*weird noise*'],foul:['HA HA HA HA','Oooh no no no'],win:['HENRY WINS! HENRY WINS!','Bow to me.'],lose:['I let you win.','This is rigged!']}},
+  patch:{err:.0028,pw:-.03,lines:{pot:['Ok that was kinda clean.','Smooth.','Bro.'],miss:['Bro I\'m gonna tickle you.','Lucky table.','Nah.'],foul:['Ok that was kinda cold.','Hehe.'],win:['GG bro.','Too easy, Boggs out.'],lose:['Ok you\'re cooking.','Bro I\'m gonna tickle you.']}},
+  stache:{err:.002,pw:.02,lines:{pot:['Textbook.','Angle of incidence, baby.','Clean signal.'],miss:['Bad mix on that one.','Your stance is all wrong. Mine too.'],foul:['Amateur hour.','Respectfully, no.'],win:['As expected.','Peak performance.'],lose:['The acoustics in here are terrible.','I\'ll allow it.']}},
+  nathan:{err:.0025,pw:0,lines:{pot:['Let\'s go!','Called it.'],miss:['Clanker sympathizer strikes again.','Ugh.'],foul:['Ball in hand, baby.'],win:['GG!'],lose:['Good game, good game.']}}
 };
 let POOL_OPP=null,POOL_REC={};try{POOL_REC=JSON.parse(localStorage.getItem('rc_pool')||'{}')||{}}catch(e){}
 const poolFound=()=>{try{return localStorage.getItem('rc_pool_found')==='1'}catch(e){return false}};
@@ -2729,7 +2729,7 @@ const plCue=pl=>pl.balls[0];
 const plLive=pl=>pl.balls.filter(b=>!b.in);
 function plMsg(pl,s,c){pl.msg={s,c:c||'#fff3dc',t:0}}
 function plSay(pl,kind){const L=(PL_AI[pl.opp.id]||PL_AI.nathan).lines[kind];if(L)pl.bub={s:pick(L),t:0}}
-function plTargets(pl,who){const g=pl.grp[who],live=plLive(pl).filter(b=>b.n!==0);if(!g)return live.filter(b=>b.n!==8);const mine=live.filter(b=>plType(b.n)===g);return mine.length?mine:live.filter(b=>b.n===8)}
+function plTargets(pl,who){const g=pl.grp?pl.grp[who]:S.pl.grp[who],live=plLive(pl).filter(b=>b.n!==0);if(!g)return live.filter(b=>b.n!==8);const mine=live.filter(b=>plType(b.n)===g);return mine.length?mine:live.filter(b=>b.n===8)}
 const plOnEight=(pl,who)=>{const t=plTargets(pl,who);return t.length===1&&t[0].n===8};
 /* ---- physics: rolling friction, ball-ball and cushion bounces, pockets ---- */
 /* ---- physics: each ball slides, then rolls; spin is real (follow and draw come from it) ---- */
@@ -2738,7 +2738,7 @@ const plOnEight=(pl,who)=>{const t=plTargets(pl,who);return t.length===1&&t[0].n
    once they match it rolls and only slows a little. */
 const PL_G=386,PL_MUS=.2,PL_MUR=.013,PL_EB=.95,PL_EC=.74;
 /* the knuckles of each pocket mouth: balls that clip them rattle out */
-const PL_JAWS=(()=>{const J=[];const c=3.3,sd=2.9;for(const [x,y,sx,sy] of [[0,0,1,1],[50,0,-1,1],[0,100,1,-1],[50,100,-1,-1]]){J.push([x+sx*c,y],[x,y+sy*c])}for(const x of [0,50])J.push([x,50-sd],[x,50+sd]);return J})();
+const PL_JAWS=(()=>{const J=[];const c=4.3,sd=3.6;for(const [x,y,sx,sy] of [[0,0,1,1],[50,0,-1,1],[0,100,1,-1],[50,100,-1,-1]]){J.push([x+sx*c,y],[x,y+sy*c])}for(const x of [0,50])J.push([x,50-sd],[x,50+sd]);return J})();
 function plOrient(b){if(!b.M)b.M=[1,0,0,0,1,0,0,0,1]}
 function plRotate(b,ax,ay,ang){/* spin the ball's body about a horizontal axis by ang (Rodrigues) */
   if(ang===0)return;plOrient(b);const c=Math.cos(ang),s=Math.sin(ang),t=1-c,x=ax,y=ay,z=0,R=[t*x*x+c,t*x*y-s*z,t*x*z+s*y,t*x*y+s*z,t*y*y+c,t*y*z-s*x,t*x*z-s*y,t*y*z+s*x,t*z*z+c],M=b.M,N=new Array(9);
@@ -2752,7 +2752,7 @@ function plStep(pl,dt){const R=PL.R,B=plLive(pl);let mx=0;for(const b of B)mx=Ma
       else{/* rolling: a little rolling resistance */const sp=Math.hypot(b.vx,b.vy);if(sp>0){const ns=Math.max(0,sp-PL_MUR*PL_G*h-sp*.04*h);b.vx*=ns/sp;b.vy*=ns/sp}b.wx=b.vx;b.wy=b.vy}
       b.x+=b.vx*h;b.y+=b.vy*h;
       /* the ball's markings turn with how its surface rolls */
-      const wl=Math.hypot(b.wx,b.wy);if(wl>.01)plRotate(b,-b.wy/wl,b.wx/wl,wl*h/R);
+      const wl=Math.hypot(b.wx,b.wy);if(wl>.01&&!pl.sim)plRotate(b,-b.wy/wl,b.wx/wl,wl*h/R);
       if(Math.hypot(b.vx,b.vy)<.5&&Math.hypot(b.wx,b.wy)<.5){b.vx=b.vy=b.wx=b.wy=0}}
     for(let it=0;it<2;it++)for(let i=0;i<B.length;i++){const a=B[i];if(a.in)continue;for(let j=i+1;j<B.length;j++){const c=B[j];if(c.in)continue;const dx=c.x-a.x,dy=c.y-a.y,d=Math.hypot(dx,dy);if(d>=2*R||d===0)continue;
       const nx=dx/d,ny=dy/d,ov=2*R-d;a.x-=nx*ov/2;a.y-=ny*ov/2;c.x+=nx*ov/2;c.y+=ny*ov/2;const rv=(c.vx-a.vx)*nx+(c.vy-a.vy)*ny;if(rv>=0)continue;
@@ -2761,18 +2761,18 @@ function plStep(pl,dt){const R=PL.R,B=plLive(pl);let mx=0;for(const b of B)mx=Ma
       if(pl.shot&&pl.shot.first==null&&(a.n===0||c.n===0))pl.shot.first=a.n===0?c.n:a.n;
       if(Math.abs(rv)>6)plClick(pl,Math.abs(rv))}}
     for(const b of B){if(b.in)continue;
-      for(const p of PL_POCKETS){const side=p[1]===50,cap=side?2.3:2.6;if(Math.hypot(b.x-p[0],b.y-p[1])<cap){b.in=true;pl.pots.push(b.n);pl.sink=pl.sink||[];pl.sink.push({n:b.n,b,x:b.x,y:b.y,px:p[0],py:p[1],vx:b.vx,vy:b.vy,t:0});b.vx=b.vy=b.wx=b.wy=0;SFX.cone&&SFX.cone();break}}
+      for(const p of PL_POCKETS){const side=p[1]===50,cap=side?3.1:3.5;if(Math.hypot(b.x-p[0],b.y-p[1])<cap){b.in=true;pl.pots.push(b.n);pl.sink=pl.sink||[];pl.sink.push({n:b.n,b,x:b.x,y:b.y,px:p[0],py:p[1],vx:b.vx,vy:b.vy,t:0});b.vx=b.vy=b.wx=b.wy=0;if(!pl.sim)SFX.cone&&SFX.cone();break}}
       if(b.in)continue;
       /* pocket jaws */
       for(const J of PL_JAWS){const dx=b.x-J[0],dy=b.y-J[1],d=Math.hypot(dx,dy),rr=R+.25;if(d<rr&&d>0){const nx=dx/d,ny=dy/d;b.x=J[0]+nx*rr;b.y=J[1]+ny*rr;const vn=b.vx*nx+b.vy*ny;if(vn<0){b.vx-=(1+PL_EC)*vn*nx;b.vy-=(1+PL_EC)*vn*ny;b.wx*=.6;b.wy*=.6;if(-vn>8)plThud(pl,-vn)}}}
-      const inCornerY=b.y<3.3||b.y>96.7,inSide=Math.abs(b.y-50)<2.9,inCornerX=b.x<3.3||b.x>46.7;
+      const inCornerY=b.y<4.3||b.y>95.7,inSide=Math.abs(b.y-50)<3.6,inCornerX=b.x<4.3||b.x>45.7;
       const bounce=(axis,sign)=>{if(axis==='x'){const vn=b.vx*sign;if(vn<0){b.vx=-b.vx*PL_EC;b.wx=-b.wx*.5;b.wy*=.8;if(-vn>8)plThud(pl,-vn)}}else{const vn=b.vy*sign;if(vn<0){b.vy=-b.vy*PL_EC;b.wy=-b.wy*.5;b.wx*=.8;if(-vn>8)plThud(pl,-vn)}}};
       if(!inCornerY&&!inSide){if(b.x<R){b.x=R;bounce('x',1)}else if(b.x>PL.W-R){b.x=PL.W-R;bounce('x',-1)}}else{if(b.x<-3){b.x=-3;bounce('x',1)}if(b.x>PL.W+3){b.x=PL.W+3;bounce('x',-1)}}
       if(!inCornerX){if(b.y<R){b.y=R;bounce('y',1)}else if(b.y>PL.H-R){b.y=PL.H-R;bounce('y',-1)}}else{if(b.y<-3){b.y=-3;bounce('y',1)}if(b.y>PL.H+3){b.y=PL.H+3;bounce('y',-1)}}}}
   for(const b of B)if(!b.in&&(b.vx||b.vy||b.wx||b.wy))any=true;return any}
 /* sounds scaled to how hard things hit (with a little cooldown so a break isn't a wall of noise) */
-function plClick(pl,v){if(pl._ck>0)return;pl._ck=.03;SFX.tap&&SFX.tap()}
-function plThud(pl,v){if(pl._th>0)return;pl._th=.05;if(v>30)SFX.land&&SFX.land();else SFX.tap&&SFX.tap()}
+function plClick(pl,v){if(pl.sim||pl._ck>0)return;pl._ck=.03;SFX.tap&&SFX.tap()}
+function plThud(pl,v){if(pl.sim||pl._th>0)return;pl._th=.05;if(v>30)SFX.land&&SFX.land();else SFX.tap&&SFX.tap()}
 /* the stick hits the cue ball: centre ball slides first, top spin rolls through, bottom spin draws back */
 function plShoot(pl,ang,power,spin){const c=plCue(pl),v=PL.VMIN+power*(PL.VMAX-PL.VMIN),u=[Math.cos(ang),Math.sin(ang)];c.vx=u[0]*v;c.vy=u[1]*v;
   const wf=spin>0?1.25:spin<0?-1.1:0;c.wx=u[0]*v*wf;c.wy=u[1]*v*wf;
@@ -2784,7 +2784,7 @@ function plResolve(pl){const sh=pl.shot,who=sh.who,oth=who==='p'?'o':'p',pots=pl
   const firstOk=sh.first!=null&&(sh.brk||(!g?sh.first!==8:(wasOnEight?sh.first===8:plType(sh.first)===g)));
   let foul=scratch||sh.first==null||!firstOk;pl.brk=false;
   if(eight){if(sh.brk&&!scratch){const e=pl.balls.find(b=>b.n===8);e.in=false;e.x=25;e.y=24;e.vx=e.vy=0;plMsg(pl,'8 on the break: re-spotted','#ffd166')}
-    else{const called=pl.called!=null?pl.called:null,pocket=pl.sink.filter(s=>s.n===8).map(s=>PL_POCKETS.findIndex(p=>p[0]===s.x&&p[1]===s.y))[0];
+    else{const called=pl.called!=null?pl.called:null,pocket=pl.sink.filter(s=>s.n===8).map(s=>PL_POCKETS.findIndex(p=>p[0]===s.px&&p[1]===s.py))[0];
       const win=wasOnEight&&!scratch&&sh.first===8&&(called==null||pocket===called);plEnd(pl,win?who:oth,win?'8 ball down':scratch?'Scratched on the 8':!wasOnEight?'Sank the 8 too early':'8 in the wrong pocket');return}}
   if(scratch){const c=plCue(pl);c.in=false;c.x=25;c.y=76;c.vx=c.vy=0}
   /* first legal pot on an open table picks the groups */
@@ -2807,15 +2807,26 @@ function plBest(pl,who,cuePos){const R=PL.R,c=cuePos||plCue(pl),opts=[];
     opts.push({b,pi,ang:Math.atan2(cy,cx),score:Math.pow(Math.cos(cut),2)*(60/(d1+d2*1.4+10)),d1,d2,cut})});
   opts.sort((a,b)=>b.score-a.score);return opts}
 function plAiPlan(pl){pl.ai={t:0,think:1.1+Math.random()*.8,shot:null}}
+/* run a shot on a copy of the table and see what happens */
+function plSim(pl,ang,pw,spin,cuePos){const balls=pl.balls.map(b=>({n:b.n,x:b.x,y:b.y,vx:0,vy:0,wx:0,wy:0,in:b.in}));if(cuePos){balls[0].x=cuePos.x;balls[0].y=cuePos.y}
+  const F={sim:true,balls,pots:[],sink:[],shot:{who:'o',first:null},turn:'o'};const c=balls[0],v=PL.VMIN+pw*(PL.VMAX-PL.VMIN),u=[Math.cos(ang),Math.sin(ang)],wf=spin>0?1.25:spin<0?-1.1:0;c.vx=u[0]*v;c.vy=u[1]*v;c.wx=u[0]*v*wf;c.wy=u[1]*v*wf;
+  let t=0;while(t<12&&plStep(F,1/30))t+=1/30;const e8=F.sink.find(s=>s.n===8);return{pots:F.pots,first:F.shot.first,cue:balls[0],balls,p8:e8?PL_POCKETS.findIndex(p=>p[0]===e8.px&&p[1]===e8.py):-1}}
 function plAiShoot(pl){const P=PL_AI[pl.opp.id]||PL_AI.nathan,c=plCue(pl);
   if(pl.brk){const ap=pl.balls.find(b=>b.n!==0&&!b.in&&b.y===Math.max(...pl.balls.filter(q=>q.n!==0).map(q=>q.y)));return{ang:Math.atan2(ap.y-c.y,ap.x-c.x)+(Math.random()-.5)*P.err,pw:.97,spin:0}}
   if(pl.hand){/* ball in hand: line up the easiest straight shot */const tg=plTargets(pl,'o');let best=null;
-    for(const b of tg)PL_POCKETS.forEach((p,pi)=>{const tx=p[0]-b.x,ty=p[1]-b.y,d2=Math.hypot(tx,ty),ux=tx/d2,uy=ty/d2,px0=b.x-ux*12,py0=b.y-uy*12;if(px0<2||px0>48||py0<2||py0>98)return;if(plLive(pl).some(o=>o!==c&&Math.hypot(o.x-px0,o.y-py0)<3))return;if(!plClear(pl,b.x,b.y,p[0],p[1],[b,c]))return;if(!best||d2<best.d2)best={x:px0,y:py0,d2}});
+    for(const b of tg)PL_POCKETS.forEach((p,pi)=>{const tx=p[0]-b.x,ty=p[1]-b.y,d2=Math.hypot(tx,ty),ux=tx/d2,uy=ty/d2,px0=b.x-ux*10,py0=b.y-uy*10;if(px0<2||px0>48||py0<2||py0>98)return;if(plLive(pl).some(o=>o!==c&&Math.hypot(o.x-px0,o.y-py0)<3))return;if(!plClear(pl,b.x,b.y,p[0],p[1],[b,c]))return;if(!best||d2<best.d2)best={x:px0,y:py0,d2}});
     if(best){c.x=best.x;c.y=best.y}}
-  const opts=plBest(pl,'o');let ang,pw;
-  if(opts.length){const o=opts[Math.min(opts.length-1,Math.random()<.2?1:0)];ang=o.ang;pw=Math.max(.16,Math.min(.95,.14+(o.d1+o.d2*1.5)/230+o.cut*.14+P.pw));if(o.b.n===8)pl.called=o.pi}
-  else{const tg=plTargets(pl,'o').sort((a,b)=>Math.hypot(a.x-c.x,a.y-c.y)-Math.hypot(b.x-c.x,b.y-c.y))[0];ang=tg?Math.atan2(tg.y-c.y,tg.x-c.x):Math.random()*6.28;pw=.3+P.pw;if(tg&&tg.n===8)pl.called=0}
-  ang+=(Math.random()-.5)*2*P.err*(1+Math.random());return{ang,pw,spin:Math.random()<.25?(Math.random()<.5?1:-1):0}}
+  const g=pl.grp.o,mine=n=>n!==0&&n!==8&&(!g||plType(n)===g),onEight=plOnEight(pl,'o');
+  const opts=plBest(pl,'o').slice(0,5);let pick=null;const T0=performance.now();
+  for(const o of opts){if(pick&&performance.now()-T0>350)break;for(const pw of [.22,.32,.44,.58,.74,.9])for(const sp of [0,1,-1]){const r=plSim(pl,o.ang,pw,sp);const scratch=r.pots.includes(0),eight=r.pots.includes(8);
+      if(scratch||r.first==null)continue;if(eight&&!onEight)continue;if(!onEight&&g&&plType(r.first)!==g)continue;if(!g&&r.first===8)continue;
+      const good=onEight?eight:r.pots.some(mine);if(!good)continue;
+      /* prefer shots that leave the cue ball with another easy pot */
+      const F2={balls:r.balls};const next=onEight?1:plBest(F2,'o',r.cue).length;const sc=o.score*2+next*.6-pw*.3;if(!pick||sc>pick.sc)pick={sc,ang:o.ang,pw,spin:sp,pi:onEight?r.p8:o.pi,eight:onEight}}}
+  if(pick){if(pick.eight)pl.called=pick.pi;return{ang:pick.ang+(Math.random()-.5)*2*P.err,pw:Math.min(1,pick.pw+P.pw*.15),spin:pick.spin}}
+  /* nothing drops cleanly: a soft legal hit on its own ball */
+  const tg=plTargets(pl,'o').sort((a,b)=>Math.hypot(a.x-c.x,a.y-c.y)-Math.hypot(b.x-c.x,b.y-c.y));for(const b of tg){const ang=Math.atan2(b.y-c.y,b.x-c.x);if(!plClear(pl,c.x,c.y,b.x,b.y,[c,b]))continue;if(b.n===8)pl.called=0;return{ang,pw:.3,spin:0}}
+  const b=tg[0];if(b&&b.n===8)pl.called=0;return{ang:b?Math.atan2(b.y-c.y,b.x-c.x):Math.random()*6.28,pw:.35,spin:0}}
 function poolUpdate(dt){const pl=S.pl;if(!pl)return;pl.t+=dt;pl.cueKick=Math.max(0,(pl.cueKick||0)-dt*4);pl._ck=Math.max(0,(pl._ck||0)-dt);pl._th=Math.max(0,(pl._th||0)-dt);
   if(pl.strike){const k=pl.strike;k.t+=dt;pl.power=k.from*Math.max(0,1-k.t/.09);if(k.t>=.09){pl.strike=null;plShoot(pl,k.ang,k.power,k.spin)}return}
   pl.tray=pl.tray||[];for(const tb of pl.tray)tb.t+=dt;
@@ -2877,7 +2888,7 @@ function poolDraw(){const pl=S.pl,G=plGeom(),s=G.s,t=pl.t,R=PL.R*s;ctx.setTransf
    const fg=ctx.createRadialGradient(x0+fw/2,y0+fh/2,10,x0+fw/2,y0+fh/2,Math.max(fw,fh)*.7);fg.addColorStop(0,'#3a8048');fg.addColorStop(1,'#2a6236');ctx.fillStyle=fg;ctx.fillRect(Math.round(x0),Math.round(y0),Math.round(fw),Math.round(fh));
    for(let i=0;i<160;i++){ctx.fillStyle=i%2?'rgba(255,255,255,.04)':'rgba(0,0,0,.06)';ctx.fillRect(Math.round(x0+hash(i*1.7)*fw),Math.round(y0+hash(i*2.9)*fh),2,2)}
    {const [a1,b1]=G.toS(0,76),[a2,b2]=G.toS(PL.W,76);ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(Math.min(a1,a2),Math.min(b1,b2),Math.max(1,Math.abs(a2-a1)),Math.max(1,Math.abs(b2-b1)));const [fx,fy]=G.toS(25,24);ctx.fillRect(Math.round(fx-1),Math.round(fy-1),3,3)}
-   PL_POCKETS.forEach((p,pi)=>{const [X,Y]=G.toS(p[0],p[1]),r=s*(p[1]===50?2.2:2.5);ctx.fillStyle='#2a1a0e';ctx.beginPath();ctx.arc(X,Y,r+s*.8,0,6.283);ctx.fill();ctx.fillStyle='#050403';ctx.beginPath();ctx.arc(X,Y,r,0,6.283);ctx.fill();
+   PL_POCKETS.forEach((p,pi)=>{const [X,Y]=G.toS(p[0],p[1]),r=s*(p[1]===50?2.9:3.3);ctx.fillStyle='#2a1a0e';ctx.beginPath();ctx.arc(X,Y,r+s*.8,0,6.283);ctx.fill();ctx.fillStyle='#050403';ctx.beginPath();ctx.arc(X,Y,r,0,6.283);ctx.fill();
      if(pl.called===pi){ctx.strokeStyle='#ffd166';ctx.lineWidth=3;ctx.beginPath();ctx.arc(X,Y,r+s*1.6+Math.sin(t*6)*2,0,6.283);ctx.stroke()}
      else if(pl.turn==='p'&&!pl.moving&&!pl.over&&plOnEight(pl,'p')&&pl.called==null){ctx.strokeStyle='rgba(255,209,102,'+(.4+.4*Math.sin(t*6)).toFixed(2)+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(X,Y,r+s*1.4,0,6.283);ctx.stroke()}})}
   /* guide line + cue stick */
