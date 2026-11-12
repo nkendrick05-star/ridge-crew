@@ -2726,6 +2726,8 @@ const PL_AI={
   nathan:{err:.0025,pw:0,lines:{pot:['Let\'s go!','Called it.'],miss:['Clanker sympathizer strikes again.','Ugh.'],foul:['Ball in hand, baby.'],win:['GG!'],lose:['Good game, good game.']}}
 };
 let POOL_OPP=null,POOL_REC={};try{POOL_REC=JSON.parse(localStorage.getItem('rc_pool')||'{}')||{}}catch(e){}
+/* one-time fix for Nathan: his win over Josiah on Nov 12 was scored as a loss by the old called-pocket bug */
+setTimeout(()=>{try{if(localStorage.getItem('rc_poolfix1')||typeof ACC==='undefined'||!ACC.id)return;if(ACC.id==='4950e3b1-db6f-415c-9bb7-bc3a45c212db'){const r=POOL_REC.curly;if(!r||r.l<1)return;r.l--;r.w++;save('rc_pool',JSON.stringify(POOL_REC));unlockBadge&&unlockBadge('pool_win');{const beat=Object.keys(POOL_REC).filter(k=>POOL_REC[k].w>0).length;if(beat>=4)unlockBadge('pool_all')}toast('8-Ball record fixed: that win over '+nm(byId('curly'))+' now counts')}save('rc_poolfix1','1')}catch(e){}},2500);
 const poolFound=()=>{try{return localStorage.getItem('rc_pool_found')==='1'}catch(e){return false}};
 const plType=n=>n===0?'cue':n===8?'eight':n<8?'solid':'stripe';
 function plRack(){const B=[{n:0,x:25,y:76,vx:0,vy:0,in:false}],R=PL.R,d=R*2+.02,top=24;
@@ -2798,7 +2800,7 @@ function plResolve(pl){const sh=pl.shot,who=sh.who,oth=who==='p'?'o':'p',pots=pl
   let foul=scratch||sh.first==null||!firstOk;pl.brk=false;
   if(eight){if(sh.brk&&!scratch){const e=pl.balls.find(b=>b.n===8);e.in=false;e.x=25;e.y=24;e.vx=e.vy=0;plMsg(pl,'8 on the break: re-spotted','#ffd166')}
     else{const called=pl.called!=null?pl.called:null,pocket=sh.p8!=null?sh.p8:(pl.sink||[]).filter(s=>s.n===8).map(s=>PL_POCKETS.findIndex(p=>p[0]===s.px&&p[1]===s.py))[0];
-      const win=wasOnEight&&!scratch&&sh.first===8&&(called==null||pocket===called);plEnd(pl,win?who:oth,win?'8 ball down':scratch?'Scratched on the 8':!wasOnEight?'Sank the 8 too early':'8 in the wrong pocket');return}}
+      const win=wasOnEight&&!scratch&&sh.first===8&&(called==null||pocket===called);plEnd(pl,win?who:oth,win?'8 ball down':scratch?'Scratched on the 8':!wasOnEight?'Sank the 8 too early':sh.first!==8?'Hit another ball before the 8':'8 in the wrong pocket');return}}
   if(scratch){const c=plCue(pl);c.in=false;c.x=25;c.y=76;c.vx=c.vy=0}
   /* first legal pot on an open table picks the groups */
   const own=pots.filter(n=>n!==0&&n!==8);
