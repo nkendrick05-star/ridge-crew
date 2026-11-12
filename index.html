@@ -5338,7 +5338,7 @@ function snOcc(sn,x,y){return sn.blocks[x+','+y]||sn.body.some(b=>b.x===x&&b.y==
 function snFree(sn,away){const g=sn.g,h=sn.body[0];for(let n=0;n<400;n++){const x=Math.floor(Math.random()*g.cols),y=Math.floor(Math.random()*g.rows);if(snOcc(sn,x,y))continue;if(away&&Math.abs(x-h.x)+Math.abs(y-h.y)<away)continue;if(sn.cone&&sn.cone.x===x&&sn.cone.y===y)continue;if(sn.bear&&sn.bear.x===x&&sn.bear.y===y)continue;return{x,y}}return{x:0,y:0}}
 function snCone(sn){sn.cone=snFree(sn,3)}
 function snakeTurn(dx,dy){const sn=S.sn;if(!sn||S.dead)return;if(sn.rev>0){dx=-dx;dy=-dy}if(!sn.started){sn.started=1;sn.stepT=0}
-  const last=sn.q.length?sn.q[sn.q.length-1]:sn.dir;if(last[0]===-dx&&last[1]===-dy)return;if(last[0]===dx&&last[1]===dy)return;if(sn.q.length<2)sn.q.push([dx,dy]);if(sn.q.length===1&&sn.stepT>.045){const e=sn.stepDur-sn.stepT;sn.stepT=.045;sn.stepDur=e+.045}}
+  const last=sn.q.length?sn.q[sn.q.length-1]:sn.dir;if(last[0]===-dx&&last[1]===-dy)return;if(last[0]===dx&&last[1]===dy)return;if(sn.q.length<2)sn.q.push([dx,dy]);if(sn.q.length===1){const nt=Math.max(.045,sn.stepT*.5);if(nt<sn.stepT){const e=sn.stepDur-sn.stepT;sn.stepT=nt;sn.stepDur=e+nt}}}
 function snakeDie(why,bear){const sn=S.sn;if(S.dead)return;S.hitStop=.1;die(why,bear?'eaten':'snake');sn.dead={t:0};sn.shake=8;SFX.hit();buzz(60);if(bear)SFX.roar()}
 function snakeUpdate(dt){
   const sn=S.sn,g=sn.g;sn.shake=Math.max(0,sn.shake-dt*30);sn.popT=Math.max(0,sn.popT-dt);
