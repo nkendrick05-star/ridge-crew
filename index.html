@@ -572,6 +572,13 @@ canvas.wicon{image-rendering:pixelated;border-radius:6px}
 .mmguy canvas{width:32px;height:58px;image-rendering:pixelated}
 .mmguy b{font:700 .74rem var(--display);color:#fff3dc}
 .mmguy span{font-size:.62rem;color:#ffb347}
+.eucode{display:flex;gap:6px;justify-content:center;margin:2px 0}.eucode b{display:grid;place-items:center;width:46px;height:56px;border-radius:10px;background:#fbf3e2;color:#2a1a0e;font:700 2rem var(--display);box-shadow:0 4px 0 #8a5a30,inset 0 -3px 0 #e2d2b0}
+.eushare{padding:6px 14px!important;min-height:0!important;font-size:.85rem!important}
+.euseats{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto auto;gap:4px;width:100%;max-width:300px;align-items:center;justify-items:center;margin:4px 0}
+.euseats .eus-t{grid-column:2;grid-row:1}.euseats .eus-l{grid-column:1;grid-row:2}.euseats .eus-r{grid-column:3;grid-row:2}.euseats .eus-b{grid-column:2;grid-row:3}
+.eumid{grid-column:2;grid-row:2;width:64px;height:44px;border-radius:50%;background:radial-gradient(#d8a86a,#a8743f 70%,#3a2412 72%)}
+.mmguy.eus.us{border-color:#9fd67a}.mmguy.eus.them{border-color:rgba(255,138,42,.6)}.mmguy.eus{min-width:84px}
+.eujoin{width:200px;text-align:center;font:700 2.2rem var(--display);letter-spacing:.3em;text-transform:uppercase;padding:8px 6px;border-radius:12px;border:2px solid #ff8a2a;background:#fbf3e2;color:#2a1a0e;margin:4px 0}
 .mmbtns{display:flex;gap:8px;width:100%;margin-top:6px}
 .mmbtns .btn{flex:1;min-width:0;padding-left:8px;padding-right:8px}
 .mmcard{box-sizing:border-box;max-width:calc(100vw - 32px)}
@@ -3002,6 +3009,8 @@ function euPicks(){const me=S&&S.leader?S.leader:byId(sel)||CHARS[0],pool=CHARS.
 function euchreInit(){const P=euPicks();
   S.eu={t:0,pt:0,me:0,seats:[{c:P.me,bot:false},{c:P.opps[0],bot:true},{c:P.part,bot:true},{c:P.opps[1],bot:true}],dealer:Math.floor(Math.random()*4),score:[0,0],
     hands:[[],[],[],[]],order:[],kitty:[],cv:{},bub:[null,null,null,null],msg:null,phase:'start',wait:0,handNo:0,sel:null,drag:null,piles:[[],[],[],[]],btns:[],alone:-1,out:-1,maker:-1,trump:null,trick:[],tricks:[0,0,0,0],played:[],void:[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]};
+  const E=S.eu,N=EU_NET&&EU_NET.inGame?EU_NET:null;E.gid=Math.random().toString(36).slice(2,8);
+  if(N){E.net=N;E.me=N.mySeat||0;if(N.role==='host')E.seats=N.seats.map(x=>Object.assign({},x));else if(N.first){euUnpack(E,N.first);N.first=null}}
   S.intro=null;SFX.setFFM&&SFX.setFFM(null)}
 function euMsg(E,s,c,big){E.msg={s,c:c||'#fff3dc',t:0,big:!!big}}
 function euSay(E,s,kind,o){if(!E.seats[s].bot)return;const L=euP(E,s).lines[kind];if(!L)return;let t=pick(L);if(o&&o.s!=null)t=t.replace(/\{s\}/g,EU_SUITS[o.s]).replace(/\{S\}/g,EU_SUITS[o.s].toUpperCase());E.bub[s]={s:t,t:0}}
@@ -3041,23 +3050,24 @@ function euStartPlay(E){E.phase='play';E.pt=0;E.trick=[];E.turn=euNext(E,E.deale
 function euHandEnd(E){const mt=E.maker%2,tk=E.tricks[mt]+E.tricks[mt+2];let team,pts,why;
   if(tk>=3){team=mt;pts=tk===5?(E.alone>=0?4:2):1;why=tk===5?(E.alone>=0?'Alone and swept!':'Swept all five!'):'Made it'}else{team=1-mt;pts=2;why='Euchred!'}
   E.score[team]+=pts;E.hres={team,pts,why,tk};E.phase='hand';E.pt=0;
-  if(team===0){SFX.win&&SFX.win()}else SFX.lose&&SFX.lose();
+  const myT=E.me%2;if(team===myT){SFX.win&&SFX.win()}else SFX.lose&&SFX.lose();
   const talk=[0,1,2,3].filter(s=>E.seats[s].bot&&s%2===team);if(talk.length){const s=pick(talk);euSay(E,s,why==='Euchred!'?'euchre':'made')}
-  if(team===0&&E.alone===0&&tk===5)unlockBadge('eu_alone');if(team===0&&why==='Euchred!')unlockBadge('eu_euchre')}
-function euGameEnd(E){const win=E.score[0]>=10;E.phase='over';E.pt=0;E.over={win};EU_REC[win?'w':'l']++;save('rc_eu',JSON.stringify(EU_REC));
-  for(const s of [1,2,3])if(E.seats[s].bot)euSay(E,s,(s%2===0)===win?'win':'lose');if(win){unlockBadge('eu_win');SFX.badge&&SFX.badge()}
+  if(team===myT&&E.alone===E.me&&tk===5)unlockBadge('eu_alone');if(team===myT&&why==='Euchred!')unlockBadge('eu_euchre')}
+function euGameEnd(E){const win=E.score[E.me%2]>=10;E.phase='over';E.pt=0;E.over={win};EU_REC[win?'w':'l']++;save('rc_eu',JSON.stringify(EU_REC));
+  for(const s of [0,1,2,3])if(E.seats[s].bot)euSay(E,s,E.score[s%2]>=10?'win':'lose');if(win){unlockBadge('eu_win');SFX.badge&&SFX.badge()}
   setTimeout(()=>{if(S&&S.eu===E)euCard(E)},1800)}
 function euchreUpdate(dt){const E=S.eu;if(!E)return;E.t+=dt;E.pt+=dt;
   for(let s=0;s<4;s++)if(E.bub[s]){E.bub[s].t+=dt;if(E.bub[s].t>2.4)E.bub[s]=null}if(E.msg){E.msg.t+=dt;if(E.msg.t>2)E.msg=null}
-  if(E.phase==='over')return;
+  if(E.phase==='over')return;const guest=E.net&&E.net.role==='guest';
+  if(guest&&E.phase!=='deal')return;
   if(E.phase==='start'){if(E.pt>.35){E.dealer=(E.dealer+3)%4;euNewHand(E)}return}
   if(E.phase==='deal'){const n=Math.max(0,Math.min(20,Math.floor((E.pt-EU_DEAL0)/EU_DEALDT)+1));if(n>E.dealt){E.dealt=n;SFX.card&&SFX.card()}
-    if(E.pt>EU_DEAL0+20*EU_DEALDT+.45){E.phase='bid1';E.pt=0;E.wait=euDelay(E)+.2;SFX.card&&SFX.card()}return}
+    if(!guest&&E.pt>EU_DEAL0+20*EU_DEALDT+.45){E.phase='bid1';E.pt=0;E.wait=euDelay(E)+.2;SFX.card&&SFX.card()}return}
   if(E.phase==='trick'){if(E.pt>1.05&&!E.collected){E.collected=true;E.piles[E.lastW].push(E.trick.map(p=>p.c));SFX.card&&SFX.card()}
     if(E.pt>1.5){E.trick=[];if(E.tricks.reduce((a,b)=>a+b,0)===5)euHandEnd(E);else{E.phase='play';E.pt=0;E.turn=E.lastW;E.wait=euDelay(E)}}return}
   if(E.phase==='hand'){if(E.pt>3.3){if(E.score[0]>=10||E.score[1]>=10)euGameEnd(E);else euNewHand(E)}return}
   const who=E.phase==='discard'?E.dealer:E.turn;
-  if(E.seats[who].bot){E.wait-=dt;if(E.wait<=0)euBotAct(E,who)}}
+  if(E.seats[who].bot||E.seats[who].away){E.wait-=dt;if(E.wait<=0)euBotAct(E,who)}}
 /* ---------------- the bots ---------------- */
 function euVal(hand,tr){let v=0,nt=0;const cnt=[0,0,0,0];
   for(const c of hand){const e=euEff(c,tr),r=euR(c);if(e===tr){nt++;v+=r===11?(euS(c)===tr?3.2:2.8):[1.4,1.5,0,1.7,1.9,2.25][r-9]}else{cnt[e]++}}
@@ -3243,25 +3253,25 @@ function euChar(E,G,s){const v=euVw(E,s);if(v===0)return;const c=E.seats[s].c,pc
 function euTag(E,G,s){const v=euVw(E,s),F=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace',f=Math.round(Math.max(11,Math.min(14,cw/30))),c=E.seats[s].c;
   let x,y;if(v===0){x=G.tx;y=G.handCY-G.H*.5-12}else{const hp=E.headPos[s];x=hp.x;y=hp.rim+f*.9}
   if(v===0&&['bid1','bid2','discard'].includes(E.phase)||v===0&&E.phase==='play'&&E.turn===E.me)return;
-  const on=E.turn===s&&['bid1','bid2','play'].includes(E.phase)||E.phase==='discard'&&E.dealer===s,txt=(v===0?'You':nm(c))+(s===E.out?'  (sitting out)':'');
+  const on=E.turn===s&&['bid1','bid2','play'].includes(E.phase)||E.phase==='discard'&&E.dealer===s,txt=euNm(E,s)+(s===E.out?'  (sitting out)':E.seats[s].away?'  (away)':'');
   ctx.font=F(f);const w=ctx.measureText(txt).width+16+(s===E.dealer?f+4:0);ctx.fillStyle=on?'rgba(70,26,12,.94)':'rgba(14,12,10,.82)';euRR(Math.round(x-w/2),Math.round(y-f*.75),Math.round(w),Math.round(f*1.6),7);ctx.fill();
-  ctx.strokeStyle=on?'#ff8a2a':s%2===0?'rgba(140,200,120,.55)':'rgba(255,179,71,.3)';ctx.lineWidth=on?2:1.2;ctx.stroke();
+  ctx.strokeStyle=on?'#ff8a2a':s%2===E.me%2?'rgba(140,200,120,.55)':'rgba(255,179,71,.3)';ctx.lineWidth=on?2:1.2;ctx.stroke();
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=on?'#ffd166':'#fff3dc';ctx.fillText(txt,x-(s===E.dealer?(f+4)/2:0),y+1);
   if(s===E.dealer){const dx=x+w/2-f*.5-6;ctx.fillStyle='#e8b23a';ctx.beginPath();ctx.arc(dx,y,f*.55,0,6.283);ctx.fill();ctx.fillStyle='#3a2412';ctx.font=F(Math.round(f*.8));ctx.fillText('D',dx,y+1)}}
 function euPipAt(s,x,y,k,col){const P=EU_PIP[s];ctx.fillStyle=col||(euRed(s)?'#e0453a':'#262634');for(let r=0;r<7;r++)for(let i=0;i<7;i++)if(P[r][i]==='#')ctx.fillRect(Math.round(x+(i-3.5)*k),Math.round(y+(r-3.5)*k),Math.ceil(k),Math.ceil(k))}
 function euHud(E,G){const F=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace',f=Math.round(Math.max(12,Math.min(17,cw/26))),pw=Math.min((cw-20-64)/2,330),ph=G.hudH-16,py=10,t=E.t;
-  const panel=(team,x)=>{const lead=E.score[team]>E.score[1-team];ctx.fillStyle=team===0?'rgba(20,34,18,.9)':'rgba(40,16,10,.9)';euRR(x,py,pw,ph,12);ctx.fill();ctx.strokeStyle=team===0?'rgba(140,200,120,.5)':'rgba(255,138,42,.45)';ctx.lineWidth=2;ctx.stroke();
-    const ss=team===0?[0,2]:[1,3],hh=ph-12;ss.forEach((s,i)=>{const pc=euPort(E.seats[s].c),w=hh*pc.width/pc.height*1.6;ctx.save();ctx.beginPath();euRR(x+6+i*(w*.62),py+6,w*.6,hh,6);ctx.clip();ctx.drawImage(pc,Math.round(x+6+i*(w*.62)-w*.2),py+4,Math.round(w),Math.round(hh*1.6));ctx.restore()});
+  const panel=(team,x)=>{const lead=E.score[team]>E.score[1-team];const mine=team===E.me%2;ctx.fillStyle=mine?'rgba(20,34,18,.9)':'rgba(40,16,10,.9)';euRR(x,py,pw,ph,12);ctx.fill();ctx.strokeStyle=mine?'rgba(140,200,120,.5)':'rgba(255,138,42,.45)';ctx.lineWidth=2;ctx.stroke();
+    const ss=mine?[E.me,(E.me+2)%4]:[(E.me+1)%4,(E.me+3)%4],hh=ph-12;ss.forEach((s,i)=>{const pc=euPort(E.seats[s].c),w=hh*pc.width/pc.height*1.6;ctx.save();ctx.beginPath();euRR(x+6+i*(w*.62),py+6,w*.6,hh,6);ctx.clip();ctx.drawImage(pc,Math.round(x+6+i*(w*.62)-w*.2),py+4,Math.round(w),Math.round(hh*1.6));ctx.restore()});
     const nx=x+6+2*(hh*16/29*1.6*.62)+6;ctx.textAlign='left';ctx.textBaseline='middle';ctx.font=F(Math.round(f*.78));ctx.fillStyle='#c8b8a0';
-    const nf=Math.round(Math.min(f*.78,ph*.27)),sf=Math.round(Math.min(f*1.7,ph*.5));ctx.font=F(nf);ctx.fillText(team===0?'YOU + '+nm(E.seats[2].c).toUpperCase():(nm(E.seats[1].c)+' + '+nm(E.seats[3].c)).toUpperCase(),nx,py+ph*.3,x+pw-nx-6);
+    const nf=Math.round(Math.min(f*.78,ph*.27)),sf=Math.round(Math.min(f*1.7,ph*.5));ctx.font=F(nf);ctx.fillText(mine?'YOU + '+euNm(E,ss[1]).toUpperCase():(euNm(E,ss[0])+' + '+euNm(E,ss[1])).toUpperCase(),nx,py+ph*.3,x+pw-nx-6);
     ctx.font=F(sf);ctx.fillStyle=lead?'#ffd166':'#fff3dc';const sc=String(Math.min(10,E.score[team]));ctx.fillText(sc,nx,py+ph*.68);
-    const sx=nx+ctx.measureText(sc).width+8,pr=Math.min(4,(x+pw-sx-8-19.8)/20);if(pr>=1.5)for(let i=0;i<10;i++){const on=i<E.score[team];ctx.fillStyle=on?(team===0?'#9fd67a':'#ff8a2a'):'rgba(255,255,255,.12)';ctx.fillRect(Math.round(sx+i*(pr*2+2.2)),Math.round(py+ph*.68-pr),Math.round(pr*2),Math.round(pr*2))}
+    const sx=nx+ctx.measureText(sc).width+8,pr=Math.min(4,(x+pw-sx-8-19.8)/20);if(pr>=1.5)for(let i=0;i<10;i++){const on=i<E.score[team];ctx.fillStyle=on?(mine?'#9fd67a':'#ff8a2a'):'rgba(255,255,255,.12)';ctx.fillRect(Math.round(sx+i*(pr*2+2.2)),Math.round(py+ph*.68-pr),Math.round(pr*2),Math.round(pr*2))}
   };
-  panel(0,cw/2-32-pw);panel(1,cw/2+32);
+  panel(E.me%2,cw/2-32-pw);panel(1-E.me%2,cw/2+32);
   /* trump token on the table */
   if(E.trump!=null&&!['deal','start'].includes(E.phase)){const x=G.tx-G.rx*.56,y=G.ty+G.ry*.5,r=Math.max(16,G.W*.28);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.arc(x+2,y+3,r,0,6.283);ctx.fill();
     ctx.fillStyle='#fbf3e2';ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();ctx.strokeStyle='#e8b23a';ctx.lineWidth=3;ctx.stroke();euPipAt(E.trump,x,y-1,r/6.2);
-    ctx.font=F(Math.round(f*.62));ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='rgba(20,12,6,.9)';const lab='TRUMP · '+(E.maker===E.me?'YOU':nm(E.seats[E.maker].c).toUpperCase())+(E.alone>=0?' ALONE':'');ctx.strokeText(lab,x,y+r+9);ctx.fillText(lab,x,y+r+9)}}
+    ctx.font=F(Math.round(f*.62));ctx.textAlign='center';ctx.fillStyle='#fff3dc';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='rgba(20,12,6,.9)';const lab='TRUMP · '+(E.maker===E.me?'YOU':euNm(E,E.maker).toUpperCase())+(E.alone>=0?' ALONE':'');ctx.strokeText(lab,x,y+r+9);ctx.fillText(lab,x,y+r+9)}}
 function euBubbles(E,G){const F=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace',f=Math.round(Math.max(12,Math.min(15,cw/28)));
   for(let s=0;s<4;s++){const b=E.bub[s];if(!b)continue;const v=euVw(E,s),a=Math.min(1,b.t*6,(2.4-b.t)*3);ctx.globalAlpha=a;ctx.font=F(f);const tw=Math.min(cw*.62,ctx.measureText(b.s).width+20),bh=f*1.9;
     let x,y,tip;if(v===0){x=G.tx-tw/2;y=G.handCY-G.H*.5-bh-16;tip=[G.tx,y+bh+8]}else{const hp=E.headPos[s];if(!hp)continue;y=hp.y-bh*.3;if(v===2){x=hp.x+hp.w*.45;tip=[hp.x+hp.w*.3,y+bh*.7]}else if(v===1){x=hp.x+hp.w*.42;y=hp.y-bh-2;tip=[hp.x+hp.w*.2,y+bh+7]}else{x=hp.x-hp.w*.42-tw;y=hp.y-bh-2;tip=[hp.x-hp.w*.2,y+bh+7]}}
@@ -3278,15 +3288,15 @@ function euBtn(E,x,y,w,h,label,kind,fn,o){o=o||{};const F=n=>'700 '+n+'px "RCD",
   if(!o.dis)E.btns.push({x,y,w,h,fn,id:label})}
 function euControls(E,G){E.btns=[];const me=E.me,F=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace',f=Math.round(Math.max(12,Math.min(16,cw/26))),bh=Math.round(Math.max(40,Math.min(48,ch*.055))),B=G.box;
   let hint=null;const L=[],tog=()=>({label:E.aloneT?'Alone ✓':'Go alone',kind:E.aloneT?'on':'',fn:()=>{E.aloneT=!E.aloneT},w:104});
-  if(E.phase==='bid1'&&E.turn===me){const dl=E.dealer===me,upn=euName(E.up);hint=dl?'Pick up the '+upn+'?':(E.dealer===(me+2)%4?'Tell '+nm(E.seats[E.dealer].c)+' to pick up the '+upn+'?':'Order up the '+upn+'?');
-    L.push({label:'Pass',kind:'',fn:()=>euAct(E,me,{k:'pass'}),w:104},tog(),{label:dl?'Pick it up':'Order up',kind:'go',fn:()=>{euAct(E,me,{k:'order',alone:!!E.aloneT});E.aloneT=false},w:120})}
+  if(E.phase==='bid1'&&E.turn===me){const dl=E.dealer===me,upn=euName(E.up);hint=dl?'Pick up the '+upn+'?':(E.dealer===(me+2)%4?'Tell '+euNm(E,E.dealer)+' to pick up the '+upn+'?':'Order up the '+upn+'?');
+    L.push({label:'Pass',kind:'',fn:()=>euDo(E,{k:'pass'}),w:104},tog(),{label:dl?'Pick it up':'Order up',kind:'go',fn:()=>{euDo(E,{k:'order',alone:!!E.aloneT});E.aloneT=false},w:120})}
   else if(E.phase==='bid2'&&E.turn===me){const dl=E.dealer===me;hint=dl?'You\'re stuck. Name trump.':'Name trump, or pass.';
-    for(let s=0;s<4;s++){const dis=s===euS(E.up);L.push({label:'s'+s,kind:dis?'':'go',fn:()=>{euAct(E,me,{k:'call',s,alone:!!E.aloneT});E.aloneT=false},o:{suit:s,dis},w:52})}
-    L.push(tog());if(!dl)L.push({label:'Pass',kind:'',fn:()=>euAct(E,me,{k:'pass'}),w:84})}
+    for(let s=0;s<4;s++){const dis=s===euS(E.up);L.push({label:'s'+s,kind:dis?'':'go',fn:()=>{euDo(E,{k:'call',s,alone:!!E.aloneT});E.aloneT=false},o:{suit:s,dis},w:52})}
+    L.push(tog());if(!dl)L.push({label:'Pass',kind:'',fn:()=>euDo(E,{k:'pass'}),w:84})}
   else if(E.phase==='discard'&&E.dealer===me)hint=E.sel!=null?'Tap it again to bury it':'Tap a card to bury it';
   else if(E.phase==='play'&&E.turn===me)hint=E.sel!=null?'Tap again or flick it up to play':E.trick.length?'Your play':'Your lead';
-  else if(E.phase==='bid1'||E.phase==='bid2'){hint=nm(E.seats[E.turn].c)+' is thinking...'}
-  else if(E.phase==='discard'){hint=nm(E.seats[E.dealer].c)+' is burying a card...'}
+  else if(E.phase==='bid1'||E.phase==='bid2'){hint=euNm(E,E.turn)+(E.seats[E.turn].bot||E.seats[E.turn].away?' is thinking...':'\'s turn...')}
+  else if(E.phase==='discard'){hint=euNm(E,E.dealer)+' is burying a card...'}
   /* wrap the buttons into rows that fit the box, bottom row last */
   const sc2=L.reduce((a,b)=>a+b.w+8,-8)*1.1<=B.w?1.1:1,rows=[[]];let rw=0;for(const b of L){const w=Math.min(b.w*sc2,B.w);if(rw&&rw+8+w>B.w){rows.push([]);rw=0}rows[rows.length-1].push(Object.assign({},b,{w}));rw+=(rw?8:0)+w}
   let y=B.bot-rows.length*(bh+8)+8;for(const r of rows){if(!r.length)continue;const tot=r.reduce((a,b)=>a+b.w,0)+8*(r.length-1);let x=B.x-tot/2;for(const b of r){euBtn(E,Math.round(x),Math.round(y),Math.round(b.w),bh,b.label,b.kind,b.fn,b.o);x+=b.w+8}y+=bh+8}
@@ -3294,7 +3304,7 @@ function euControls(E,G){E.btns=[];const me=E.me,F=n=>'700 '+n+'px "RCD","Pixeli
 function euCenter(E,G){const F=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace',f=Math.round(Math.max(14,Math.min(22,cw/20)));
   if(E.msg){const m=E.msg,a=Math.min(1,m.t*5,(2-m.t)*3),sc=1+Math.max(0,.18-m.t)*2;ctx.globalAlpha=a;ctx.save();ctx.translate(G.tx,G.ty+G.ry*.05);ctx.scale(sc,sc);
     ctx.font=F(Math.round(f*(m.big?1.05:.85)));ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=6;ctx.strokeStyle='rgba(16,10,6,.92)';ctx.strokeText(m.s,0,0);ctx.fillStyle=m.c;ctx.fillText(m.s,0,0);ctx.restore();ctx.globalAlpha=1}
-  if(E.phase==='hand'&&E.hres){const r=E.hres,a=Math.min(1,E.pt*4,(3.3-E.pt)*4),us=r.team===0,w=Math.min(cw*.8,300),h=f*4.6,x=G.tx-w/2,y=G.ty-h/2,pop=1+Math.max(0,.2-E.pt)*1.5;
+  if(E.phase==='hand'&&E.hres){const r=E.hres,a=Math.min(1,E.pt*4,(3.3-E.pt)*4),us=r.team===E.me%2,w=Math.min(cw*.8,300),h=f*4.6,x=G.tx-w/2,y=G.ty-h/2,pop=1+Math.max(0,.2-E.pt)*1.5;
     ctx.globalAlpha=a;ctx.save();ctx.translate(G.tx,G.ty);ctx.scale(pop,pop);ctx.translate(-G.tx,-G.ty);ctx.fillStyle=us?'rgba(20,40,20,.95)':'rgba(48,16,10,.95)';euRR(x,y,w,h,14);ctx.fill();ctx.strokeStyle=us?'#9fd67a':'#ff8a2a';ctx.lineWidth=3;ctx.stroke();
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=F(Math.round(f*1.25));ctx.fillStyle=r.why==='Euchred!'?'#ffd166':'#fff3dc';ctx.fillText(r.why==='Euchred!'?(us?'YOU EUCHRED THEM!':'EUCHRED!'):r.why,G.tx,y+h*.33,w-16);
     ctx.font=F(Math.round(f*.85));ctx.fillStyle=us?'#bfe39a':'#ffb38a';ctx.fillText((us?'+'+r.pts+' for you':'+'+r.pts+' for them')+'   ·   '+E.score[0]+' - '+E.score[1],G.tx,y+h*.72,w-16);ctx.restore();ctx.globalAlpha=1}}
@@ -3303,16 +3313,23 @@ function euAnim(E,G,dt){const T=euTargets(E,G),k=1-Math.exp(-dt*13);
     v.x+=(t.x-v.x)*k;v.y+=(t.y-v.y)*k;let da=t.a-v.a;while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;v.a+=da*k;v.s+=(t.s-v.s)*k;v.f+=Math.max(-dt*5,Math.min(dt*5,t.f-v.f))}
   return T}
 function euPiles(E,G){if(!['play','trick','hand'].includes(E.phase))return;const F=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace',f=Math.round(Math.max(11,Math.min(14,cw/30)));
-  for(let s=0;s<4;s++){const n=E.piles[s].length;if(!n)continue;const P=G.PILE[euVw(E,s)],x=P.x+n*3+G.W*.2,y=P.y-n*2.5-G.H*.2,r=f*.75;ctx.fillStyle=s%2===0?'#9fd67a':'#ff8a2a';ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();ctx.strokeStyle='#1a0e08';ctx.lineWidth=2;ctx.stroke();
+  for(let s=0;s<4;s++){const n=E.piles[s].length;if(!n)continue;const P=G.PILE[euVw(E,s)],x=P.x+n*3+G.W*.2,y=P.y-n*2.5-G.H*.2,r=f*.75;ctx.fillStyle=s%2===E.me%2?'#9fd67a':'#ff8a2a';ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();ctx.strokeStyle='#1a0e08';ctx.lineWidth=2;ctx.stroke();
     ctx.fillStyle='#1a0e08';ctx.font=F(f);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(n),x,y+1)}}
+function euTalk(E,G){if(E.phase==='over')return;const F=n=>'700 '+n+'px "RCD","Pixelify Sans", monospace',r=19,x=cw-14-r,y=G.port?Math.round(G.ty+G.ry*1.12):G.hudH+r+10;
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.arc(x+1,y+3,r,0,6.283);ctx.fill();ctx.fillStyle=E.talk?'#ffd166':'#3a2a1e';ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();ctx.strokeStyle='rgba(255,179,71,.5)';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle=E.talk?'#2a1a0e':'#fff3dc';euRR(x-10,y-8,20,13,4);ctx.fill();ctx.beginPath();ctx.moveTo(x-5,y+4);ctx.lineTo(x-8,y+10);ctx.lineTo(x+1,y+4);ctx.fill();ctx.fillStyle=E.talk?'#ffd166':'#3a2a1e';for(const d of [-5,0,5])ctx.fillRect(Math.round(x+d-1),Math.round(y-2.5),3,3);
+  E.btns.push({x:x-r,y:y-r,w:r*2,h:r*2,id:'talk',fn:()=>{E.talk=!E.talk}});
+  if(!E.talk)return;const f=Math.round(Math.max(12,Math.min(15,cw/27))),bh=f*2.2;ctx.font=F(f);let yy=y-r-10-bh,xx=x+r;
+  for(let i=EU_SAYS.length-1;i>=0;i--){const t=EU_SAYS[i],w=ctx.measureText(t).width+22,bx=xx-w,by=yy-(EU_SAYS.length-1-i)*(bh+6);ctx.fillStyle='rgba(0,0,0,.35)';euRR(bx+1,by+3,w,bh,10);ctx.fill();ctx.fillStyle='#fff3dc';euRR(bx,by,w,bh,10);ctx.fill();
+    ctx.fillStyle='#1a0e08';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,bx+w/2,by+bh/2+1);E.btns.push({x:bx,y:by,w,h:bh,id:'say'+i,fn:()=>{E.talk=false;euDo(E,{k:'say',i})}})}}
 let EU_LT=0;
 function euchreDraw(){const E=S.eu,G=euGeom();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;const now=performance.now(),dt=EU_LT?Math.min(.05,(now-EU_LT)/1000):.016;EU_LT=now;
   if(E.press)E.press.t+=dt;
-  euBg(E,G);E.headPos=[];for(const s of [2,1,3])euChar(E,G,s);euTable(E,G);const T=euAnim(E,G,dt);
+  euBg(E,G);E.headPos=[];for(const v of [2,1,3])euChar(E,G,(E.me+v)%4);euTable(E,G);const T=euAnim(E,G,dt);
   const ids=[...Array(24).keys()].sort((a,b)=>T[a].z-T[b].z);for(const c of ids)if(!T[c].hand)euCardDraw(c,E.cv[c],G,T[c]);
-  euHud(E,G);for(const s of [1,2,3])euTag(E,G,s);euPiles(E,G);
+  euHud(E,G);for(const v of [1,2,3])euTag(E,G,(E.me+v)%4);euPiles(E,G);
   E.handHit=[];for(const c of ids)if(T[c].hand){const v=E.cv[c];euCardDraw(c,v,G,T[c]);if(E.sel===c&&!T[c].dim){ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.a);ctx.strokeStyle='rgba(255,209,102,'+(.6+.4*Math.sin(E.t*6)).toFixed(2)+')';ctx.lineWidth=3;euRR(-G.W/2-2,-G.H/2-2,G.W+4,G.H+4,6);ctx.stroke();ctx.restore()}E.handHit.push({c,x:v.x,y:v.y})}
-  euTag(E,G,E.me);euControls(E,G);euCenter(E,G);euBubbles(E,G)}
+  euTag(E,G,E.me);euControls(E,G);euTalk(E,G);euCenter(E,G);euBubbles(E,G)}
 /* ---- touch ---- */
 function euPt(e){const R=cv.getBoundingClientRect();return[(e?e.clientX:0)-R.left,(e?e.clientY:0)-R.top]}
 function euDown(e){const E=S.eu;if(!E||E.phase==='over')return;const [X,Y]=euPt(e),G=euGeom();
@@ -3323,7 +3340,7 @@ function euDown(e){const E=S.eu;if(!E||E.phase==='over')return;const [X,Y]=euPt(
   if(!mine.includes(hh.c)){E.sel=null;euMsg(E,E.phase==='play'?'Follow suit if you can':'','#ffd166');SFX.hit&&SFX.hit();return}
   if(E.sel===hh.c){euCommit(E,hh.c);return}
   E.sel=hh.c;SFX.tap&&SFX.tap();E.drag={c:hh.c,x0:X,y0:Y,x:hh.x,y:hh.y,on:false,dx:hh.x-X,dy:hh.y-Y}}
-function euCommit(E,c){if(E.phase==='play')euAct(E,E.me,{k:'play',c});else if(E.phase==='discard')euAct(E,E.me,{k:'discard',c})}
+function euCommit(E,c){if(E.phase==='play')euDo(E,{k:'play',c});else if(E.phase==='discard')euDo(E,{k:'discard',c})}
 function euMove(e){const E=S&&S.eu;if(!E||!E.drag)return;const [X,Y]=euPt(e),d=E.drag;if(!d.on&&Math.hypot(X-d.x0,Y-d.y0)>10)d.on=true;if(d.on){d.x=X+d.dx;d.y=Y+d.dy}}
 function euUp(e){const E=S&&S.eu;if(!E||!E.drag)return;const d=E.drag,G=euGeom();E.drag=null;if(d.on&&d.y<G.handCY-G.H*.55){const v=E.cv[d.c];if(v){v.x=d.x;v.y=d.y}euCommit(E,d.c)}}
 /* ---- menus ---- */
@@ -3339,14 +3356,131 @@ function euMenu(){for(const o of document.querySelectorAll('.mmov'))o.remove();c
   card.append(lab('TAP A GUY TO MAKE HIM YOUR PARTNER'),row);
   const rec=el('p','mmbest','Your record: '+EU_REC.w+' - '+EU_REC.l);card.appendChild(rec);
   const r2=el('div','mmbtns'),no=el('button','btn ghost','Back');no.type='button';no.addEventListener('click',()=>ov.remove());const go=el('button','btn','Deal');go.type='button';
-  go.addEventListener('click',()=>{ov.remove();runMode='euchre';EU_GO=true;start();EU_GO=false});r2.append(no,go);card.appendChild(r2);ov.appendChild(card);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});$('app').appendChild(ov)}
-function euCard(E){const ov=el('div','mmov mmend'),win=E.over.win,card=el('div','mmcard'+(win?' win':' lose'));
-  card.append(el('span','mmk','CAMPFIRE EUCHRE  ·  '+E.score[0]+' - '+E.score[1]),el('h3',null,win?'You and '+nm(E.seats[2].c)+' win!':nm(E.seats[1].c)+' and '+nm(E.seats[3].c)+' win'));
-  const row=el('div','mmcrew');for(const s of win?[0,2]:[1,3]){const p=portrait(E.seats[s].c,3);p.style.cssText='width:48px;height:87px;image-rendering:pixelated';row.appendChild(p)}card.appendChild(row);
-  const said=[1,2,3].map(s=>E.bub[s]).find(b=>b);card.append(el('p','mmbest',said?'"'+said.s+'"':''),el('div','mmscore',EU_REC.w+' - '+EU_REC.l));
-  const r2=el('div','mmbtns'),B=(t,cls,fn)=>{const b=el('button',cls,t);b.type='button';b.addEventListener('click',()=>{ov.remove();fn()});r2.appendChild(b)};
-  B('Home','btn ghost',()=>showHome());B('Players','btn ghost',()=>euMenu());B('Rematch','btn',()=>{runMode='euchre';EU_GO=true;start();EU_GO=false});
+  go.addEventListener('click',()=>{ov.remove();runMode='euchre';EU_GO=true;start();EU_GO=false});r2.append(no,go);card.appendChild(r2);card.appendChild(lab('OR PLAY YOUR FRIENDS, LIVE'));const lr=el('div','mmbtns'),st=el('button','btn ghost','Start a table'),jn=el('button','btn ghost','Join a table');st.type=jn.type='button';
+  st.addEventListener('click',()=>{ov.remove();euLiveStart()});jn.addEventListener('click',()=>{ov.remove();euJoinPrompt()});lr.append(st,jn);card.appendChild(lr);
+  if(!euNetOK()){st.disabled=jn.disabled=true;card.appendChild(el('p','mmbest','Live tables work in the Ridge Crew app, not this preview.'))}
+  ov.appendChild(card);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});$('app').appendChild(ov)}
+function euCard(E){for(const o of document.querySelectorAll('.mmov'))o.remove();const me=E.me,pt=(me+2)%4,win=E.score[me%2]>=10,ov=el('div','mmov mmend'),card=el('div','mmcard'+(win?' win':' lose')),live=E.net,host=live&&live.role==='host';
+  card.append(el('span','mmk','CAMPFIRE EUCHRE  ·  '+E.score[me%2]+' - '+E.score[1-me%2]),el('h3',null,win?'You and '+euNm(E,pt)+' win!':euNm(E,(me+1)%4)+' and '+euNm(E,(me+3)%4)+' win'));
+  const row=el('div','mmcrew');for(const s of win?[me,pt]:[(me+1)%4,(me+3)%4]){const p=portrait(E.seats[s].c,3);p.style.cssText='width:48px;height:87px;image-rendering:pixelated';row.appendChild(p)}card.appendChild(row);
+  const said=[0,1,2,3].filter(s=>s!==me).map(s=>E.bub[s]).find(b=>b);card.append(el('p','mmbest',said?'"'+said.s+'"':''),el('div','mmscore',EU_REC.w+' - '+EU_REC.l));
+  const r2=el('div','mmbtns'),B=(t,cls,fn)=>{const b=el('button',cls,t);b.type='button';b.addEventListener('click',()=>{ov.remove();fn()});r2.appendChild(b);return b};
+  if(!live){B('Home','btn ghost',()=>showHome());B('Players','btn ghost',()=>euMenu());B('Rematch','btn',()=>{runMode='euchre';EU_GO=true;start();EU_GO=false})}
+  else if(host){B('Leave','btn ghost',()=>showHome());B('Lobby','btn ghost',()=>{const N=EU_NET;rpc('eu_put',{p_code:N.code,p_pid:N.pid,p_state:null,p_status:'lobby'}).catch(()=>{});showHome();euLobbyOpen(N.code)});
+    B('Rematch','btn',()=>{const N=EU_NET;N.seats=E.seats.map(x=>Object.assign({},x,{away:false}));N.mySeat=E.me;runMode='euchre';EU_GO=true;start();EU_GO=false})}
+  else{B('Leave','btn ghost',()=>showHome());const w=B('Waiting for the host...','btn ghost',()=>{});w.disabled=true}
   card.appendChild(r2);ov.appendChild(card);$('app').appendChild(ov);$('pauseBtn').hidden=true}
+/* ---------- Campfire Euchre live tables: one phone hosts the game, everyone else sends moves ---------- */
+const euNetOK=()=>typeof SB_URL!=='undefined'&&typeof rpc==='function';
+const EU_CODEC='ABCDEFGHJKLMNPQRSTUVWXYZ',EU_SAYS=['Nice!','Ugh.','Called it.','Let\'s go!','Sorry partner','Hurry up!'];
+let EU_NET=null,EU_PID=null,EU_LOOP=null;
+function euPid(){if(EU_PID)return EU_PID;try{EU_PID=localStorage.getItem('rc_eu_pid')}catch(e){}if(!EU_PID){EU_PID='p'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);save('rc_eu_pid',EU_PID)}return EU_PID}
+function euMeInfo(){const c=byId(myWho)||(S&&S.leader)||byId(sel)||CHARS[0];return{name:((typeof myName==='string'&&myName.trim())||nm(c)).slice(0,16),who:c.id}}
+const euNm=(E,s)=>s===E.me?'You':(E.seats[s].name||nm(E.seats[s].c));
+const euNowS=()=>Date.now()/1000+(EU_NET&&EU_NET.skew||0);
+function euNetStartLoop(){if(!EU_LOOP)EU_LOOP=setInterval(()=>{try{euNetLoop()}catch(e){}},120)}
+/* ---- starting and joining ---- */
+function euLiveStart(){if(!euNetOK()){toast('Live tables work in the Ridge Crew app');return}const pid=euPid(),info=euMeInfo();let tries=0;
+  const go=()=>{const code=[0,0,0,0].map(()=>EU_CODEC[Math.random()*EU_CODEC.length|0]).join('');
+    rpc('eu_create',{p_code:code,p_pid:pid,p_info:info}).then(ok=>{if(ok)euLobbyOpen(code);else if(++tries<6)go();else toast('Could not start a table. Try again.')}).catch(()=>toast('No connection. Try again in a sec.'))};go()}
+function euLiveJoin(code){if(!euNetOK()){toast('Live tables work in the Ridge Crew app');return}code=String(code||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);if(code.length!==4){toast('Table codes are 4 letters');return}
+  rpc('eu_join',{p_code:code,p_pid:euPid(),p_info:euMeInfo()}).then(r=>{if(!r||r.err){toast(r&&r.err==='full'?'That table is full':'No table with that code');return}
+    if(!euFound()){save('rc_eu_found','1');unlockBadge('eu_found')}euLobbyOpen(r.code)}).catch(()=>toast('No connection. Try again.'))}
+function euLobbyOpen(code){if(!EU_NET||EU_NET.code!==code)EU_NET={code,pid:euPid(),players:{},host:null,ver:-1,status:'lobby',mv:0,role:null,skew:0};
+  const N=EU_NET;N.lobby=true;N.inGame=false;N.role=null;N.ver=-1;N.lastSig=null;N.sigP=null;euLobbyRender();euNetStartLoop();N.nextSync=0}
+function euLeave(){const N=EU_NET;if(!N)return;EU_NET=null;rpc('eu_leave',{p_code:N.code,p_pid:N.pid}).catch(()=>{});for(const o of document.querySelectorAll('.mmov.eulob'))o.remove()}
+/* the crew fills every seat nobody is sitting in, never doubling up on a guy someone is playing as */
+function euBotFill(players){const humans={};for(const [pid,p] of Object.entries(players||{}))humans[p.seat]={pid,...p};const used=new Set(Object.values(humans).map(h=>h.who));
+  const pool=['curly','camo','stache','patch','nathan'].filter(id=>!used.has(id));const seats=[];
+  for(let s=0;s<4;s++){const h=humans[s];if(h)seats.push({c:byId(h.who)||CHARS[0],bot:false,pid:h.pid,name:h.name});else{const id=pool.shift()||'curly';seats.push({c:byId(id),bot:true,pid:null,name:null})}}return seats}
+/* ---- the lobby card ---- */
+function euLobbyRender(){const N=EU_NET;if(!N||!N.lobby)return;let ov=document.querySelector('.mmov.eulob');if(!ov){for(const o of document.querySelectorAll('.mmov'))o.remove();ov=el('div','mmov eulob');$('app').appendChild(ov)}
+  ov.innerHTML='';const card=el('div','mmcard');ov.appendChild(card);
+  const me=N.players[N.pid],mySeat=me?me.seat:0,isHost=N.host===N.pid,seats=euBotFill(N.players);
+  card.append(el('span','mmk','LIVE TABLE'),el('h3',null,'Campfire Euchre'));
+  const codeEl=el('div','eucode');for(const ch2 of N.code){codeEl.appendChild(el('b',null,ch2))}card.appendChild(codeEl);
+  const sh=el('button','btn ghost eushare','Share the code');sh.type='button';sh.addEventListener('click',()=>{const url=location.origin+location.pathname+'?eu='+N.code,txt='Pull up a stump. Join my Euchre table in Ridge Crew. Code: '+N.code;
+    if(navigator.share)navigator.share({title:'Ridge Crew Euchre',text:txt,url}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(txt+' '+url).then(()=>toast('Invite copied')).catch(()=>toast('Code: '+N.code));else toast('Code: '+N.code)});card.appendChild(sh);
+  const grid=el('div','euseats');const pos={0:'b',1:'l',2:'t',3:'r'};
+  for(let s=0;s<4;s++){const v=(s-mySeat+4)%4,st=seats[s],mine=s===mySeat,team=s%2===mySeat%2,b=el('button','mmguy eus eus-'+pos[v]+(team?' us':' them'));b.type='button';
+    b.append(portrait(st.c,2),el('b',null,mine?'You':st.bot?nm(st.c):st.name),el('span',null,mine?(v===0?'YOUR SEAT':''):st.bot?'BOT · TAP TO SIT':(N.host===st.pid?'HOST':'PLAYER')));
+    if(st.bot)b.addEventListener('click',()=>{SFX.tap&&SFX.tap();rpc('eu_seat',{p_code:N.code,p_pid:N.pid,p_seat:s}).then(ok=>{if(ok){N.players[N.pid].seat=s;euLobbyRender()}N.nextSync=0}).catch(()=>{})});
+    grid.appendChild(b)}
+  const mid=el('div','eumid',' ');grid.appendChild(mid);card.appendChild(grid);
+  const n=Object.keys(N.players).length;card.appendChild(el('p','mmbest',n<2?'Send the code to the crew. Empty seats get played by the guys.':'You and the player across from you are a team. Empty seats get played by the guys.'));
+  const r2=el('div','mmbtns'),lv=el('button','btn ghost','Leave');lv.type='button';lv.addEventListener('click',()=>{euLeave()});r2.appendChild(lv);
+  if(isHost){const go=el('button','btn','Deal');go.type='button';go.addEventListener('click',()=>euHostDeal());r2.appendChild(go)}
+  else{const w=el('button','btn ghost',N.host&&N.players[N.host]?'Waiting for '+N.players[N.host].name+'...':'Connecting...');w.type='button';w.disabled=true;r2.appendChild(w)}
+  card.appendChild(r2);N.drawn=JSON.stringify([N.players,N.host].map(x=>x&&JSON.stringify(x,(k,v)=>k==='seen'?undefined:v)))}
+function euHostDeal(){const N=EU_NET;if(!N||N.host!==N.pid)return;N.lobby=false;for(const o of document.querySelectorAll('.mmov'))o.remove();
+  N.role='host';N.inGame=true;N.lastSig=null;N.seats=euBotFill(N.players);N.mySeat=(N.players[N.pid]||{seat:0}).seat;runMode='euchre';EU_GO=true;start();EU_GO=false}
+function euGuestStart(state){const N=EU_NET;N.lobby=false;N.inGame=true;N.role='guest';for(const o of document.querySelectorAll('.mmov'))o.remove();
+  N.seats=null;N.mySeat=(N.players[N.pid]||{seat:0}).seat;N.first=state;runMode='euchre';EU_GO=true;start();EU_GO=false}
+/* ---- packing the game so it can travel ---- */
+const EU_KEYS=['dealer','score','hands','order','kitty','up','trump','maker','alone','out','trick','tricks','played','buried','turned','piles','void','hres','phase','turn','lastW','collected','handNo','ledBack','over','msg','bub','pt','mv','gid'];
+function euPack(E){const o={seats:E.seats.map(s=>({id:s.c.id,bot:!!s.bot,pid:s.pid||null,name:s.name||null,away:!!s.away}))};for(const k of EU_KEYS)o[k]=E[k]===undefined?null:E[k];return o}
+const euSig=o=>JSON.stringify(o,(k,v)=>k==='pt'||k==='t'?undefined:v);
+const euPre=E=>JSON.stringify([E.phase,E.turn,E.hands&&E.hands[E.me]?E.hands[E.me].length:0,E.trump,E.trick?E.trick.length:0]);
+function euUnpack(E,o){const N=EU_NET,old={phase:E.phase,hand:E.handNo,trick:(E.trick||[]).length,played:(E.played||[]).length,hres:E.hres,gid:E.gid};
+  E.seats=o.seats.map(s=>({c:byId(s.id)||CHARS[0],bot:s.bot,pid:s.pid,name:s.name,away:s.away}));const me=E.seats.findIndex(s=>s.pid===N.pid);if(me>=0)E.me=me;
+  const keepPt=o.phase===E.phase&&o.handNo===E.handNo,pt=E.pt,bub=E.bub,msg=E.msg;
+  for(const k of EU_KEYS)if(k in o)E[k]=o[k];
+  if(keepPt)E.pt=pt;
+  E.bub=(o.bub||[null,null,null,null]).map((b,i)=>b&&bub&&bub[i]&&bub[i].s===b.s?bub[i]:b);if(o.msg&&msg&&msg.s===o.msg.s)E.msg=msg;
+  if(E.handNo!==old.hand||E.gid!==old.gid){E.cv={};E.dealt=0;if(E.phase==='deal')SFX.shuffle&&SFX.shuffle()}
+  if((E.trick||[]).length>old.trick||(E.played||[]).length>old.played)SFX.cardSlap&&SFX.cardSlap(false);
+  if(E.phase==='play'&&old.phase!=='play'&&old.phase!=='trick')SFX.chime&&SFX.chime();
+  if(E.phase==='hand'&&old.phase!=='hand'&&E.hres){if(E.hres.team===E.me%2)SFX.win&&SFX.win();else SFX.lose&&SFX.lose()}
+  if(E.phase==='over'&&old.phase!=='over'){const win=E.score[E.me%2]>=10;EU_REC[win?'w':'l']++;save('rc_eu',JSON.stringify(EU_REC));if(win)unlockBadge('eu_win');setTimeout(()=>{if(S&&S.eu===E&&E.phase==='over')euCard(E)},1800)}
+  if(old.phase==='over'&&E.phase!=='over'){for(const o2 of document.querySelectorAll('.mmov'))o2.remove();$('pauseBtn').hidden=false}
+  if(E.sel!=null&&!(E.hands[E.me]||[]).includes(E.sel))E.sel=null}
+/* everything you do at the table goes through here */
+function euDo(E,a){const N=E.net;if(N&&N.role==='guest'){const pre=euPre(E);if(a.k==='say'){E.bub[E.me]={s:EU_SAYS[a.i],t:0,you:1}}else if(!euAct(E,E.me,a))return false;
+    N.pend={pre,until:performance.now()+3000};rpc('eu_move',{p_code:N.code,p_pid:N.pid,p_move:a}).catch(()=>{});return true}
+  if(a.k==='say'){E.bub[E.me]={s:EU_SAYS[a.i]||'',t:0,you:1};return true}return euAct(E,E.me,a)}
+function euApplyMove(E,pid,m){const s=E.seats.findIndex(x=>x.pid===pid);if(s<0||!m||typeof m!=='object')return;
+  if(m.k==='say'){if(EU_SAYS[m.i])E.bub[s]={s:EU_SAYS[m.i],t:0,you:1};return}
+  const a={k:String(m.k)};if(m.c!=null)a.c=m.c|0;if(m.s!=null)a.s=m.s|0;if(m.alone)a.alone=true;euAct(E,s,a)}
+/* host: keep seats in step with who is actually here */
+function euPresence(E,N){const now=euNowS();
+  for(let s=0;s<4;s++){const st=E.seats[s];if(!st.pid)continue;const p=N.players[st.pid];
+    if(!p){st.pid=null;st.bot=true;st.away=false;st.name=null;continue}
+    st.away=st.pid!==N.pid&&now-p.seen>10}
+  for(const [pid,p] of Object.entries(N.players)){if(E.seats.some(x=>x.pid===pid))continue;const st=E.seats[p.seat];if(st&&!st.pid){E.seats[p.seat]={c:byId(p.who)||st.c,bot:false,pid,name:p.name,away:false}}}}
+/* ---- the loop that talks to the server ---- */
+function euNetLoop(){const N=EU_NET;if(!N)return;const now=performance.now();
+  const E=S&&S.eu&&S.eu.net===N?S.eu:null,playing=E&&(mode==='play'||mode==='paused');
+  if(N.inGame&&!playing&&!N.lobby){euLeave();return}
+  if(N.lobby){if(now>=N.nextSync&&!N.busy){N.busy=true;N.nextSync=now+900;rpc('eu_sync',{p_code:N.code,p_pid:N.pid,p_since:N.ver}).then(r=>{N.busy=false;if(!EU_NET||EU_NET!==N||!N.lobby)return;
+      if(!r||r.err){toast('That table closed');euLeave();return}N.skew=r.now-Date.now()/1000;N.players=r.players||{};N.host=r.host;
+      if(!N.players[N.pid]){toast('You left the table');euLeave();return}
+      if(r.status==='playing'&&r.state&&r.host!==N.pid){N.ver=r.ver;euGuestStart(r.state);return}
+      const sig=JSON.stringify([N.players,N.host].map(x=>x&&JSON.stringify(x,(k,v)=>k==='seen'?undefined:v)));if(sig!==N.drawn)euLobbyRender()}).catch(()=>{N.busy=false})}return}
+  if(!E)return;
+  if(N.role==='host'){
+    if(now>=(N.nextTake||0)&&!N.busyT){N.busyT=true;N.nextTake=now+350;rpc('eu_take',{p_code:N.code,p_pid:N.pid,p_after:N.mv||0}).then(r=>{N.busyT=false;if(EU_NET!==N)return;
+      if(!r||r.err==='nothost'){N.role='guest';N.ver=-1;return}N.skew=r.now-Date.now()/1000;N.players=r.players||N.players;
+      for(const m of r.moves||[]){N.mv=Math.max(N.mv||0,m.id);if(S.eu===E)euApplyMove(E,m.pid,m.move)}E.mv=N.mv;euPresence(E,N)}).catch(()=>{N.busyT=false})}
+    if(now>=(N.nextPut||0)&&!N.busyP){const st=euPack(E),sig=euSig(st);if(sig!==N.lastSig||now-(N.lastPut||0)>2500){N.busyP=true;N.nextPut=now+200;N.lastPut=now;
+      rpc('eu_put',{p_code:N.code,p_pid:N.pid,p_state:st,p_status:E.phase==='over'?'over':'playing'}).then(v=>{N.busyP=false;if(v>=0){N.lastSig=sig;N.ver=v}}).catch(()=>{N.busyP=false})}}
+    return}
+  /* guest */
+  if(now>=(N.nextSync||0)&&!N.busy){N.busy=true;N.nextSync=now+400;rpc('eu_sync',{p_code:N.code,p_pid:N.pid,p_since:N.ver}).then(r=>{N.busy=false;if(EU_NET!==N||S.eu!==E)return;
+    if(!r||r.err){toast('The table closed');euLeave();showHome();return}N.skew=r.now-Date.now()/1000;N.players=r.players||{};N.host=r.host;
+    if(r.status==='lobby'){showHome();euLobbyOpen(N.code);return}
+    if(r.state&&r.ver>N.ver){N.ver=r.ver;const p=N.pend;if(p&&performance.now()<p.until&&euPre(Object.assign({},r.state,{me:E.me}))===p.pre){/* old news: our move hasn't landed yet */}else{N.pend=null;euUnpack(E,r.state)}}
+    if(r.host===N.pid){N.role='host';N.mv=E.mv||0;N.lastSig=null;return}
+    /* the host's phone went quiet: the first player still here (by seat) takes over */
+    const h=N.players[r.host];if(!h||r.now-h.seen>15){const here=Object.entries(N.players).filter(([pid,p])=>pid!==r.host&&r.now-p.seen<8).sort((a,b)=>a[1].seat-b[1].seat);
+      if(here.length&&here[0][0]===N.pid)rpc('eu_host',{p_code:N.code,p_pid:N.pid,p_old:r.host}).then(ok=>{if(ok&&EU_NET===N){N.role='host';N.mv=E.mv||0;N.lastSig=null;toast('You\'re hosting the table now')}}).catch(()=>{})}}).catch(()=>{N.busy=false})}}
+/* open straight into a table from a shared link */
+setTimeout(()=>{try{const q=new URLSearchParams(location.search).get('eu');if(q&&euNetOK()){history.replaceState(null,'',location.pathname);euLiveJoin(q)}}catch(e){}},1500);
+function euJoinPrompt(){for(const o of document.querySelectorAll('.mmov'))o.remove();const ov=el('div','mmov'),card=el('div','mmcard');
+  card.append(el('span','mmk','LIVE TABLE'),el('h3',null,'Join a table'),el('p','mmbest','Type the 4-letter code from whoever started it.'));
+  const inp=document.createElement('input');inp.className='eujoin';inp.maxLength=4;inp.autocapitalize='characters';inp.autocomplete='off';inp.spellcheck=false;inp.placeholder='CODE';
+  inp.addEventListener('input',()=>{inp.value=inp.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ov.remove();euLiveJoin(inp.value)}});card.appendChild(inp);
+  const r2=el('div','mmbtns'),no=el('button','btn ghost','Back');no.type='button';no.addEventListener('click',()=>{ov.remove();euMenu()});const go=el('button','btn','Join');go.type='button';go.addEventListener('click',()=>{ov.remove();euLiveJoin(inp.value)});r2.append(no,go);card.appendChild(r2);
+  ov.appendChild(card);$('app').appendChild(ov);setTimeout(()=>inp.focus(),50)}
 var ffPick=(()=>{try{return localStorage.getItem('rc_ffpick')||'random'}catch(e){return 'random'}})();
 function mlPickRow(t){const seg=el('div','ffpick');for(const [k,lab] of [['random','Random'],['lava','Lava'],['ride','Rodeo']]){const s=el('span',ffPick===k?'on':'',lab);s.classList.toggle('on',ffPick===k||(k==='random'&&ffPick==='mallow'));s.addEventListener('click',ev=>{ev.stopPropagation();ffPick=k;save('rc_ffpick',k);runMode='fire';save('rc_mode','fire');SFX.tap&&SFX.tap();const sc=$('modeList').scrollTop;showModes();$('modeList').scrollTop=sc});seg.appendChild(s)}t.appendChild(seg)}
 window.addEventListener('pointermove',e=>{if(S&&S.ml&&(S.ml.aim||S.ml.pan))mlMove(e);if(S&&S.mode==='stampede')spSwipeMove(e);if(S&&S.pl&&S.pl.drag)plMove(e);if(S&&S.eu&&S.eu.drag)euMove(e)});
