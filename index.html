@@ -5338,7 +5338,12 @@ function snOcc(sn,x,y){return sn.blocks[x+','+y]||sn.body.some(b=>b.x===x&&b.y==
 function snFree(sn,away){const g=sn.g,h=sn.body[0];for(let n=0;n<400;n++){const x=Math.floor(Math.random()*g.cols),y=Math.floor(Math.random()*g.rows);if(snOcc(sn,x,y))continue;if(away&&Math.abs(x-h.x)+Math.abs(y-h.y)<away)continue;if(sn.cone&&sn.cone.x===x&&sn.cone.y===y)continue;if(sn.bear&&sn.bear.x===x&&sn.bear.y===y)continue;return{x,y}}return{x:0,y:0}}
 function snCone(sn){sn.cone=snFree(sn,3)}
 function snakeTurn(dx,dy){const sn=S.sn;if(!sn||S.dead)return;if(sn.rev>0){dx=-dx;dy=-dy}if(!sn.started){sn.started=1;sn.stepT=0}
-  const last=sn.q.length?sn.q[sn.q.length-1]:sn.dir;if(last[0]===-dx&&last[1]===-dy)return;if(last[0]===dx&&last[1]===dy)return;if(sn.q.length<2)sn.q.push([dx,dy]);if(sn.q.length===1){const nt=Math.max(.045,sn.stepT*.5);if(nt<sn.stepT){const e=sn.stepDur-sn.stepT;sn.stepT=nt;sn.stepDur=e+nt}}}
+  const last=sn.q.length?sn.q[sn.q.length-1]:sn.dir;if(last[0]===-dx&&last[1]===-dy)return;if(last[0]===dx&&last[1]===dy)return;if(!sn.q.length&&snRetro(sn,dx,dy))return;if(sn.q.length<2)sn.q.push([dx,dy])}
+/* a turn that comes just after a step re-routes that step instead of waiting for the next one, so the line bends right away without speeding up */
+function snRetro(sn,dx,dy){const L=sn.lastStep,g=sn.g,h=sn.body[0];if(!L||!L.plain||sn.dead||(sn.stepDur-sn.stepT)/sn.stepDur>.33)return false;if(L.d[0]===-dx&&L.d[1]===-dy)return false;
+  const nx=L.x+dx,ny=L.y+dy;if(nx<0||ny<0||nx>=g.cols||ny>=g.rows||sn.blocks[nx+','+ny])return false;if(sn.body.slice(2).some(b=>b.x===nx&&b.y===ny))return false;
+  for(const o of [sn.cone,sn.gold,sn.rare,sn.bear])if(o&&o.x===nx&&o.y===ny)return false;
+  h.x=nx;h.y=ny;h.f=[dx,dy];sn.dir=[dx,dy];L.plain=false;return true}
 function snakeDie(why,bear){const sn=S.sn;if(S.dead)return;S.hitStop=.1;die(why,bear?'eaten':'snake');sn.dead={t:0};sn.shake=8;SFX.hit();buzz(60);if(bear)SFX.roar()}
 function snakeUpdate(dt){
   const sn=S.sn,g=sn.g;sn.shake=Math.max(0,sn.shake-dt*30);sn.popT=Math.max(0,sn.popT-dt);
@@ -5355,7 +5360,8 @@ function snakeUpdate(dt){
   sn.stepT-=dt;if(sn.stepT>0)return;sn.stepDur=Math.max(.12,.21-Math.floor(sn.len/3)*.005);sn.stepT=sn.stepDur;
   if(sn.q.length)sn.dir=sn.q.shift();
   const h=sn.body[0];let nx=h.x+sn.dir[0],ny=h.y+sn.dir[1];
-  if(nx<0||nx>=g.cols){if(sn.tun.includes(ny)){nx=nx<0?g.cols-1:0;SFX.thunk&&SFX.thunk()}else{snakeDie('Hiked right off the edge of the meadow.');return}}
+  sn.lastStep={x:h.x,y:h.y,d:sn.dir.slice(),plain:true};
+  if(nx<0||nx>=g.cols){if(sn.tun.includes(ny)){sn.lastStep.plain=false;nx=nx<0?g.cols-1:0;SFX.thunk&&SFX.thunk()}else{snakeDie('Hiked right off the edge of the meadow.');return}}
   if(ny<0||ny>=g.rows){snakeDie('Hiked right off the edge of the meadow.');return}
   const blk=sn.blocks[nx+','+ny];if(blk){snakeDie(blk==='tree'?'Walked face-first into a tree.':'Tripped over a rock.');return}
   if(sn.body.slice(0,sn.grow>0?sn.body.length:sn.body.length-1).some(b=>b.x===nx&&b.y===ny)){snakeDie('Walked into your own hiking line.');return}
@@ -5368,6 +5374,7 @@ function snakeUpdate(dt){
   if(sn.cone&&sn.cone.x===nx&&sn.cone.y===ny){sn.grow+=1;S.cones++;SFX.cone();snCone(sn);sn.flash=.1}
   if(sn.gold&&sn.gold.x===nx&&sn.gold.y===ny){sn.golds=(sn.golds||0)+1;sn.grow+=5;S.cones+=5;SFX.badge&&SFX.badge();sn.gold=null;sn.flash=.25}
   if(sn.rare&&sn.rare.x===nx&&sn.rare.y===ny){const k=sn.rare.k;sn.rare=null;SFX.badge&&SFX.badge();buzz(25);sn.tags=sn.tags||[];if(k==='statue'){sn.noBear=10;sn.tags.push({s:'BEAR GONE! 10s',x:nx,y:ny,t0:S.t,c:'#ffd84a'})}else{sn.rev=6;sn.tags.push({s:'WHOA... controls flipped!',x:nx,y:ny,t0:S.t,c:'#ff8ae0'})}}
+  if(sn.flash>0)sn.lastStep.plain=false;
   S.dist=sn.len*30;S.stats.clears=sn.len;
 }
 /* drawing */
