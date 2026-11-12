@@ -7649,10 +7649,15 @@ function drawCamp(t){
     CAMP_HITS.push({x:cx+bx*k,y:gy+(by-1)*k,r:Math.max(14,7*k),fn:()=>{SFX.tap&&SFX.tap();if(!poolFound()){save('rc_pool_found','1');unlockBadge('pool_found');SFX.win&&SFX.win();campText(cx+bx*k,gy+(by-8)*k,'You found Camp 8-Ball!','#ffd166');campSay(pick([1,2,3]),'8-ball? Rack \'em.');setTimeout(()=>poolMenu(),900)}else poolMenu()}})}
 
   /* the hidden deck of cards: some nights somebody left it by the fire */
-  if(!STORY&&EU_SPOT){const [bx,by]=EU_SPOT;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(bx+.5,by+2.6,4.4,1,0,0,6.283);ctx.fill();
-    px(ctx,'#1a0e08',bx-4,by-2,5,6);px(ctx,'#1d4428',bx-3.5,by-1.5,4,5);px(ctx,'#e0601e',bx-2,by,1,2);
-    px(ctx,'#1a0e08',bx-1,by-4,5,6);px(ctx,'#fbf3e2',bx-.5,by-3.5,4,5);px(ctx,'#c8302a',bx+.5,by-2.5,2,1);px(ctx,'#c8302a',bx+1,by-1.5,1,1.4);
-    if(Math.sin(t*2.1+1)>.88){px(ctx,'#ffffff',bx+3,by-5,1,1);px(ctx,'#ffffff',bx+2,by-5,3,.5);px(ctx,'#ffffff',bx+3,by-6,.5,3)}
+  if(!STORY&&EU_SPOT){const [bx,by]=EU_SPOT;const g5=(rows,x,y,c)=>rows.forEach((r,j)=>{for(let i=0;i<r.length;i++)if(r[i]==='#')px(ctx,c,x+i*.5,y+j*.5,.5,.5)});
+    ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(bx,by+2.8,8.5,1.5,0,0,6.283);ctx.fill();
+    /* a face-down card spilled out to the left, and the ace of hearts slid out to the right */
+    px(ctx,'#1a0e08',bx-9,by-1.5,5,5);px(ctx,'#1d4428',bx-8.5,by-1,4,4);px(ctx,'#e0601e',bx-8.5,by-1,4,.5);px(ctx,'#2c6a3c',bx-7.5,by,1,1);px(ctx,'#2c6a3c',bx-6.5,by+1.5,1,1);
+    px(ctx,'#1a0e08',bx+1,by-2.5,6.5,6);px(ctx,'#fbf3e2',bx+1.5,by-2,5.5,5);px(ctx,'#e9dcc2',bx+1.5,by+2.5,5.5,.5);g5(['.##.##.','#######','#######','.#####.','..###..','...#...'],bx+2.5,by-1.5,'#c8302a');
+    /* the card box, lying flat, ace of spades on the lid */
+    px(ctx,'#3a0e0a',bx-6.5,by-3.5,10,7);px(ctx,'#b8282a',bx-6,by-3,9,5);px(ctx,'#e05a4a',bx-6,by-3,9,.5);px(ctx,'#8a1c18',bx-6,by-3,1,5);px(ctx,'#7a1a14',bx-6,by+2,9,1);px(ctx,'#5a1010',bx-6,by+2.5,9,.5);
+    px(ctx,'#fbf3e2',bx-4.5,by-2.25,6.5,3.75);g5(['.#.','#.#','###','#.#'],bx-4.25,by-2,'#1a1a24');g5(['..#..','.###.','#####','#####','..#..','.###.'],bx-2.25,by-1.75,'#1a1a24');
+    if(Math.sin(t*2.1+1)>.88){px(ctx,'#ffffff',bx+2,by-5,1,1);px(ctx,'#ffffff',bx+1,by-5,3,.5);px(ctx,'#ffffff',bx+2,by-6,.5,3)}
     CAMP_HITS.push({x:cx+bx*k,y:gy+(by-1)*k,r:Math.max(14,7*k),fn:()=>{SFX.tap&&SFX.tap();if(!euFound()){save('rc_eu_found','1');unlockBadge('eu_found');SFX.win&&SFX.win();campText(cx+bx*k,gy+(by-8)*k,'You found Campfire Euchre!','#ffd166');campSay(pick([1,2,3]),'Euchre? Deal me in.');setTimeout(()=>euMenu(),900)}else euMenu()}})}
   yawnNext-=dt;if(yawnNext<=0&&yawnT<=0){yawnI=pick([0,1,3,4]);yawnT=1.6;yawnNext=9+Math.random()*9}
   if(yawnT>0){yawnT-=dt;const yx=[-48,-27,0,27,48][yawnI],sk=look(C[yawnI]).skin,up=Math.min(1,(1.6-yawnT)*3,yawnT*3);px(ctx,sk,yx-6,Math.round(-14-6*up),2,Math.round(4+4*up));px(ctx,sk,yx+4,Math.round(-14-6*up),2,Math.round(4+4*up));
