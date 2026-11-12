@@ -2774,7 +2774,7 @@ function plStep(pl,dt){const R=PL.R,B=plLive(pl);let mx=0;for(const b of B)mx=Ma
       if(pl.shot&&pl.shot.first==null&&(a.n===0||c.n===0))pl.shot.first=a.n===0?c.n:a.n;
       if(Math.abs(rv)>6)plClick(pl,Math.abs(rv))}}
     for(const b of B){if(b.in)continue;
-      for(const p of PL_POCKETS){const side=p[1]===50,cap=side?3.1:3.5;if(Math.hypot(b.x-p[0],b.y-p[1])<cap){b.in=true;pl.pots.push(b.n);pl.sink=pl.sink||[];pl.sink.push({n:b.n,b,x:b.x,y:b.y,px:p[0],py:p[1],vx:b.vx,vy:b.vy,t:0});b.vx=b.vy=b.wx=b.wy=0;if(!pl.sim)SFX.cone&&SFX.cone();break}}
+      for(const p of PL_POCKETS){const side=p[1]===50,cap=side?3.1:3.5;if(Math.hypot(b.x-p[0],b.y-p[1])<cap){b.in=true;pl.pots.push(b.n);if(b.n===8&&pl.shot)pl.shot.p8=PL_POCKETS.indexOf(p);pl.sink=pl.sink||[];pl.sink.push({n:b.n,b,x:b.x,y:b.y,px:p[0],py:p[1],vx:b.vx,vy:b.vy,t:0});b.vx=b.vy=b.wx=b.wy=0;if(!pl.sim)SFX.cone&&SFX.cone();break}}
       if(b.in)continue;
       /* pocket jaws */
       for(const J of PL_JAWS){const dx=b.x-J[0],dy=b.y-J[1],d=Math.hypot(dx,dy),rr=R+.25;if(d<rr&&d>0){const nx=dx/d,ny=dy/d;b.x=J[0]+nx*rr;b.y=J[1]+ny*rr;const vn=b.vx*nx+b.vy*ny;if(vn<0){b.vx-=(1+PL_EC)*vn*nx;b.vy-=(1+PL_EC)*vn*ny;b.wx*=.6;b.wy*=.6;if(-vn>8)plThud(pl,-vn)}}}
@@ -2797,7 +2797,7 @@ function plResolve(pl){const sh=pl.shot,who=sh.who,oth=who==='p'?'o':'p',pots=pl
   const firstOk=sh.first!=null&&(sh.brk||(!g?sh.first!==8:(wasOnEight?sh.first===8:plType(sh.first)===g)));
   let foul=scratch||sh.first==null||!firstOk;pl.brk=false;
   if(eight){if(sh.brk&&!scratch){const e=pl.balls.find(b=>b.n===8);e.in=false;e.x=25;e.y=24;e.vx=e.vy=0;plMsg(pl,'8 on the break: re-spotted','#ffd166')}
-    else{const called=pl.called!=null?pl.called:null,pocket=pl.sink.filter(s=>s.n===8).map(s=>PL_POCKETS.findIndex(p=>p[0]===s.px&&p[1]===s.py))[0];
+    else{const called=pl.called!=null?pl.called:null,pocket=sh.p8!=null?sh.p8:(pl.sink||[]).filter(s=>s.n===8).map(s=>PL_POCKETS.findIndex(p=>p[0]===s.px&&p[1]===s.py))[0];
       const win=wasOnEight&&!scratch&&sh.first===8&&(called==null||pocket===called);plEnd(pl,win?who:oth,win?'8 ball down':scratch?'Scratched on the 8':!wasOnEight?'Sank the 8 too early':'8 in the wrong pocket');return}}
   if(scratch){const c=plCue(pl);c.in=false;c.x=25;c.y=76;c.vx=c.vy=0}
   /* first legal pot on an open table picks the groups */
