@@ -5147,7 +5147,7 @@ function drawPeeOdyssey(){
 
 /* ---------- unlocks: modes by level or milestone, themed gear by badge, and a big reveal when something opens up ---------- */
 const bestRunM=()=>Math.max(0,...Object.values((typeof bestDist!=='undefined'&&bestDist)||{}).map(v=>+v||0));
-const MODE_REQ={night:{lvl:3},solo:{lvl:5},uphill:{lvl:7},
+const MODE_REQ={night:{lvl:3},mallow:{lvl:4},solo:{lvl:5},uphill:{lvl:7},
  bear:{fn:()=>(LIFE.eaten||0)>=15,txt:'Get eaten by the bear 15 times',prog:()=>Math.min(15,LIFE.eaten||0)+' / 15'},
  fire:{fn:()=>bestRunM()>=2000,txt:'Run 2,000 m in one run',prog:()=>Math.min(2000,bestRunM()).toLocaleString()+' / 2,000 m'},
  arcade:{fn:()=>bestRunM()>=1000,txt:'Run 1,000 m in one run',prog:()=>Math.min(1000,bestRunM()).toLocaleString()+' / 1,000 m'},
