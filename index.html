@@ -1077,7 +1077,7 @@ const STYLE_GROUPS=[
  {k:'pee',title:'Pee-break style',note:'Changes the pause screen.',items:[{id:'none',name:'Classic line-up',price:0},{id:'curtain',name:'Privacy curtain',price:720},{id:'outhouse',name:'Portable outhouse',price:900},{id:'wrong',name:'Wrong-way guy',price:480}]},
  {k:'home',title:'Home screen',note:'Where the crew hangs out on the main menu.',items:[{id:'none',name:'Campfire',price:0},{id:'apt',name:'The Hew Stu living room',price:2400,need:'hewstu',desc:'Your actual apartment. Whole crew on the couch.'}]},
  {k:'tent',title:'Camp tent',note:'Shows up at the campfire.',items:[{id:'none',name:'No tent',price:0},{id:'dome',name:'Orange dome',price:600},{id:'aframe',name:'Canvas A-frame',price:720},{id:'teepee',name:'Teepee',price:960}]},
- {k:'music',title:'Soundtrack',note:'Plays on the home screen and during regular runs. Equip one and head back home to hear it.',items:[{id:'none',name:'Trail theme',price:0},{id:'grace',name:'Amazing Grace',price:900},{id:'doxo',name:'The Doxology',price:900},{id:'joyful',name:'Joyful, Joyful',price:900},{id:'saints',name:'When the Saints',price:1050},{id:'mountain',name:"Comin' Round the Mountain",price:1050},{id:'susanna',name:'Oh! Susanna',price:1050},{id:'mtnking',name:'Hall of the Mountain King',desc:'Speeds up every loop.',price:1500},{id:'tell',name:'William Tell Gallop',price:1500},{id:'ridge',name:'King of the Ridge',desc:'“That’s my purse! I don’t know you!”',price:1800},{id:'smell',name:'Smell It in the Air',desc:'Build... and drop. An original.',price:2100}]},
+ {k:'music',title:'Soundtrack',note:'Plays on the home screen and during regular runs. Equip one and head back home to hear it.',items:[{id:'none',name:'Trail theme',price:0},{id:'grace',name:'Amazing Grace',price:900},{id:'doxo',name:'The Doxology',price:900},{id:'joyful',name:'Joyful, Joyful',price:900},{id:'jesus',name:'Jesus Loves Me',price:900},{id:'saints',name:'When the Saints',price:1050},{id:'mountain',name:"Comin' Round the Mountain",price:1050},{id:'susanna',name:'Oh! Susanna',price:1050},{id:'mtnking',name:'Hall of the Mountain King',desc:'Speeds up every loop.',price:1500}]},
  {k:'fire',title:'Campfire',note:'The fire at camp and in stories.',items:[{id:'none',name:'Classic flames',price:0},{id:'blue',name:'Blue flames',price:720},{id:'green',name:'Ghost green',price:900},{id:'purple',name:'Purple haze',price:1080}]}
 ];
 const styleOf=k=>((equip.style||{})[k])||'none';
@@ -7620,6 +7620,11 @@ function drawApt(t,dt,r,k,cx,gy){
   for(let yy=-4;yy<=4;yy++){const w=Math.round(26*Math.sqrt(1-(yy*yy)/20.25));px(ctx,yy>2?'#6b4423':'#9a6a3e',-w,10+yy,w*2,1)}
   px(ctx,'#b07a46',-18,7,30,1);px(ctx,'#1a1a1a',-10,9,6,2);px(ctx,'#6a2ab0',-9,9,1,1);px(ctx,'#1d1a17',-21,4,12,5);px(ctx,'#b8322e',-20,4,10,4);px(ctx,'#e8c050',-20,5,10,1);px(ctx,'#a8282a',-20,7,10,1);if(!STORY)drawArcHandheld(t,k,cx,gy);
   px(ctx,'#5a3a22',-18,15,2,10);px(ctx,'#5a3a22',16,15,2,10);px(ctx,'#4a2e1a',-1,15,2,8);px(ctx,'#4a2e1a',-16,20,32,1);
+  /* the hidden games can turn up on the coffee table here too: the 8-ball and the deck of cards */
+  if(!STORY&&POOL_SPOT){const bx=20,by=9;px(ctx,'rgba(0,0,0,.3)',bx-2,by+2,5,1);for(const [dy,w2] of [[-2,1],[-1,2],[0,2],[1,2],[2,1]])px(ctx,'#151515',bx-w2,by+dy,w2*2+1,1);px(ctx,'#3a3a3a',bx-1,by-2,1,1);px(ctx,'#f4efe4',bx,by-1,1,1);
+    if(Math.sin(t*2.3)>.86){px(ctx,'#ffffff',bx-2,by-3,1,1)}}
+  if(!STORY&&EU_SPOT){const bx=-21,by=11;px(ctx,'rgba(0,0,0,.3)',bx,by+3,7,1);px(ctx,'#3a0e0a',bx,by,7,3.5);px(ctx,'#b8282a',bx+.5,by+.5,6,2.5);px(ctx,'#fbf3e2',bx+2,by+.5,3,2.5);px(ctx,'#1a1a24',bx+3,by+1,1,1.5);px(ctx,'#1a1a24',bx+2.5,by+1.5,2,.5);
+    if(Math.sin(t*2.1+1)>.88){px(ctx,'#ffffff',bx+6,by-1,1,1)}}
   /* the yawn bit, same as the campfire */
   yawnNext-=dt;if(yawnNext<=0&&yawnT<=0){yawnI=pick([0,1,3,4]);yawnT=1.6;yawnNext=9+Math.random()*9}
   if(yawnT>0){yawnT-=dt;const yx=xs[yawnI],up=Math.min(1,(1.6-yawnT)*3,yawnT*3);ctx.font='700 6px "RCD","Pixelify Sans", monospace';ctx.textAlign='center';ctx.globalAlpha=up;ctx.fillStyle='#fff3dc';ctx.fillText(ids[yawnI]==='patch'?'*yawn* ...bro':'*yawn*',yx,-42);ctx.globalAlpha=1}
@@ -7637,7 +7642,10 @@ function drawApt(t,dt,r,k,cx,gy){
     const SONGS=['Last Date','Moody River','Love Letters','Bridge Over Troubled Water','Sweet Caroline','Moonlight Serenade'];
     for(let i=0;i<6;i++){const [hx,hy]=S2(-41+i*16,-45);CAMP_HITS.push({x:hx,y:hy,r:8*k,fn:()=>{SFX.cone&&SFX.cone();campText(hx,hy-10*k,'♪ '+SONGS[i]+' ♪','#ffd166')}})}
     {const [hx,hy]=S2(-15,6);CAMP_HITS.push({x:hx,y:hy,r:7*k,fn:()=>{SFX.tap&&SFX.tap();campText(hx,hy-10*k,pick(['Catan rematch?!','who took all the sheep','I have longest road. Again.','Euchre instead?']),'#ffd166')}})}
-    [-40,-20,0,20,40].forEach((x,i)=>{const [hx,hy]=S2(x,-18);CAMP_HITS.push({x:hx,y:hy,r:9*k,fn:()=>{const L2=CREW_LINES[ids2[i]]||CREW_LINES.nathan;SFX.tap&&SFX.tap();campText(hx,hy-14*k,pick(L2))}})})}
+    [-40,-20,0,20,40].forEach((x,i)=>{const [hx,hy]=S2(x,-18);CAMP_HITS.push({x:hx,y:hy,r:9*k,fn:()=>{const L2=CREW_LINES[ids2[i]]||CREW_LINES.nathan;SFX.tap&&SFX.tap();campText(hx,hy-14*k,pick(L2))}})})
+    if(POOL_SPOT){const [hx,hy]=S2(20.5,9);CAMP_HITS.push({x:hx,y:hy,r:Math.max(14,6*k),fn:()=>{SFX.tap&&SFX.tap();if(!poolFound()){save('rc_pool_found','1');unlockBadge('pool_found');SFX.win&&SFX.win();campText(hx,hy-10*k,'You found Camp 8-Ball!','#ffd166');setTimeout(()=>poolMenu(),900)}else poolMenu()}})}
+    if(EU_SPOT){const [hx,hy]=S2(-17.5,12.5);CAMP_HITS.push({x:hx,y:hy,r:Math.max(14,6*k),fn:()=>{SFX.tap&&SFX.tap();if(!euFound()){save('rc_eu_found','1');unlockBadge('eu_found');SFX.win&&SFX.win();campText(hx,hy-10*k,'You found Campfire Euchre!','#ffd166');setTimeout(()=>euMenu(),900)}else euMenu()}})}
+  }
   /* warm room tint so it feels like night with the lamps on */
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='rgba(40,28,18,.08)';ctx.fillRect(0,0,cw,ch);
   const v=ctx.createRadialGradient(cx,gy-40*k,40*k,cx,gy-40*k,Math.max(cw,ch)*.8);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(10,8,6,.22)');ctx.fillStyle=v;ctx.fillRect(0,0,cw,ch);
@@ -8094,26 +8102,21 @@ const SFX=(()=>{
     windG=mk('lowpass',420,.7,.1);waterG=mk('bandpass',1300,.55,0);
     setInterval(tick,60);
   }
-  /* ---------- shop soundtracks: public-domain tunes + two originals, as note data [midi, eighths] ---------- */
+  /* ---------- shop soundtracks: public-domain tunes, as note data [midi, eighths] ---------- */
   const TRK={
    grace:{bpm:76,bar:6,key:7,w:'triangle',bass:'waltz',mel:[[0,4],[62,2],[67,4],[71,1],[67,1],[71,4],[69,2],[67,4],[64,2],[62,4],[62,2],[67,4],[71,1],[67,1],[71,4],[69,2],[74,4],[71,2],[74,4],[71,1],[67,1],[71,4],[69,2],[67,4],[64,2],[62,4],[62,2],[67,4],[71,1],[67,1],[71,4],[69,2],[67,6],[0,6]]},
+   jesus:{bpm:100,bar:8,key:0,w:'triangle',bass:'boom',mel:[[67,2],[64,2],[64,2],[62,2],[64,2],[67,2],[67,4],[69,2],[69,2],[72,2],[69,2],[69,2],[67,2],[67,4],[67,2],[64,2],[64,2],[62,2],[64,2],[67,2],[67,4],[69,2],[69,2],[67,2],[60,2],[64,2],[62,2],[60,4],[67,4],[64,2],[67,2],[69,4],[72,4],[67,4],[64,2],[60,2],[64,4],[62,4],[67,4],[64,2],[67,2],[69,4],[72,4],[69,2],[67,2],[60,2],[64,2],[62,4],[60,4]]},
    doxo:{bpm:176,bar:8,key:7,w:'triangle',bass:'boom',mel:[[67,8],[67,4],[66,4],[64,4],[62,4],[67,4],[69,4],[71,8],[71,8],[71,4],[71,4],[69,4],[67,4],[72,4],[71,4],[69,8],[67,8],[69,4],[71,4],[69,4],[67,4],[64,4],[66,4],[67,8],[74,8],[71,4],[67,4],[69,4],[72,4],[71,4],[69,4],[67,8]]},
    joyful:{bpm:112,bar:8,key:0,w:'square',bass:'boom',mel:[[64,2],[64,2],[65,2],[67,2],[67,2],[65,2],[64,2],[62,2],[60,2],[60,2],[62,2],[64,2],[64,3],[62,1],[62,4],[64,2],[64,2],[65,2],[67,2],[67,2],[65,2],[64,2],[62,2],[60,2],[60,2],[62,2],[64,2],[62,3],[60,1],[60,4],
      [62,2],[62,2],[64,2],[60,2],[62,2],[64,1],[65,1],[64,2],[60,2],[62,2],[64,1],[65,1],[64,2],[62,2],[60,2],[62,2],[55,4],[64,2],[64,2],[65,2],[67,2],[67,2],[65,2],[64,2],[62,2],[60,2],[60,2],[62,2],[64,2],[62,3],[60,1],[60,4]]},
    mtnking:{bpm:96,bar:8,key:9,minor:1,w:'square',bass:'pulse',accel:1,drums:'march',mel:[[57,1],[59,1],[60,1],[62,1],[64,1],[60,1],[64,2],[63,1],[59,1],[63,2],[62,1],[58,1],[62,2],[57,1],[59,1],[60,1],[62,1],[64,1],[60,1],[64,1],[69,1],[67,1],[64,1],[60,1],[64,1],[67,4],
      [64,1],[66,1],[68,1],[69,1],[71,1],[68,1],[71,2],[72,1],[68,1],[72,2],[71,1],[68,1],[71,2],[64,1],[66,1],[68,1],[69,1],[71,1],[68,1],[71,1],[76,1],[74,1],[71,1],[68,1],[71,1],[74,4]]},
-   tell:{bpm:300,bar:16,key:9,w:'square',bass:'gallop',drums:'march',mel:[[76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[76,1],[81,2],[83,2],[85,2],[76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[73,1],[73,1],[69,2],[73,2],[76,2],
-     [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[76,1],[81,2],[83,2],[85,2],[76,1],[76,1],[76,2],[73,1],[73,1],[69,2],[71,1],[71,1],[68,2],[64,4]]},
    mountain:{bpm:104,bar:8,key:0,w:'square',bass:'boom',drums:'country',mel:[[0,6],[67,1],[69,1],[72,1],[72,1],[72,1],[72,1],[69,1],[67,1],[64,1],[67,1],[72,6],[72,1],[74,1],[76,1],[76,1],[76,1],[76,1],[79,1],[76,1],[74,1],[72,1],[74,6],[77,1],[79,1],
      [81,1],[81,1],[81,1],[81,1],[79,1],[77,1],[76,1],[74,1],[76,1],[76,1],[76,1],[76,1],[74,1],[72,1],[71,1],[69,1],[71,1],[71,1],[71,1],[71,1],[74,1],[72,1],[71,1],[74,1],[72,8]]},
    susanna:{bpm:112,bar:8,key:0,w:'square',bass:'boom',drums:'country',mel:[[0,6],[60,1],[62,1],[64,2],[67,2],[67,3],[69,1],[67,2],[64,2],[60,3],[62,1],[64,2],[64,2],[62,2],[60,2],[62,6],[60,1],[62,1],[64,2],[67,2],[67,3],[69,1],[67,2],[64,2],[60,3],[62,1],[64,2],[64,2],[62,2],[62,2],[60,8],
      [65,4],[65,4],[69,2],[69,4],[69,2],[67,2],[67,2],[64,2],[60,2],[62,6],[60,1],[62,1],[64,2],[67,2],[67,3],[69,1],[67,2],[64,2],[60,3],[62,1],[64,2],[64,2],[62,2],[62,2],[60,8]]},
    saints:{bpm:120,bar:8,key:0,w:'square',bass:'boom',drums:'march',mel:[[0,2],[60,2],[64,2],[65,2],[67,8],[0,2],[60,2],[64,2],[65,2],[67,8],[0,2],[60,2],[64,2],[65,2],[67,4],[64,4],[60,4],[64,4],[62,8],
      [0,2],[64,2],[64,2],[62,2],[60,6],[60,2],[64,4],[67,2],[67,2],[65,8],[0,2],[64,2],[65,2],[67,2],[64,4],[60,4],[62,8],[60,8]]},
-   ridge:{bpm:100,bar:8,key:4,w:'sawtooth',twang:1,bass:'boom',drums:'country',mel:[[64,1],[67,1],[68,2],[71,2],[68,1],[71,1],[73,2],[71,2],[68,4],[64,1],[67,1],[68,2],[71,1],[73,1],[71,1],[68,1],[69,2],[68,2],[64,4],
-     [76,2],[74,1],[71,1],[73,2],[71,2],[68,2],[69,1],[71,1],[68,4],[66,1],[68,1],[69,2],[71,2],[73,2],[71,6],[0,2]]},
-   smell:{bpm:128,bar:8,key:9,minor:1,w:'sawtooth',bass:'pulse',drums:'edm',chords:[[9,0,4],[9,0,4],[5,9,0],[5,9,0],[0,4,7],[0,4,7],[7,11,2],[7,11,2],[9,0,4],[9,0,4],[5,9,0],[5,9,0],[0,4,7],[0,4,7],[7,11,2],[7,11,2]],
-     mel:[[0,64],[76,2],[76,1],[74,1],[72,2],[69,2],[72,2],[74,2],[76,4],[77,2],[76,1],[74,1],[72,2],[69,2],[67,2],[69,2],[72,4],[76,2],[76,1],[74,1],[72,2],[69,2],[72,2],[74,2],[76,2],[79,2],[81,4],[79,2],[76,2],[74,2],[72,2],[71,4],[69,4]]}
   };
   function trkPrep(T){if(T.ev)return T;const ev=[];let p=0;for(const [m,d] of T.mel){ev.push({p,m,d});p+=d}T.len=Math.ceil(p/T.bar)*T.bar;const bars=T.len/T.bar;
     const CH=T.minor?[[0,3,7],[5,8,0],[7,11,2],[8,0,3],[3,7,10]]:[[0,4,7],[5,9,0],[7,11,2],[9,0,4]];
