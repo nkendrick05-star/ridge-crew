@@ -1,6 +1,6 @@
 // Ridge Crew offline helper. Bump VERSION whenever index.html changes.
 const VERSION = 'ridge-crew-v186';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png?v=2', './icon-512.png?v=2', './apple-touch-icon.png?v=2'];
+const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png?v=3', './icon-512.png?v=2', './apple-touch-icon.png?v=3', './favicon.png?v=3'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
