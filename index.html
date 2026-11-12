@@ -3180,7 +3180,7 @@ function euTargets(E,G){const T=[],vd=euVw(E,E.dealer),deck=G.V[vd];
   const dealing=E.phase==='deal',rel={};E.order.forEach((o,i)=>{const t0=EU_DEAL0+i*EU_DEALDT;if(!dealing||E.pt>=t0)rel[o.c]=dealing?E.pt-t0:9});
   /* the kitty sits in the middle while people bid, then goes back by the dealer */
   const bidding=E.phase==='bid1'||E.phase==='bid2'||dealing,inHand=new Set([].concat(...E.hands));
-  E.kitty.forEach((c,i)=>{if(inHand.has(c))return;if(bidding&&!dealing||dealing&&E.pt>EU_DEAL0+20*EU_DEALDT){const up=c===E.up;T[c]={x:G.tx+(up?0:(i-2)*1.5),y:G.ty-G.H*.04-(up?0:i*1.2),a:up?(E.turned?.35:0):-.06+i*.03,s:G.port?.86:.7,f:up&&!E.turned?1:0,z:up?20:10+i}}
+  E.kitty.forEach((c,i)=>{if(inHand.has(c))return;if(bidding&&!dealing||dealing&&E.pt>EU_DEAL0+20*EU_DEALDT){const up=c===E.up;T[c]={x:G.tx+(up?0:(i-2)*1.5),y:G.ty+(G.port?G.H*.16:-G.H*.04)-(up?0:i*1.2),a:up?(E.turned?.35:0):-.06+i*.03,s:G.port?.86:.7,f:up&&!E.turned?1:0,z:up?20:10+i}}
     else if(!dealing)T[c]={x:deck.x+(vd%2?0:G.W*.5),y:deck.y+(vd%2?G.H*.35:0),a:vd%2?Math.PI/2+.1:.1,s:.4,f:0,z:5+i}});
   if(!dealing&&E.buried!=null&&!inHand.has(E.buried))T[E.buried]={x:deck.x+(vd%2?0:G.W*.5),y:deck.y+(vd%2?G.H*.35:0),a:vd%2?Math.PI/2+.1:.1,s:.4,f:0,z:9};
   const mine=euMine(E);
