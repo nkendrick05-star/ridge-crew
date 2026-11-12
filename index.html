@@ -9857,8 +9857,8 @@ $('resetBtn').addEventListener('click',async()=>{
   const b=$('resetBtn');
   if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Tap again to erase everything';$('resetNote').hidden=false;clearTimeout(resetArmT);resetArmT=setTimeout(()=>{b.classList.remove('armed');b.textContent='Reset my progress';$('resetNote').hidden=true},5000);return}
   clearTimeout(resetArmT);b.disabled=true;b.textContent='Resetting...';
-  const KEYS=['rc_snake','rc_wallet','rc_owned','rc_equip','rc_ups','rc_xp','rc_badges','rc_missions','rc_journal','rc_life','rc_modebest','rc_bestdist','rc_seen','rc_best','rc_ffplayed','rc_mm','rc_mmburn'];
-  try{for(const k of KEYS)localStorage.removeItem(k);for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith('daily_'))localStorage.removeItem(k)}}catch(e){}
+  const KEYS=['rc_snake','rc_wallet','rc_owned','rc_equip','rc_ups','rc_xp','rc_badges','rc_missions','rc_journal','rc_life','rc_modebest','rc_bestdist','rc_seen','rc_best','rc_ffplayed','rc_mm','rc_mmburn','rc_eu','rc_eu_found','rc_pool','rc_pool_found','rc_camp','rc_daily','rc_unl','rc_arcplayed','rc_arcrecent','rc_arclast','rc_lastranks','rc_ffpick','rc_mode'];
+  try{for(const k of KEYS)localStorage.removeItem(k);for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&(k.startsWith('daily_')||k.startsWith('rc_gh_')))localStorage.removeItem(k)}}catch(e){}
   wallet=0;owned={};equip={};ups={};xp=0;
   if(ACC.code){try{await rpc('rc_reset',{p_code:ACC.code})}catch(e){}}
   try{location.reload()}catch(e){toast('Progress reset. Close and reopen the game.')}
@@ -9917,7 +9917,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
  if(location.protocol==='https:'){getVer().then(v=>{ver=v});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){hidAt=Date.now();return}if(!hidAt||Date.now()-hidAt<60e3)return;hidAt=0;
     getVer().then(v=>{if(v&&ver&&v!==ver&&mode!=='play'&&mode!=='paused')location.reload();else if(v&&ver&&v!==ver)ver=v})})}}
-try{if(ACC.code&&!sessionStorage.getItem('rc_pulled')){sessionStorage.setItem('rc_pulled','1');syncPull(ACC.code).then(r=>{if(r==='applied')location.reload()}).catch(()=>{})}}catch(e){}
+try{if(ACC.code&&!sessionStorage.getItem('rc_pulled')){sessionStorage.setItem('rc_pulled','1');syncPull(ACC.code).then(r=>{if(r==='applied')location.reload();else if(r==='bad'){/* this device's account is gone from the server: start a fresh one and upload what's on the phone */try{localStorage.removeItem('rc_code');localStorage.removeItem('rc_pid')}catch(e){}ACC.code=null;ACC.id=null;regP=null;ensurePlayer().catch(()=>{})}}).catch(()=>{})}}catch(e){}
 
 })();
 </script>
