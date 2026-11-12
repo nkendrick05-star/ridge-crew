@@ -2728,6 +2728,8 @@ const PL_AI={
 let POOL_OPP=null,POOL_REC={};try{POOL_REC=JSON.parse(localStorage.getItem('rc_pool')||'{}')||{}}catch(e){}
 /* one-time fix for Nathan: his win over Josiah on Nov 12 was scored as a loss by the old called-pocket bug */
 setTimeout(()=>{try{if(localStorage.getItem('rc_poolfix1')||typeof ACC==='undefined'||!ACC.id)return;if(ACC.id==='4950e3b1-db6f-415c-9bb7-bc3a45c212db'){const r=POOL_REC.curly;if(!r||r.l<1)return;r.l--;r.w++;save('rc_pool',JSON.stringify(POOL_REC));unlockBadge&&unlockBadge('pool_win');{const beat=Object.keys(POOL_REC).filter(k=>POOL_REC[k].w>0).length;if(beat>=4)unlockBadge('pool_all')}toast('8-Ball record fixed: that win over '+nm(byId('curly'))+' now counts')}save('rc_poolfix1','1')}catch(e){}},2500);
+/* and the reverse: Henry sank the 8 to beat him, but the old bug handed Nathan the win */
+setTimeout(()=>{try{if(localStorage.getItem('rc_poolfix2')||typeof ACC==='undefined'||!ACC.id)return;if(ACC.id==='4950e3b1-db6f-415c-9bb7-bc3a45c212db'){const r=POOL_REC.camo;if(!r||r.w<1)return;r.w--;r.l++;save('rc_pool',JSON.stringify(POOL_REC));setTimeout(()=>toast('8-Ball record fixed: '+nm(byId('camo'))+' gets his win back'),3200)}save('rc_poolfix2','1')}catch(e){}},2600);
 const poolFound=()=>{try{return localStorage.getItem('rc_pool_found')==='1'}catch(e){return false}};
 const plType=n=>n===0?'cue':n===8?'eight':n<8?'solid':'stripe';
 function plRack(){const B=[{n:0,x:25,y:76,vx:0,vy:0,in:false}],R=PL.R,d=R*2+.02,top=24;
