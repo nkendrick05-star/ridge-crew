@@ -981,7 +981,7 @@ const SHIRTS=[
  {need:'ff_climb',id:'reflect',name:'Reflective jacket',price:1080,shirt:'#b8c0c8',shine:true,lvl:3},
  {need:'ff_lake',id:'saddle',name:'Saddle blanket',price:900,shirt:'#b84a2a',zig:true},
  {id:'scorched',name:'Scorched tee',price:0,shirt:'#4a3a32',scorch:true,fireRuns:10},
- {id:'pyrjersey',name:'Pyramid jersey',price:0,shirt:'#6a2ab0',num:true,badge:'ff_pyramid'},
+ {id:'pyrjersey',name:'Pyramid jersey',price:0,shirt:'#6a2ab0',num:true,badge:'ff_swing'},
  {need:'ar_flip',id:'odytee',name:'Odyssey tee',price:600,shirt:'#f4f4f0',stripe:'#3a5a98'},
  {need:'ar_snake30',id:'snaketee',name:'Snake Trail tee',price:600,shirt:'#aad751',stripe:'#2f5a24'},
  {need:'ar_all',id:'arcadetee',name:'Arcade tee',price:720,shirt:'#2a1840',stripe:'#ffd84a'},
@@ -1472,13 +1472,12 @@ const MODES=[
  {id:'bear',name:'Bear Mode',desc:'You are the bear. Catch all five as fast as you can. Fastest time wins.'},
  {id:'fire',name:'Forest Fire',desc:'The floor is lava. Swing and fling through the burning woods.'},
  {id:'mallow',name:'Mad Mallows',desc:'Throw flaming marshmallows at the rangers\' forts. 15 camps, three stars each.'},
- {id:'stampede',name:'Bear Stampede',desc:'Ride the bear down the trail with the fire right behind you. Swipe to dodge, jump and duck.'},
  {id:'cross',name:'Ridge Cross',arcade:true,desc:'Hop up the ridge across creeks, elk stampedes, bike trails and rockslides. Tap to hop, swipe to dodge. Don\'t let the bear catch you.'},
  {id:'snake',name:'Snake Trail',arcade:true,desc:'A hidden one. Swipe to steer your hiking line, grab pinecones to grow it, and steer clear of trees, rocks and the wandering bear.'},
  {id:'odyssey',name:'Odyssey Climb',arcade:true,desc:'Drive the white Odyssey up the ridge. Hold right for gas, left to brake. Too much gas on a hill flips you, and if you land on the roof the bear gets the crew.'},
  {id:'copter',name:'Fart Copter',arcade:true,desc:'The bear chased you into a cave. Tap to fart and flap through as many spires as you can. Beans refill your gas.'}
 ];
-let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}catch(e){}
+let runMode='classic';try{runMode=localStorage.getItem('rc_mode')||'classic'}catch(e){}if(runMode==='stampede')runMode='classic';
 if(!MODES.find(m=>m.id===runMode))runMode='classic';
 setTimeout(()=>{try{if(!MODES.find(m=>m.id===runMode).arcade&&!modeOk(runMode))runMode='classic'}catch(e){}},0);
 const pick=a=>a[Math.random()*a.length|0];
@@ -7514,13 +7513,10 @@ const BADGES=[
  {id:'ff_climb',ic:'UP',name:'Rope Climber',desc:'Climb all the way up a rope'},
  {id:'ff_raft',ic:'5R',name:'Raft Surfer',desc:'Ride 5 lava rafts in one run'},
  {id:'ff_mallow',ic:'10C',name:"S'more Chef",desc:'Earn 30 stars in Mad Mallows'},
- {id:'ff_chain',ic:'3R',name:'Raccoon Express',desc:'Give 3 raccoons a ride in one Bear Stampede run'},
  {id:'ff_burn',ic:'100',name:'Arsonist',desc:'Burn 100 things in Mad Mallows'},
  {id:'ff_inferno',ic:'HOT',name:'Inferno',desc:'Have 12 things burning at once'},
  {id:'ff_swing',ic:'50',name:'Tarzan',desc:'50 swings in one Forest Fire run without a lava hit'},
  {id:'ff_flip',ic:'FLIP',name:'Flip Out',desc:'Land 10 flips in one Forest Fire run'},
- {id:'ff_pyramid',ic:'2K',name:'Long Haul',desc:'Ride 2,000 m in Bear Stampede'},
- {id:'ff_lake',ic:'H2O',name:'Splashdown',desc:'Ride the bear all the way to the lake (1,500 m)'},
  {id:'ff_all',ic:'2/2',name:'Firestarter',desc:'Play Forest Fire and Mad Mallows'},
  {id:'up_camp',ic:'C1',name:'Base Camper',desc:'Reach Camp 1 in Summit Climb'},
  {id:'up_high',ic:'13K',name:'High Camp',desc:'Reach High Camp at 13,000 ft'},
@@ -7847,7 +7843,6 @@ const JOURNAL=[
  {id:'bj_den',ic:'DN',name:'The Den',desc:'Nap time after a full catch.',g:'bear'},
  {id:'ff_blaze',ic:'MM',name:'Mad Mallows',desc:'Five guys. Fifteen camps.',g:'fire'},
  {id:'ff_lava',ic:'FF',name:'Forest Fire',desc:'Hold to climb, let go to fling.',g:'fire'},
- {id:'ff_ride',ic:'BS',name:'Bear Stampede',desc:'One bear. One rider. Run.',g:'fire'},
  {id:'ff_bomber',ic:'WB',name:'Water Bomber',desc:'Soaks the whole trail.',g:'fire'},
  {id:'ff_timber',ic:'WB',name:'Water Barrel',desc:'Puts out everything nearby.',g:'fire'},
  {id:'ff_smoke',ic:'SM',name:'Smoke Bank',desc:'Cannot see a thing.',g:'fire'},
@@ -7859,9 +7854,6 @@ const JOURNAL=[
  {id:'ff_raft',ic:'LR',name:'Lava Raft',desc:'Sinks if you stay.',g:'fire'},
  {id:'ff_shroom',ic:'BM',name:'Bounce Mushroom',desc:'BOING.',g:'fire'},
  {id:'ff_vine',ic:'VN',name:'Vine Swing',desc:'Longer reach, bigger swing.',g:'fire'},
- {id:'ff_hitch',ic:'HH',name:'Raccoon Hitchhiker',desc:'Takes one hit for you. First to bail.',g:'fire'},
- {id:'ff_moose',ic:'ME',name:'Moose Escort',desc:'Runs ahead and clears the trail.',g:'fire'},
- {id:'ff_lake',ic:'LK',name:'The Lake',desc:'The trail crosses it on a bridge.',g:'fire'},
  {id:'camp',ic:'CP',name:'Base Camp',desc:'Second wind, and lost crew wait here.',g:'up'},
  {id:'goat',ic:'GT',name:'Mountain Goat',desc:'Unimpressed. Jump it.',g:'up'},
  {id:'yeti',ic:'YT',name:'The Yeti',desc:'The bear turned back. This did not.',g:'up'},
@@ -8948,7 +8940,7 @@ function showPlayerCard(r){
   card.appendChild(st);scr.appendChild(ov);
 }
 const MAIN_BOARDS=()=>BOARDS.filter(b=>!['copter','cross','snake','odyssey'].includes(b[0]));
-const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Summit Climb'],['solo','Solo'],['bear_t','Bear Mode'],['mallow','Mad Mallows'],['stampede','Bear Stampede'],['fire_lava','Forest Fire'],['copter','Fart Copter'],['cross','Ridge Cross'],['snake','Snake Trail'],['odyssey','Odyssey Climb']];
+const BOARDS=[['classic','Classic'],['night','Night Hike'],['uphill','Summit Climb'],['solo','Solo'],['bear_t','Bear Mode'],['mallow','Mad Mallows'],['fire_lava','Forest Fire'],['copter','Fart Copter'],['cross','Ridge Cross'],['snake','Snake Trail'],['odyssey','Odyssey Climb']];
 /* Bear Mode ranks by fastest full catch: stored as 100000 - tenths of a second so bigger is still better */
 const bearTV=sec=>Math.max(1,100000-Math.round(sec*10)),fmtB=(k,v)=>k==='bear_t'?((100000-v)/10).toFixed(1)+'s':Number(v).toLocaleString();
 function boardModes(){const m={};for(const [k] of BOARDS){const v=k==='classic'?Math.max(modeBest.classic||0,best||0):(modeBest[k]||0);if(v>0)m[k]=v}return m}
