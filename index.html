@@ -3330,9 +3330,21 @@ function euTalk(E,G){if(E.phase==='over')return;const F=n=>'700 '+n+'px "RCD","P
   ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.arc(x+1,y+3,r,0,6.283);ctx.fill();ctx.fillStyle=E.talk?'#ffd166':'#3a2a1e';ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();ctx.strokeStyle='rgba(255,179,71,.5)';ctx.lineWidth=2;ctx.stroke();
   ctx.fillStyle=E.talk?'#2a1a0e':'#fff3dc';euRR(x-10,y-8,20,13,4);ctx.fill();ctx.beginPath();ctx.moveTo(x-5,y+4);ctx.lineTo(x-8,y+10);ctx.lineTo(x+1,y+4);ctx.fill();ctx.fillStyle=E.talk?'#ffd166':'#3a2a1e';for(const d of [-5,0,5])ctx.fillRect(Math.round(x+d-1),Math.round(y-2.5),3,3);
   E.btns.push({x:x-r,y:y-r,w:r*2,h:r*2,id:'talk',fn:()=>{E.talk=!E.talk}});
-  if(!E.talk)return;const f=Math.round(Math.max(12,Math.min(15,cw/27))),bh=f*2.2;ctx.font=F(f);let yy=y-r-10-bh,xx=x+r;
-  for(let i=EU_SAYS.length-1;i>=0;i--){const t=EU_SAYS[i],w=ctx.measureText(t).width+22,bx=xx-w,by=yy-(EU_SAYS.length-1-i)*(bh+6);ctx.fillStyle='rgba(0,0,0,.35)';euRR(bx+1,by+3,w,bh,10);ctx.fill();ctx.fillStyle='#fff3dc';euRR(bx,by,w,bh,10);ctx.fill();
-    ctx.fillStyle='#1a0e08';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,bx+w/2,by+bh/2+1);E.btns.push({x:bx,y:by,w,h:bh,id:'say'+i,fn:()=>{E.talk=false;euDo(E,{k:'say',i})}})}}
+  if(!E.talk){E.talkBox=null;return}const f=Math.round(Math.max(12,Math.min(15,cw/27))),bh=Math.round(f*2.2),gap=6,pad=7,n=EU_SAYS.length;ctx.font=F(f);
+  /* floating window: shows about 4 and a half phrases, swipe up/down inside it to see the rest */
+  let w=0;for(const t of EU_SAYS)w=Math.max(w,ctx.measureText(t).width+26);w=Math.min(w+pad*2,cw-28);
+  const top=(G.hudH||0)+8,up=y-r-10-top,down=ch-(y+r+10)-8,goUp=up>=down,room=Math.max(bh+pad*2,goUp?up:down);
+  const full=n*(bh+gap)-gap+pad*2,h=Math.min(full,Math.round(pad+4.5*(bh+gap)),room),bx=x+r-w,by=goUp?y-r-10-h:y+r+10,maxS=Math.max(0,full-h);
+  E.talkS=Math.max(0,Math.min(maxS,E.talkS||0));E.talkBox={x:bx,y:by,w,h,bh,gap,pad,maxS};
+  ctx.fillStyle='rgba(0,0,0,.4)';euRR(bx+2,by+4,w,h,14);ctx.fill();ctx.fillStyle='#3a2a1e';euRR(bx,by,w,h,14);ctx.fill();ctx.strokeStyle='rgba(255,179,71,.55)';ctx.lineWidth=2;ctx.stroke();
+  ctx.save();euRR(bx+2,by+2,w-4,h-4,12);ctx.clip();ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let i=0;i<n;i++){const iy=by+pad+i*(bh+gap)-E.talkS;if(iy+bh<by||iy>by+h)continue;const ix=bx+pad,iw=w-pad*2-(maxS?6:0),hot=E.talkHot===i;
+    ctx.fillStyle='rgba(0,0,0,.3)';euRR(ix+1,iy+3,iw,bh,10);ctx.fill();ctx.fillStyle=hot?'#ffd166':'#fff3dc';euRR(ix,iy,iw,bh,10);ctx.fill();ctx.fillStyle='#1a0e08';ctx.fillText(EU_SAYS[i],ix+iw/2,iy+bh/2+1)}
+  if(E.talkS>1){const g=ctx.createLinearGradient(0,by,0,by+16);g.addColorStop(0,'rgba(58,42,30,1)');g.addColorStop(1,'rgba(58,42,30,0)');ctx.fillStyle=g;ctx.fillRect(bx,by,w,16)}
+  if(E.talkS<maxS-1){const g=ctx.createLinearGradient(0,by+h-16,0,by+h);g.addColorStop(0,'rgba(58,42,30,0)');g.addColorStop(1,'rgba(58,42,30,1)');ctx.fillStyle=g;ctx.fillRect(bx,by+h-16,w,16)}
+  if(maxS){const th=Math.max(24,(h-12)*h/full),ty=by+6+(h-12-th)*(E.talkS/maxS);ctx.fillStyle='rgba(255,179,71,.6)';euRR(bx+w-7,ty,4,th,2);ctx.fill()}
+  ctx.restore()}
+function euTalkHit(E,X,Y){const T=E.talkBox;if(!T||X<T.x||X>T.x+T.w||Y<T.y||Y>T.y+T.h)return -1;const i=Math.floor((Y-T.y-T.pad+E.talkS)/(T.bh+T.gap));return i>=0&&i<EU_SAYS.length?i:-1}
 let EU_LT=0;
 function euchreDraw(){const E=S.eu,G=euGeom();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;const now=performance.now(),dt=EU_LT?Math.min(.05,(now-EU_LT)/1000):.016;EU_LT=now;
   if(E.press)E.press.t+=dt;
@@ -3344,6 +3356,8 @@ function euchreDraw(){const E=S.eu,G=euGeom();ctx.setTransform(dpr,0,0,dpr,0,0);
 /* ---- touch ---- */
 function euPt(e){const R=cv.getBoundingClientRect();return[(e?e.clientX:0)-R.left,(e?e.clientY:0)-R.top]}
 function euDown(e){const E=S.eu;if(!E||E.phase==='over')return;const [X,Y]=euPt(e),G=euGeom();
+  if(E.talk){const T=E.talkBox,tb=(E.btns||[]).find(b=>b.id==='talk');if(T&&X>=T.x&&X<=T.x+T.w&&Y>=T.y&&Y<=T.y+T.h){E.tdrag={y0:Y,s0:E.talkS||0,moved:false};E.talkHot=euTalkHit(E,X,Y);return}
+    if(!(tb&&X>=tb.x-4&&X<=tb.x+tb.w+4&&Y>=tb.y-6&&Y<=tb.y+tb.h+8)){E.talk=false;return}}
   for(const b of E.btns||[])if(X>=b.x-4&&X<=b.x+b.w+4&&Y>=b.y-6&&Y<=b.y+b.h+8){E.press={id:b.id,t:0};SFX.tap&&SFX.tap();b.fn();return}
   const mine=euMine(E);if(!mine)return;
   /* topmost card under the finger: hand cards are drawn left to right, so check from the right */
@@ -3352,8 +3366,8 @@ function euDown(e){const E=S.eu;if(!E||E.phase==='over')return;const [X,Y]=euPt(
   if(E.sel===hh.c){euCommit(E,hh.c);return}
   E.sel=hh.c;SFX.tap&&SFX.tap();E.drag={c:hh.c,x0:X,y0:Y,x:hh.x,y:hh.y,on:false,dx:hh.x-X,dy:hh.y-Y}}
 function euCommit(E,c){if(E.phase==='play')euDo(E,{k:'play',c});else if(E.phase==='discard')euDo(E,{k:'discard',c})}
-function euMove(e){const E=S&&S.eu;if(!E||!E.drag)return;const [X,Y]=euPt(e),d=E.drag;if(!d.on&&Math.hypot(X-d.x0,Y-d.y0)>10)d.on=true;if(d.on){d.x=X+d.dx;d.y=Y+d.dy}}
-function euUp(e){const E=S&&S.eu;if(!E||!E.drag)return;const d=E.drag,G=euGeom();E.drag=null;if(d.on&&d.y<G.handCY-G.H*.55){const v=E.cv[d.c];if(v){v.x=d.x;v.y=d.y}euCommit(E,d.c)}}
+function euMove(e){const E=S&&S.eu;if(E&&E.tdrag){const [X,Y]=euPt(e),d=E.tdrag;if(Math.abs(Y-d.y0)>6){d.moved=true;E.talkHot=-1}if(d.moved){const T=E.talkBox;E.talkS=Math.max(0,Math.min(T?T.maxS:0,d.s0-(Y-d.y0)))}return}if(!E||!E.drag)return;const [X,Y]=euPt(e),d=E.drag;if(!d.on&&Math.hypot(X-d.x0,Y-d.y0)>10)d.on=true;if(d.on){d.x=X+d.dx;d.y=Y+d.dy}}
+function euUp(e){const E=S&&S.eu;if(E&&E.tdrag){const d=E.tdrag;E.tdrag=null;const i=E.talkHot;E.talkHot=-1;if(!d.moved&&i>=0){SFX.tap&&SFX.tap();E.talk=false;euDo(E,{k:'say',i})}return}if(!E||!E.drag)return;const d=E.drag,G=euGeom();E.drag=null;if(d.on&&d.y<G.handCY-G.H*.55){const v=E.cv[d.c];if(v){v.x=d.x;v.y=d.y}euCommit(E,d.c)}}
 /* ---- menus ---- */
 function euMenu(){for(const o of document.querySelectorAll('.mmov'))o.remove();const ov=el('div','mmov'),card=el('div','mmcard');const P=euPicks();
   card.append(el('span','mmk','HIDDEN MODE'),el('h3',null,'Campfire Euchre'),el('p','mmbest','You and a partner against two of the guys. First team to 10.'));
@@ -3383,7 +3397,7 @@ function euCard(E){for(const o of document.querySelectorAll('.mmov'))o.remove();
   card.appendChild(r2);ov.appendChild(card);$('app').appendChild(ov);$('pauseBtn').hidden=true}
 /* ---------- Campfire Euchre live tables: one phone hosts the game, everyone else sends moves ---------- */
 const euNetOK=()=>typeof SB_URL!=='undefined'&&typeof rpc==='function';
-const EU_CODEC='ABCDEFGHJKLMNPQRSTUVWXYZ',EU_SAYS=['Nice!','Ugh.','Called it.','Let\'s go!','Sorry partner','Hurry up!'];
+const EU_CODEC='ABCDEFGHJKLMNPQRSTUVWXYZ',EU_SAYS=['Nice!','Ugh.','Called it.','Let\'s go!','Sorry partner','Hurry up!','Pick it up!','Go alone!','Euchred!','Trust me','My bad','Good game'];
 let EU_NET=null,EU_PID=null,EU_LOOP=null;
 function euPid(){if(EU_PID)return EU_PID;try{EU_PID=localStorage.getItem('rc_eu_pid')}catch(e){}if(!EU_PID){EU_PID='p'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);save('rc_eu_pid',EU_PID)}return EU_PID}
 function euMeInfo(){const c=byId(myWho)||(S&&S.leader)||byId(sel)||CHARS[0];return{name:((typeof myName==='string'&&myName.trim())||nm(c)).slice(0,16),who:c.id}}
@@ -3494,9 +3508,9 @@ function euJoinPrompt(){for(const o of document.querySelectorAll('.mmov'))o.remo
   ov.appendChild(card);$('app').appendChild(ov);setTimeout(()=>inp.focus(),50)}
 var ffPick=(()=>{try{return localStorage.getItem('rc_ffpick')||'random'}catch(e){return 'random'}})();
 function mlPickRow(t){const seg=el('div','ffpick');for(const [k,lab] of [['random','Random'],['lava','Lava'],['ride','Rodeo']]){const s=el('span',ffPick===k?'on':'',lab);s.classList.toggle('on',ffPick===k||(k==='random'&&ffPick==='mallow'));s.addEventListener('click',ev=>{ev.stopPropagation();ffPick=k;save('rc_ffpick',k);runMode='fire';save('rc_mode','fire');SFX.tap&&SFX.tap();const sc=$('modeList').scrollTop;showModes();$('modeList').scrollTop=sc});seg.appendChild(s)}t.appendChild(seg)}
-window.addEventListener('pointermove',e=>{if(S&&S.ml&&(S.ml.aim||S.ml.pan))mlMove(e);if(S&&S.mode==='stampede')spSwipeMove(e);if(S&&S.pl&&S.pl.drag)plMove(e);if(S&&S.eu&&S.eu.drag)euMove(e)});
-window.addEventListener('pointerup',e=>{if(S&&S.ml&&(S.ml.aim||S.ml.pan))mlUp(e);if(S&&S.pl&&S.pl.drag)plUp(e);if(S&&S.eu&&S.eu.drag)euUp(e)});
-window.addEventListener('pointercancel',()=>{if(S&&S.ml){S.ml.aim=null;S.ml.pan=null}});
+window.addEventListener('pointermove',e=>{if(S&&S.ml&&(S.ml.aim||S.ml.pan))mlMove(e);if(S&&S.mode==='stampede')spSwipeMove(e);if(S&&S.pl&&S.pl.drag)plMove(e);if(S&&S.eu&&(S.eu.drag||S.eu.tdrag))euMove(e)});
+window.addEventListener('pointerup',e=>{if(S&&S.ml&&(S.ml.aim||S.ml.pan))mlUp(e);if(S&&S.pl&&S.pl.drag)plUp(e);if(S&&S.eu&&(S.eu.drag||S.eu.tdrag))euUp(e)});
+window.addEventListener('pointercancel',()=>{if(S&&S.ml){S.ml.aim=null;S.ml.pan=null}if(S&&S.eu){S.eu.tdrag=null;S.eu.talkHot=-1}});
 /* ---------- forest fire mode: three random variants ---------- */
 const FF_INFO={
   mallow:{name:'Marshmallow Launcher',intro:()=>'Drag back and let go to throw. Burn every NO FIRES sign! Tap mid-air for each guy\'s move.'},
